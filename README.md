@@ -1,4 +1,4 @@
-# BharatSaathi 🇮🇳
+# BharatSahayak 🇮🇳
 **Empowering Rural Bharat through Voice-First AI**
 
 Developed by Team **Algorangers** for the **AI for Bharat 2026** Initiative.
