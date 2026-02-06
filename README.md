@@ -1,10 +1,10 @@
 # BharatSahayak 🇮🇳
 **Empowering Rural Bharat through Voice-First AI**
 
-Developed by Team **Algorangers** for the **AI for Bharat 2026** Initiative.
+Developed by Team **BharatSahayak** for the **AI for Bharat 2026** Initiative.
 
 ## 🚀 Overview
-BharatSaathi is an AI-powered digital companion designed to solve the accessibility gap for 250M+ rural users. By combining **Bhashini's** multilingual speech capabilities with **Retrieval-Augmented Generation (RAG)**, we provide a safe, hallucination-free way for users to discover government schemes, local jobs, and educational resources—entirely through voice.
+BharatSahayak is an AI-powered digital companion designed to solve the accessibility gap for 250M+ rural users. By combining **Bhashini's** multilingual speech capabilities with **Retrieval-Augmented Generation (RAG)**, we provide a safe, hallucination-free way for users to discover government schemes, local jobs, and educational resources—entirely through voice.
 
 ## 🛠️ Key Features
 - **Dialect-Aware Voice Interaction:** Direct communication in 22+ Indian languages.
