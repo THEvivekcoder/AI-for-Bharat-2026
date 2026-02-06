@@ -218,4 +218,4 @@ MIT License
 ## 👨‍💻 Author
 
 **Vivek Kumar**  
-AI for Bharat | Social Impact Project
+AI for Bharat | AI for Communities, Access & Public Impact
