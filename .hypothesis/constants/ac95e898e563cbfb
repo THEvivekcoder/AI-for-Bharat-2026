@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/offline_cache.py
+# hypothesis_version: 6.151.9
+
+[100, 168, 1024, 3600, 86400, ' AND language = ?', 'Cleared all cache', 'by_priority', 'by_type', 'content_type', 'count', 'created_at', 'data', 'en', 'entity_data', 'entity_type', 'max_size_mb', 'operation', 'pending_syncs', 'priority', 'size', 'sync_id', 'total_items', 'total_size', 'total_size_bytes', 'total_size_mb', 'usage_percent']

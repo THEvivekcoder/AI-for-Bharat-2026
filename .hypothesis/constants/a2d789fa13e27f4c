@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/models/__init__.py
+# hypothesis_version: 6.151.9
+
+['CropCalendar', 'CropRecommendation', 'FarmProfile', 'Location', 'MandiPrice', 'Scheme', 'SchemeTranslation', 'User', 'UserProfile']

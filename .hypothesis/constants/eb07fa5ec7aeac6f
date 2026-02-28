@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/api/rag.py
+# hypothesis_version: 6.151.9
+
+[500, '/api', '/ask', '/documents/add', '/documents/stats', '/session/create', 'data/faiss_index', 'gpt-3.5-turbo', 'openai', 'openai_api_key']

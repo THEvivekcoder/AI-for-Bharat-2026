@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/job_matcher.py
+# hypothesis_version: 6.151.9
+
+[0.0, 0.02, 0.03, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 1.0, ', ', '10th', '12th', 'This job ', 'below_10th', 'diploma', 'district', 'doctorate', 'education_level', 'experience_years', 'graduate', 'locations', 'postgraduate', 'recently posted', 'skills', 'state']

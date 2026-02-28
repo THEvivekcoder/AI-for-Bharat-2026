@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/api/farmer.py
+# hypothesis_version: 6.151.9
+
+['/api/farmer', '/crop-advice', '/crop-calendar', '/fertilizer-advice', '/market-price', '/market-price/trend', '/profile', 'Farmer Advisory']

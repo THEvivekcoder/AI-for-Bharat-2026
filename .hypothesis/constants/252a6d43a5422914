@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/schemas/__init__.py
+# hypothesis_version: 6.151.9
+
+['HealthResponse', 'LocationSchema', 'OTPVerifyRequest', 'TokenResponse', 'UserProfileCreate', 'UserProfileResponse', 'UserProfileUpdate', 'UserRegisterRequest', 'UserRegisterResponse', 'UserResponse']

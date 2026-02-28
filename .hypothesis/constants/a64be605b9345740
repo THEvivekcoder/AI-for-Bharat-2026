@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/middleware/rate_limiter.py
+# hypothesis_version: 6.151.9
+
+[1.0, 100, 300, 3600, ',', '-', '/api/ask', '/api/auth/register', '/api/auth/verify', '/api/farmer', '/api/health', '/api/impact', '/api/jobs', '/api/schemes', '/api/session', '/api/skills', '/api/text-to-voice', '/api/voice-to-text', '/health', 'Accept-Language', 'RATE_LIMIT_EXCEEDED', 'Retry-After', 'X-RateLimit-Limit', 'X-RateLimit-Reset', 'X-RateLimit-Window', 'burst', 'default', 'en', 'error', 'message', 'message_translations', 'quota_limit', 'quota_reset_time', 'requests', 'retry_after_seconds', 'retry_allowed', 'timestamp', 'unknown', 'user_id', 'window']

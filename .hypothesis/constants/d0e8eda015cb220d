@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/verification_tracker.py
+# hypothesis_version: 6.151.9
+
+['data_age_days', 'data_warnings', 'fresh', 'freshness_level', 'is_verified', 'last_updated', 'pending', 'recent', 'stale', 'unknown', 'unverified', 'verification_source', 'verification_status', 'verified', 'verified_at']

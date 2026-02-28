@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/config.py
+# hypothesis_version: 6.151.9
+
+['.env', '1.0.0', 'BharatSahayak', 'HS256', 'INFO', 'case_sensitive', 'env_file', 'env_file_encoding', 'utf-8']

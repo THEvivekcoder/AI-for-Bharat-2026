@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/api/auth.py
+# hypothesis_version: 6.151.9
+
+['/api', '/auth/register', '/auth/verify', '/user/data', '/user/profile', 'Delete user data', 'Get user profile', 'Register new user', 'Registration failed', 'Update user profile', 'User not found', 'bearer']

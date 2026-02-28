@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="BharatSahayak - Voice-enabled AI assistant for rural India">
+    <meta name="theme-color" content="#2563eb">
+    <title>BharatSahayak - भारत सहायक</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512x512.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">भारत सहायक</h1>
+                <div class="header-actions">
+                    <button id="languageBtn" class="icon-btn" aria-label="Change Language">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                        </svg>
+                    </button>
+                    <div id="offlineIndicator" class="offline-indicator hidden">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/>
+                        </svg>
+                        <span>Offline</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="app-main">
+            <!-- Navigation Tabs -->
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-view="chat">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                    <span>Chat</span>
+                </button>
+                <button class="nav-tab" data-view="schemes">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                    </svg>
+                    <span>Schemes</span>
+                </button>
+                <button class="nav-tab" data-view="farmer">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2c-5.33 4.55-8 8.48-8 11.8 0 4.98 3.8 8.2 8 8.2s8-3.22 8-8.2c0-3.32-2.67-7.25-8-11.8zm0 18c-3.35 0-6-2.57-6-6.2 0-2.34 1.95-5.44 6-9.14 4.05 3.7 6 6.79 6 9.14 0 3.63-2.65 6.2-6 6.2z"/>
+                    </svg>
+                    <span>Farming</span>
+                </button>
+                <button class="nav-tab" data-view="skills">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>
+                    </svg>
+                    <span>Skills</span>
+                </button>
+                <button class="nav-tab" data-view="health">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z"/>
+                    </svg>
+                    <span>Health</span>
+                </button>
+            </nav>
+
+            <!-- View Container -->
+            <div id="viewContainer" class="view-container">
+                <!-- Chat View (default) -->
+                <div id="chatView" class="view active">
+                    <div id="chatMessages" class="chat-messages"></div>
+                    <div class="chat-input-container">
+                        <button id="voiceBtn" class="voice-btn" aria-label="Voice Input">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+                            </svg>
+                        </button>
+                        <input type="text" id="textInput" class="text-input" placeholder="Type your message...">
+                        <button id="sendBtn" class="send-btn" aria-label="Send">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Schemes View -->
+                <div id="schemesView" class="view">
+                    <div class="view-content">
+                        <h2>Government Schemes</h2>
+                        <div class="search-box">
+                            <input type="text" id="schemeSearch" placeholder="Search schemes...">
+                        </div>
+                        <div id="schemesList" class="schemes-list"></div>
+                    </div>
+                </div>
+
+                <!-- Farmer View -->
+                <div id="farmerView" class="view">
+                    <div class="view-content">
+                        <h2>Farmer Advisory</h2>
+                        <div class="farmer-sections">
+                            <button class="section-btn" data-section="crops">Crop Recommendations</button>
+                            <button class="section-btn" data-section="fertilizer">Fertilizer Guidance</button>
+                            <button class="section-btn" data-section="prices">Market Prices</button>
+                        </div>
+                        <div id="farmerContent" class="farmer-content"></div>
+                    </div>
+                </div>
+
+                <!-- Skills View -->
+                <div id="skillsView" class="view">
+                    <div class="view-content">
+                        <h2>Skills & Employment</h2>
+                        <div class="skills-tabs">
+                            <button class="skills-tab active" data-tab="programs">Skill Programs</button>
+                            <button class="skills-tab" data-tab="jobs">Job Opportunities</button>
+                        </div>
+                        <div id="skillsContent" class="skills-content"></div>
+                    </div>
+                </div>
+
+                <!-- Health View -->
+                <div id="healthView" class="view">
+                    <div class="view-content">
+                        <h2>Health Advisory</h2>
+                        <div class="health-sections">
+                            <button class="section-btn" data-section="symptoms">Check Symptoms</button>
+                            <button class="section-btn" data-section="facilities">Find Facilities</button>
+                            <button class="section-btn" data-section="schemes">Health Schemes</button>
+                        </div>
+                        <div id="healthContent" class="health-content"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Loading Overlay -->
+        <div id="loadingOverlay" class="loading-overlay hidden">
+            <div class="spinner"></div>
+            <p id="loadingText">Processing...</p>
+        </div>
+
+        <!-- Language Selector Modal -->
+        <div id="languageModal" class="modal hidden">
+            <div class="modal-content">
+                <h3>Select Language / भाषा चुनें</h3>
+                <div class="language-list">
+                    <button class="language-option" data-lang="hi">हिंदी (Hindi)</button>
+                    <button class="language-option" data-lang="en">English</button>
+                    <button class="language-option" data-lang="bn">বাংলা (Bengali)</button>
+                    <button class="language-option" data-lang="te">తెలుగు (Telugu)</button>
+                    <button class="language-option" data-lang="mr">मराठी (Marathi)</button>
+                    <button class="language-option" data-lang="ta">தமிழ் (Tamil)</button>
+                    <button class="language-option" data-lang="gu">ગુજરાતી (Gujarati)</button>
+                    <button class="language-option" data-lang="kn">ಕನ್ನಡ (Kannada)</button>
+                </div>
+                <button id="closeLanguageModal" class="close-modal-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/app.js" type="module"></script>
+</body>
+</html>
