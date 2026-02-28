@@ -12,8 +12,6 @@ import os
 import re
 from hypothesis import given, settings, strategies as st, HealthCheck
 from hypothesis.strategies import composite
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from app.database import Base
 from app.services.impact_tracker import ImpactTracker
 from app.models.impact import InteractionEvent, OutcomeEvent
@@ -31,10 +29,6 @@ from app.schemas.impact import (
 from datetime import datetime, timedelta
 import uuid
 import json
-
-
-# Use test database URL from environment or default
-TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "postgresql://bharatsahayak:password@localhost:5432/bharatsahayak")
 
 
 # PII detection patterns
@@ -215,35 +209,6 @@ def metric_filters_strategy(draw):
             st.sampled_from(['schemes', 'farmer', 'skills', 'health'])
         ))
     )
-
-
-@pytest.fixture(scope="module")
-def test_engine():
-    """Create test database engine"""
-    engine = create_engine(TEST_DATABASE_URL)
-    Base.metadata.create_all(engine)
-    yield engine
-    Base.metadata.drop_all(engine)
-    engine.dispose()
-
-
-@pytest.fixture(scope="function")
-def test_db(test_engine):
-    """Create a test database session for each test"""
-    TestingSessionLocal = sessionmaker(bind=test_engine)
-    db = TestingSessionLocal()
-    
-    yield db
-    
-    db.rollback()
-    # Clean up test data
-    db.query(OutcomeEvent).delete()
-    db.query(InteractionEvent).delete()
-    db.query(UserProfile).delete()
-    db.query(User).delete()
-    db.query(Location).delete()
-    db.commit()
-    db.close()
 
 
 @pytest.fixture(scope="function")

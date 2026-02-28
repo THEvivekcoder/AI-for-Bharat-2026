@@ -654,7 +654,7 @@ class TestLanguageProcessorErrorHandling:
             try:
                 result = processor.translate(None, "en", "hi")
                 assert result is not None
-            except (TypeError, AttributeError):
+            except (TypeError, AttributeError, ValueError):
                 # Acceptable to raise error for None input
                 pass
     
@@ -673,7 +673,7 @@ class TestLanguageProcessorErrorHandling:
             result = processor.romanize(None, "devanagari")
             # If it doesn't raise error, should return empty or None
             assert result is None or result == ""
-        except (TypeError, AttributeError):
+        except (TypeError, AttributeError, ValueError):
             # Acceptable to raise error for None input
             pass
     

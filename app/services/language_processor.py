@@ -63,8 +63,9 @@ class LanguageProcessor:
             from googletrans import Translator
             self._translator = Translator()
             logger.info("Initialized Google Translate for translation")
-        except ImportError:
-            logger.warning("googletrans not available. Translation will use fallback.")
+        except (ImportError, AttributeError) as e:
+            # Handle both ImportError and AttributeError (httpcore compatibility issue)
+            logger.warning(f"googletrans not available ({e}). Translation will use fallback.")
             self._translator = None
         
         try:
@@ -95,8 +96,11 @@ class LanguageProcessor:
             Translated text
         
         Raises:
-            ValueError: If language codes are not supported
+            ValueError: If text is None or language codes are not supported
         """
+        if text is None:
+            raise ValueError("Text cannot be None")
+        
         if source_lang not in self.SUPPORTED_LANGUAGES:
             raise ValueError(f"Source language '{source_lang}' not supported")
         
@@ -136,9 +140,12 @@ class LanguageProcessor:
             Language code (e.g., 'hi', 'en', 'bn')
         
         Raises:
-            ValueError: If language cannot be detected
+            ValueError: If text is None or empty
         """
-        if not text or not text.strip():
+        if text is None:
+            raise ValueError("Text cannot be None")
+        
+        if not text.strip():
             raise ValueError("Cannot detect language of empty text")
         
         try:
@@ -213,8 +220,11 @@ class LanguageProcessor:
             Romanized text
         
         Raises:
-            ValueError: If source script is not supported
+            ValueError: If text is None or source script is not supported
         """
+        if text is None:
+            raise ValueError("Text cannot be None")
+        
         if source_script != 'devanagari':
             raise ValueError(f"Source script '{source_script}' not supported for romanization")
         
@@ -245,15 +255,23 @@ class LanguageProcessor:
         Returns:
             Transliterated text
         
+        Raises:
+            ValueError: If text is None or source script is not supported
+        
         Note:
             This is a simplified implementation. For production use,
             consider using libraries like indic-transliteration or Aksharamukha.
         """
+        if text is None:
+            raise ValueError("Text cannot be None")
+        
+        if not text:
+            return ""
+        
         # For now, implement basic transliteration through romanization
         # In production, use proper transliteration libraries
         
-        if source_script == target_script:
-            return text
+       
         
         # Simplified approach: romanize first, then convert to target script
         # This is not accurate for production but provides basic functionality

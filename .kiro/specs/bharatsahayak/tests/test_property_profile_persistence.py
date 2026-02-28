@@ -11,8 +11,6 @@ import pytest
 import os
 from hypothesis import given, settings, strategies as st, HealthCheck
 from hypothesis.strategies import composite
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from app.database import Base, get_db
 from app.services.user_manager import UserManager
 from app.models.user import User, UserProfile
@@ -20,10 +18,6 @@ from app.models.location import Location
 from app.schemas.user import UserProfileCreate, LocationSchema
 from app.redis_client import RedisCache
 import uuid
-
-
-# Use test database URL from environment or default
-TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "postgresql://bharatsahayak:password@localhost:5432/bharatsahayak")
 
 
 # Strategy for generating valid location data
@@ -64,36 +58,6 @@ def profile_strategy(draw):
     )
 
 
-@pytest.fixture(scope="module")
-def test_engine():
-    """Create test database engine"""
-    engine = create_engine(TEST_DATABASE_URL)
-    # Create all tables
-    Base.metadata.create_all(engine)
-    yield engine
-    # Drop all tables after tests
-    Base.metadata.drop_all(engine)
-    engine.dispose()
-
-
-@pytest.fixture(scope="function")
-def test_db(test_engine):
-    """Create a test database session for each test"""
-    TestingSessionLocal = sessionmaker(bind=test_engine)
-    db = TestingSessionLocal()
-    
-    yield db
-    
-    # Rollback any uncommitted changes and close
-    db.rollback()
-    # Clean up test data
-    db.query(UserProfile).delete()
-    db.query(User).delete()
-    db.query(Location).delete()
-    db.commit()
-    db.close()
-
-
 @pytest.fixture(scope="function")
 def redis_cache():
     """Create a mock Redis cache"""
@@ -124,11 +88,14 @@ def user_manager(test_db, redis_cache):
 @pytest.fixture(scope="function")
 def test_user(test_db):
     """Create a test user"""
+    import hashlib
     # Generate unique phone number for each test
     phone_number = f"+9198765{uuid.uuid4().hex[:5]}"
+    phone_hash = hashlib.sha256(phone_number.encode()).hexdigest()
     user = User(
         user_id=uuid.uuid4(),
         phone_number=phone_number,
+        phone_number_hash=phone_hash,
         language="hi"
     )
     test_db.add(user)

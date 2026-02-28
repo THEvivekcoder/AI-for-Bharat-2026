@@ -32,77 +32,13 @@ from app.models.location import Location
 from app.models.skills import JobPosting
 
 
-# Test database setup with SQLite compatibility
-SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./test_e2e_simple.db"
-
-from sqlalchemy import event, String, Text, TypeDecorator
-from sqlalchemy.dialects.postgresql import UUID as PostgresUUID, JSONB
-import uuid as uuid_module
-
-class SQLiteUUID(TypeDecorator):
-    """Platform-independent UUID type for SQLite"""
-    impl = String
-    cache_ok = True
-    
-    def process_bind_param(self, value, dialect):
-        if value is None:
-            return value
-        if isinstance(value, uuid_module.UUID):
-            return str(value)
-        return str(value)
-    
-    def process_result_value(self, value, dialect):
-        if value is None:
-            return value
-        if not isinstance(value, uuid_module.UUID):
-            return uuid_module.UUID(value)
-        return value
-
-engine = create_engine(SQLALCHEMY_TEST_DATABASE_URL, connect_args={"check_same_thread": False})
-
-@event.listens_for(Base.metadata, "before_create")
-def receive_before_create(target, connection, **kw):
-    """Replace PostgreSQL-specific types with SQLite-compatible types"""
-    if connection.dialect.name == 'sqlite':
-        for table in target.tables.values():
-            for column in table.columns:
-                if isinstance(column.type, PostgresUUID):
-                    column.type = SQLiteUUID()
-                elif isinstance(column.type, JSONB):
-                    column.type = Text()
-
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def override_get_db():
-    """Override database dependency for testing"""
-    try:
-        db = TestingSessionLocal()
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
-
-
-@pytest.fixture(scope="module")
-def setup_database():
-    """Create test database and tables"""
-    Base.metadata.create_all(bind=engine)
-    yield
-    Base.metadata.drop_all(bind=engine)
+# Database fixtures are provided by conftest.py
+# Tests use test_db and client fixtures from root conftest.py
 
 
 @pytest.fixture
-def client(setup_database):
-    """Create test client"""
-    return TestClient(app)
-
-
-@pytest.fixture
-def test_user(setup_database):
+def test_user(test_db):
     """Create test user"""
-    db = TestingSessionLocal()
-    
     phone_number = "+919876543210"
     phone_hash = hashlib.sha256(phone_number.encode()).hexdigest()
     
@@ -111,11 +47,10 @@ def test_user(setup_database):
         phone_number_hash=phone_hash,
         language="hi"
     )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
-    yield user
-    db.close()
+    test_db.add(user)
+    test_db.commit()
+    test_db.refresh(user)
+    return user
 
 
 @pytest.fixture
@@ -141,7 +76,7 @@ class TestUserRegistrationToRecommendationsFlow:
         self,
         mock_send_otp,
         client,
-        setup_database
+        test_db
     ):
         """
         End-to-end test: User registers → creates profile → receives personalized recommendations
@@ -230,7 +165,7 @@ class TestSchemeSearchEligibilityApplicationFlow:
         self,
         client,
         auth_headers,
-        setup_database
+        test_db
     ):
         """
         End-to-end test: User searches schemes → checks eligibility → gets application guidance
@@ -244,8 +179,7 @@ class TestSchemeSearchEligibilityApplicationFlow:
         6. User receives application guidance
         """
         # Setup: Create user profile for eligibility checking
-        db = TestingSessionLocal()
-        user = db.query(User).first()
+        user = test_db.query(User).first()
         
         # Create location
         location = Location(
@@ -253,8 +187,8 @@ class TestSchemeSearchEligibilityApplicationFlow:
             district="Varanasi",
             pincode="221001"
         )
-        db.add(location)
-        db.flush()
+        test_db.add(location)
+        test_db.flush()
         
         # Create user profile
         profile = UserProfile(
@@ -265,8 +199,8 @@ class TestSchemeSearchEligibilityApplicationFlow:
             income_bracket="below_2_lakh",
             location_id=location.id
         )
-        db.add(profile)
-        db.commit()
+        test_db.add(profile)
+        test_db.commit()
         
         # Create test schemes with different eligibility
         import json
@@ -423,7 +357,7 @@ class TestOfflineCacheSyncFlow:
         mock_network,
         client,
         auth_headers,
-        setup_database
+        test_db
     ):
         """
         End-to-end test: User goes offline → accesses cached data → reconnects → syncs
@@ -439,7 +373,6 @@ class TestOfflineCacheSyncFlow:
         # Step 1: User is online - create content to cache
         mock_network.return_value = True
         
-        db = TestingSessionLocal()
         scheme = Scheme(
             name="Cached Scheme",
             category="agriculture",
@@ -451,10 +384,9 @@ class TestOfflineCacheSyncFlow:
             department="Test",
             source_url="https://test.gov.in"
         )
-        db.add(scheme)
-        db.commit()
+        test_db.add(scheme)
+        test_db.commit()
         scheme_id = str(scheme.scheme_id)
-        db.close()
         
         # Access scheme to trigger caching
         response = client.get(

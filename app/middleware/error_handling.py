@@ -42,15 +42,14 @@ async def error_handling_middleware(request: Request, call_next: Callable):
         translated_message = ErrorTranslator.translate(e.error_code, language) if hasattr(e, 'error_code') else str(e)
         
         error_response = ErrorResponse(
-            error_code=getattr(e, 'error_code', 'APPLICATION_ERROR'),
+            error=getattr(e, 'error_code', 'APPLICATION_ERROR'),
             message=translated_message or str(e),
-            details=getattr(e, 'details', None),
-            suggestions=getattr(e, 'suggestions', None)
+            retry_allowed=getattr(e, 'retry_allowed', False)
         )
         
         return JSONResponse(
             status_code=e.status_code,
-            content=error_response.dict()
+            content=error_response.model_dump(mode='json')
         )
         
     except ValueError as e:
@@ -58,15 +57,14 @@ async def error_handling_middleware(request: Request, call_next: Callable):
         logger.warning(f"Validation error: {str(e)}")
         
         error_response = ErrorResponse(
-            error_code="VALIDATION_ERROR",
+            error="VALIDATION_ERROR",
             message=str(e),
-            details=None,
-            suggestions=["Check your input parameters", "Refer to API documentation"]
+            retry_allowed=False
         )
         
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=error_response.dict()
+            content=error_response.model_dump(mode='json')
         )
         
     except Exception as e:
@@ -76,15 +74,14 @@ async def error_handling_middleware(request: Request, call_next: Callable):
         
         # Don't expose internal error details in production
         error_response = ErrorResponse(
-            error_code="INTERNAL_SERVER_ERROR",
+            error="INTERNAL_SERVER_ERROR",
             message="An unexpected error occurred. Please try again later.",
-            details=None,
-            suggestions=["Try again in a few moments", "Contact support if the issue persists"]
+            retry_allowed=True
         )
         
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=error_response.dict()
+            content=error_response.model_dump(mode='json')
         )
 
 
@@ -98,15 +95,14 @@ def setup_exception_handlers(app):
         translated_message = ErrorTranslator.translate("DATA_NOT_FOUND", language)
         
         error_response = ErrorResponse(
-            error_code="DATA_NOT_FOUND",
+            error="DATA_NOT_FOUND",
             message=translated_message or exc.message,
-            details=exc.details,
-            suggestions=exc.suggestions
+            retry_allowed=False
         )
         
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
-            content=error_response.dict()
+            content=error_response.model_dump(mode='json')
         )
     
     @app.exception_handler(RateLimitException)
@@ -116,15 +112,14 @@ def setup_exception_handlers(app):
         translated_message = ErrorTranslator.translate("RATE_LIMIT_EXCEEDED", language)
         
         error_response = ErrorResponse(
-            error_code="RATE_LIMIT_EXCEEDED",
+            error="RATE_LIMIT_EXCEEDED",
             message=translated_message or exc.message,
-            details=exc.details,
-            suggestions=["Wait before making more requests", "Reduce request frequency"]
+            retry_allowed=True
         )
         
         return JSONResponse(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            content=error_response.dict(),
+            content=error_response.model_dump(mode='json'),
             headers={"Retry-After": str(exc.retry_after)} if hasattr(exc, 'retry_after') else {}
         )
     
@@ -132,15 +127,14 @@ def setup_exception_handlers(app):
     async def authentication_handler(request: Request, exc: AuthenticationException):
         """Handle authentication exceptions"""
         error_response = ErrorResponse(
-            error_code="AUTHENTICATION_ERROR",
+            error="AUTHENTICATION_ERROR",
             message=exc.message,
-            details=exc.details,
-            suggestions=["Check your credentials", "Request a new authentication token"]
+            retry_allowed=False
         )
         
         return JSONResponse(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            content=error_response.dict(),
+            content=error_response.model_dump(mode='json'),
             headers={"WWW-Authenticate": "Bearer"}
         )
     
@@ -148,15 +142,14 @@ def setup_exception_handlers(app):
     async def validation_handler(request: Request, exc: ValidationException):
         """Handle validation exceptions"""
         error_response = ErrorResponse(
-            error_code="VALIDATION_ERROR",
+            error="VALIDATION_ERROR",
             message=exc.message,
-            details=exc.details,
-            suggestions=exc.suggestions
+            retry_allowed=False
         )
         
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
-            content=error_response.dict()
+            content=error_response.model_dump(mode='json')
         )
     
     @app.exception_handler(ExternalServiceException)
@@ -166,15 +159,14 @@ def setup_exception_handlers(app):
         translated_message = ErrorTranslator.translate("EXTERNAL_SERVICE_ERROR", language)
         
         error_response = ErrorResponse(
-            error_code="EXTERNAL_SERVICE_ERROR",
+            error="EXTERNAL_SERVICE_ERROR",
             message=translated_message or exc.message,
-            details=exc.details,
-            suggestions=["Try again later", "Service may be temporarily unavailable"]
+            retry_allowed=True
         )
         
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content=error_response.dict()
+            content=error_response.model_dump(mode='json')
         )
     
     logger.info("Exception handlers registered")

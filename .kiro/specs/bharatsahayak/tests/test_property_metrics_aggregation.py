@@ -11,8 +11,6 @@ import pytest
 import os
 from hypothesis import given, settings, strategies as st, HealthCheck, assume
 from hypothesis.strategies import composite
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from app.database import Base
 from app.services.impact_tracker import ImpactTracker
 from app.models.impact import InteractionEvent
@@ -22,8 +20,7 @@ from datetime import datetime, timedelta
 import uuid
 
 
-# Use test database URL from environment or default
-TEST_DATABASE_URL = os.getenv("TEST_DATABASE_URL", "postgresql://bharatsahayak:password@localhost:5432/bharatsahayak")
+# Database fixtures are provided by conftest.py
 
 
 # Strategy for generating valid text without null bytes (PostgreSQL incompatible)
@@ -85,34 +82,6 @@ def interaction_event_with_metadata_strategy(draw):
         event_data=event_data,
         language=language
     )
-
-
-@pytest.fixture(scope="module")
-def test_engine():
-    """Create test database engine"""
-    engine = create_engine(TEST_DATABASE_URL)
-    # Create all tables
-    Base.metadata.create_all(engine)
-    yield engine
-    # Drop all tables after tests
-    Base.metadata.drop_all(engine)
-    engine.dispose()
-
-
-@pytest.fixture(scope="function")
-def test_db(test_engine):
-    """Create a test database session for each test"""
-    TestingSessionLocal = sessionmaker(bind=test_engine)
-    db = TestingSessionLocal()
-    
-    yield db
-    
-    # Rollback any uncommitted changes and close
-    db.rollback()
-    # Clean up test data
-    db.query(InteractionEvent).delete()
-    db.commit()
-    db.close()
 
 
 @pytest.fixture(scope="function")
