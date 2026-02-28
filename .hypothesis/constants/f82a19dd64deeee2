@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/models/farmer.py
+# hypothesis_version: 6.151.9
+
+[100, 'CASCADE', 'FarmProfile', 'Location', 'User', 'crop_calendars', 'crop_recommendations', 'farm_profiles', 'locations.id', 'mandi_prices', 'schema', 'users.user_id']

@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/vector_store.py
+# hypothesis_version: 6.151.9
+
+[0.0, 768, 'data/faiss_index', 'dimension', 'doc_id_to_idx', 'documents', 'embedding_dimension', 'embedding_model', 'embedding_model_name', 'index_size', 'official', 'rb', 'total_documents', 'wb']

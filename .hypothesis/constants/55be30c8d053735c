@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/schemas/impact.py
+# hypothesis_version: 6.151.9
+
+['Count by event type', 'Count by language', 'End date', 'End date for metrics', 'Filter by event type', 'Filter by language', 'Language code', 'Metrics by language', 'Metrics by region', 'Outcome event data', 'Start date', '^[a-z]{2}$', 'crop_planted', 'custom', 'daily', 'event', 'facility_located', 'facility_visited', 'fertilizer_purchased', 'job_applied', 'job_discovered', 'language_used', 'market_price_checked', 'monthly', 'outcome', 'quarterly', 'query_submitted', 'scheme_accessed', 'scheme_applied', 'skill_enrolled', 'skill_program_viewed', 'voice_interaction', 'weekly']

@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/models/impact.py
+# hypothesis_version: 6.151.9
+
+['SET NULL', 'event_type', 'interactions', 'outcome_type', 'outcomes', 'timestamp', 'user_id', 'users.user_id']

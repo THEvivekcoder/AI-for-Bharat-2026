@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/integrations/weather_api.py
+# hypothesis_version: 6.151.9
+
+[30.0, '1h', '3h', 'agricultural_advice', 'all', 'appid', 'avg_humidity', 'avg_temperature', 'city', 'clouds', 'cnt', 'current', 'datetime', 'days', 'description', 'dt', 'feels_like', 'forecast_summary', 'forecasts', 'humidity', 'lat', 'latitude', 'list', 'location', 'lon', 'longitude', 'main', 'max_temperature', 'metric', 'min_temperature', 'name', 'pressure', 'rain', 'rainfall_1h', 'rainfall_3h', 'rainy_days', 'speed', 'temp', 'temperature', 'timestamp', 'total_rainfall_mm', 'units', 'weather', 'wind', 'wind_speed']

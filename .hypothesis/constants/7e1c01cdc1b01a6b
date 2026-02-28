@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/mandi_price_service.py
+# hypothesis_version: 6.151.9
+
+[0.95, 1.05, 28.4595, 28.6139, 77.0266, 77.209, 2180.0, 2200.0, 2450.0, 2500.0, 6371.0, 3600, 'Delhi', 'Delhi Mandi', 'Gurgaon', 'Gurgaon Mandi', 'Haryana', 'New Delhi', 'Sample Data', 'crop_name', 'date', 'decreasing', 'district', 'increasing', 'latitude', 'longitude', 'mandi_name', 'price', 'price_date', 'price_per_quintal', 'rice', 'source', 'stable', 'state', 'wheat']

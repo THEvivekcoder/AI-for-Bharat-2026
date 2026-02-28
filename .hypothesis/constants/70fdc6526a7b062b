@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/models/scheme.py
+# hypothesis_version: 6.151.9
+
+[100, 255, 500, 'CASCADE', 'Scheme', 'SchemeTranslation', 'all, delete-orphan', 'schema', 'scheme', 'scheme_translations', 'schemes', 'schemes.scheme_id', 'translations', 'unverified']

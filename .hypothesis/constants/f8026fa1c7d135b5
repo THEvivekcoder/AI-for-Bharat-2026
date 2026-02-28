@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/skills_matcher.py
+# hypothesis_version: 6.151.9
+
+[0.0, 0.02, 0.03, 0.05, 0.2, 0.3, 0.4, 1.0, 100, ', ', 'No match found', 'This program ', 'available online', 'career_goals', 'category', 'certification', 'current_skills', 'description', 'district', 'education', 'education_level', 'eligibility_criteria', 'interests', 'mode', 'name', 'online', 'placement_support', 'program_id', 'state']

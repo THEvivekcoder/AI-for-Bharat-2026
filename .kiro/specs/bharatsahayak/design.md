@@ -20,32 +20,31 @@ The architecture follows a modular, microservices-inspired design with a FastAPI
 
 ```mermaid
 graph TB
-
-    subgraph ClientLayer
+    subgraph "Client Layer"
         PWA[Progressive Web App]
         Voice[Voice Interface]
         Cache[Offline Cache]
     end
     
-    subgraph APIGateway
+    subgraph "API Gateway"
         FastAPI[FastAPI Backend]
         Auth[Authentication]
         RateLimit[Rate Limiting]
     end
     
-    subgraph AICore
-        LLM[LLM Engine]
+    subgraph "AI Core"
+        LLM[LLM Engine<br/>LLaMA/Mistral/GPT]
         RAG[RAG Engine]
-        VectorDB[Vector DB]
+        VectorDB[Vector DB<br/>FAISS]
     end
     
-    subgraph LanguageProcessing
-        STT[Speech To Text]
-        TTS[Text To Speech]
-        NLP[Indic NLP]
+    subgraph "Language Processing"
+        STT[Speech-to-Text<br/>Whisper/Vosk]
+        TTS[Text-to-Speech<br/>Indic TTS/Coqui]
+        NLP[Indic NLP<br/>Bhashini/IndicTrans]
     end
     
-    subgraph DomainServices
+    subgraph "Domain Services"
         Schemes[Scheme Service]
         Farmer[Farmer Advisory]
         Skills[Skills Service]
@@ -53,44 +52,27 @@ graph TB
         Impact[Impact Tracker]
     end
     
-    subgraph DataLayer
+    subgraph "Data Layer"
         Postgres[(PostgreSQL)]
-        SQLite[(SQLite Offline)]
+        SQLite[(SQLite<br/>Offline)]
         Redis[(Redis Cache)]
-        S3[(Object Storage)]
+        S3[Object Storage]
     end
-
-    %% Connections
+    
     PWA --> FastAPI
     Voice --> STT
     Voice --> TTS
-
     FastAPI --> Auth
     FastAPI --> RateLimit
     FastAPI --> LLM
-    FastAPI --> NLP
-
-    %% Connect to REAL nodes, not subgraph
-    FastAPI --> Schemes
-    FastAPI --> Farmer
-    FastAPI --> Skills
-    FastAPI --> Health
-
+    FastAPI --> Domain Services
     LLM --> RAG
     RAG --> VectorDB
-
-    Schemes --> Postgres
-    Farmer --> Postgres
-    Skills --> Postgres
-    Health --> Postgres
-    Impact --> Postgres
-
-    Schemes --> Redis
-    Farmer --> Redis
-
+    FastAPI --> NLP
+    Domain Services --> Postgres
+    Domain Services --> Redis
     Cache --> SQLite
     VectorDB --> S3
-
 ```
 
 ### Deployment Architecture
@@ -1361,5 +1343,4 @@ Feature: bharatsahayak, Property 1: Voice-to-Text Transcription Accuracy
 - Verify simple language in responses
 - Test voice-only interaction flows
 - Verify visual simplicity of PWA
-
 

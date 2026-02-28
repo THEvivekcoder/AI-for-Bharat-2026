@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/schemas/user.py
+# hypothesis_version: 6.151.9
+
+[-180, 100, 150, 180, '+', '+91', 'Invalid phone number', '^[a-z]{2}$', '^\\d{6}$', 'bearer', 'hi', 'phone_number']

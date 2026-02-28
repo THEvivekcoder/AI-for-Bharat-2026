@@ -1,0 +1,4 @@
+# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/conversation_manager.py
+# hypothesis_version: 6.151.9
+
+['assistant_message', 'created_at', 'current_topic', 'duration_minutes', 'entities', 'history', 'intent', 'language', 'last_activity', 'num_turns', 'session_id', 'timestamp', 'user_id', 'user_message', 'user_profile']
