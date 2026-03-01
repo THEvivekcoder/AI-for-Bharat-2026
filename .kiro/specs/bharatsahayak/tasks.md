@@ -260,53 +260,53 @@ The implementation follows an incremental approach: starting with infrastructure
   - Test error handling and edge cases
   - Ensure all tests pass, ask the user if questions arise
  
-- [ ] 12. Optional: Add agricultural advisory features
-  - [ ]* 12.1 Create FarmProfile model and DynamoDB table
+- [x] 12. Optional: Add agricultural advisory features
+  - [x] 12.1 Create FarmProfile model and DynamoDB table
     - Define farm attributes: land_size, soil_type, irrigation, location
     - Create DynamoDB table for farm profiles
     - _Requirements: 3.1_
   
-  - [ ]* 12.2 Implement crop recommendation Lambda function
+  - [x] 12.2 Implement crop recommendation Lambda function
     - Create Lambda handler for POST /farmer/crop-advice
     - Implement basic crop recommendation logic based on season and soil
     - Return crop suggestions with reasoning
     - _Requirements: 3.1_
   
-  - [ ]* 12.3 Write property test for crop recommendation generation
+  - [x] 12.3 Write property test for crop recommendation generation
     - **Property 7: Crop Recommendation Generation**
     - **Validates: Requirements 3.1**
     - Test that recommendations contain all required fields
   
-  - [ ]* 12.4 Integrate external mandi price API
+  - [x] 12.4 Integrate external mandi price API
     - Research and integrate government mandi price API
     - Create Lambda handler for GET /farmer/market-price
     - Cache prices in DynamoDB for offline access
     - _Requirements: 3.3_
   
-  - [ ]* 12.5 Write property test for mandi price radius constraint
+  - [x] 12.5 Write property test for mandi price radius constraint
     - **Property 9: Mandi Price Radius Constraint**
     - **Validates: Requirements 3.3**
     - Test that returned prices are within specified radius
 
-- [ ] 13. Optional: Add skill development and job matching
-  - [ ]* 13.1 Create SkillProgram and JobPosting models
+- [-] 13. Optional: Add skill development and job matching
+  - [x]* 13.1 Create SkillProgram and JobPosting models
     - Define skill program attributes and eligibility
     - Define job posting attributes and qualifications
     - Create DynamoDB tables for programs and jobs
     - _Requirements: 4.1, 4.3_
   
-  - [ ]* 13.2 Load sample skill programs and job postings
+  - [x]* 13.2 Load sample skill programs and job postings
     - Create data loader script for programs and jobs
     - Add at least 10 sample programs and 10 job postings
     - _Requirements: 4.1, 4.2, 4.3_
   
-  - [ ]* 13.3 Implement skill program matching Lambda function
+  - [x]* 13.3 Implement skill program matching Lambda function
     - Create Lambda handler for POST /skills/match
     - Match programs based on user education and interests
     - Return ranked list of relevant programs
     - _Requirements: 4.1_
   
-  - [ ]* 13.4 Write property test for skill program matching relevance
+  - [x]* 13.4 Write property test for skill program matching relevance
     - **Property 10: Skill Program Matching Relevance**
     - **Validates: Requirements 4.1**
     - Test that matched programs align with user profile

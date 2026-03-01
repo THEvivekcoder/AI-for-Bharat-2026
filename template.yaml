@@ -246,6 +246,79 @@ Resources:
         - AttributeName: timestamp
           KeyType: RANGE
 
+  FarmProfilesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub bharatsahayak-farm-profiles-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+
+  MandiPricesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub bharatsahayak-mandi-prices-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: crop_name
+          AttributeType: S
+        - AttributeName: state_district
+          AttributeType: S
+      KeySchema:
+        - AttributeName: crop_name
+          KeyType: HASH
+        - AttributeName: state_district
+          KeyType: RANGE
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  SkillProgramsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub bharatsahayak-skill-programs-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: program_id
+          AttributeType: S
+        - AttributeName: category
+          AttributeType: S
+      KeySchema:
+        - AttributeName: program_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: category-index
+          KeySchema:
+            - AttributeName: category
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  JobPostingsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub bharatsahayak-job-postings-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: job_id
+          AttributeType: S
+        - AttributeName: department
+          AttributeType: S
+      KeySchema:
+        - AttributeName: job_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: department-index
+          KeySchema:
+            - AttributeName: department
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
   # S3 Buckets
   VoiceDataBucket:
     Type: AWS::S3::Bucket
@@ -534,6 +607,94 @@ Resources:
             Path: /schemes/eligible
             Method: POST
 
+  # Farmer Advisory: Crop Recommendations
+  CropAdviceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-crop-advice-${Environment}
+      CodeUri: .
+      Handler: src.api.crop_advice.lambda_handler
+      Environment:
+        Variables:
+          FARM_PROFILES_TABLE: !Ref FarmProfilesTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref FarmProfilesTable
+      Events:
+        CropAdviceApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /farmer/crop-advice
+            Method: POST
+
+  # Farmer Advisory: Mandi Prices
+  MarketPriceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-market-price-${Environment}
+      CodeUri: .
+      Handler: src.api.market_price.lambda_handler
+      Environment:
+        Variables:
+          MANDI_PRICES_TABLE: !Ref MandiPricesTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref MandiPricesTable
+      Events:
+        MarketPriceApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /farmer/market-price
+            Method: GET
+            Auth:
+              Authorizer: NONE
+
+  # Skills: Program Matching
+  SkillsMatchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-skills-match-${Environment}
+      CodeUri: .
+      Handler: src.api.skills_match.lambda_handler
+      Environment:
+        Variables:
+          SKILL_PROGRAMS_TABLE: !Ref SkillProgramsTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SkillProgramsTable
+      Events:
+        SkillsMatchApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /skills/match
+            Method: POST
+
+  # Skills: Job Search
+  JobSearchFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-job-search-${Environment}
+      CodeUri: .
+      Handler: src.api.job_search.lambda_handler
+      Environment:
+        Variables:
+          JOB_POSTINGS_TABLE: !Ref JobPostingsTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref JobPostingsTable
+      Events:
+        JobSearchApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /jobs
+            Method: GET
+            Auth:
+              Authorizer: NONE
+
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL
@@ -574,6 +735,14 @@ Outputs:
   InteractionsTableName:
     Description: DynamoDB Interactions Table Name
     Value: !Ref InteractionsTable
+
+  FarmProfilesTableName:
+    Description: DynamoDB Farm Profiles Table Name
+    Value: !Ref FarmProfilesTable
+
+  MandiPricesTableName:
+    Description: DynamoDB Mandi Prices Table Name
+    Value: !Ref MandiPricesTable
 
   StaticContentBucketName:
     Description: S3 Bucket for Static Content and Scheme Documents

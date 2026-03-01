@@ -15,6 +15,9 @@ os.environ.setdefault('ENCRYPTION_KEY', base64.b64encode(test_key).decode('utf-8
 os.environ.setdefault('JWT_SECRET', 'test-jwt-secret-key-for-testing-only')
 os.environ.setdefault('TESTING', '1')
 os.environ.setdefault('REDIS_URL', 'redis://localhost:6379/1')
+# AWS configuration for tests
+os.environ.setdefault('AWS_DEFAULT_REGION', 'us-east-1')
+os.environ.setdefault('AWS_REGION', 'us-east-1')
 # Don't set DATABASE_URL here - let it use the default PostgreSQL URL
 # We'll override the database dependency instead
 
