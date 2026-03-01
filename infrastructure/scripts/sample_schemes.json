@@ -1,0 +1,44 @@
+[
+  {
+    "scheme_id": "SAMPLE-SCHEME-001",
+    "name": "Sample Agriculture Scheme",
+    "name_translations": {
+      "hi": "नमूना कृषि योजना"
+    },
+    "category": "agriculture",
+    "description": "This is a sample agriculture scheme for testing the data loader",
+    "description_translations": {
+      "hi": "यह डेटा लोडर के परीक्षण के लिए एक नमूना कृषि योजना है"
+    },
+    "benefits": [
+      "Financial assistance",
+      "Technical support",
+      "Training programs"
+    ],
+    "eligibility_criteria": {
+      "age_min": 18,
+      "age_max": 60,
+      "income_max": 500000,
+      "occupation": ["farmer"],
+      "custom_criteria": {
+        "land_ownership": "yes"
+      }
+    },
+    "required_documents": [
+      "Aadhaar card",
+      "Land ownership documents",
+      "Bank account details"
+    ],
+    "application_process": [
+      "Visit local agriculture office",
+      "Fill application form",
+      "Submit required documents",
+      "Wait for approval"
+    ],
+    "application_url": "https://example.gov.in/sample-scheme",
+    "department": "Department of Agriculture",
+    "state": null,
+    "last_updated": "2024-01-20T10:00:00Z",
+    "source_url": "https://example.gov.in/sample-scheme"
+  }
+]

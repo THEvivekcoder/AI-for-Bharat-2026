@@ -1,0 +1,2 @@
+scheme_id,name,category,description,department,state,source_url,benefits,required_documents,application_process,application_url,age_min,age_max,income_max,gender,occupation,education,location,caste
+SAMPLE-CSV-001,Sample Health Scheme,health,Free health checkup scheme for rural areas,Ministry of Health,,https://example.gov.in/health,Free health checkup|Medicine subsidy|Ambulance service,Aadhaar card|Ration card,Visit nearest PHC|Register for checkup|Get health card,https://example.gov.in/health,18,65,200000,any,any,,,

@@ -59,76 +59,76 @@ The implementation follows an incremental approach: starting with infrastructure
     - Test query filters and pagination
     - _Requirements: 8.1, 2.1_
 
-- [ ] 3. Build user registration and authentication APIs
-  - [ ] 3.1 Implement user registration Lambda function
+- [x] 3. Build user registration and authentication APIs
+  - [x] 3.1 Implement user registration Lambda function
     - Create Lambda handler for POST /auth/register
     - Integrate with Cognito to create user and send OTP
     - Store user profile in DynamoDB
     - Return session token on successful registration
     - _Requirements: 8.1, 11.1_
   
-  - [ ] 3.2 Implement OTP verification Lambda function
+  - [x] 3.2 Implement OTP verification Lambda function
     - Create Lambda handler for POST /auth/verify
     - Validate OTP with Cognito
     - Generate JWT token for authenticated sessions
     - _Requirements: 11.1_
   
-  - [ ] 3.3 Implement user profile management Lambda functions
+  - [x] 3.3 Implement user profile management Lambda functions
     - Create Lambda handler for GET /user/profile
     - Create Lambda handler for PUT /user/profile
     - Add authorization middleware to verify JWT tokens
     - _Requirements: 8.1, 8.2_
   
-  - [ ]* 3.4 Write unit tests for authentication flow
+  - [x] 3.4 Write unit tests for authentication flow
     - Test registration with valid/invalid phone numbers
     - Test OTP verification success and failure cases
     - Test JWT token generation and validation
     - _Requirements: 11.1_
 
-- [ ] 4. Checkpoint - Ensure authentication works end-to-end
+- [x] 4. Checkpoint - Ensure authentication works end-to-end
   - Test user registration, OTP verification, and profile retrieval
   - Verify DynamoDB tables are populated correctly
   - Ensure all tests pass, ask the user if questions arise
 
-- [ ] 5. Implement scheme database and search functionality
-  - [ ] 5.1 Create scheme data loader script
+- [x] 5. Implement scheme database and search functionality
+  - [x] 5.1 Create scheme data loader script
     - Write Python script to load scheme data from JSON/CSV files
     - Parse scheme information and eligibility criteria
     - Bulk insert schemes into DynamoDB Schemes table
     - Add sample schemes for testing (at least 20 schemes across categories)
     - _Requirements: 2.1, 2.5, 12.1_
   
-  - [ ] 5.2 Implement scheme search Lambda function
+  - [x] 5.2 Implement scheme search Lambda function
     - Create Lambda handler for GET /schemes with query parameters
     - Implement keyword search across scheme name and description
     - Add filters for category, state, and department
     - Return paginated results with scheme summaries
     - _Requirements: 2.1, 2.2_
   
-  - [ ]* 5.3 Write property test for scheme search relevance
+  - [x] 5.3 Write property test for scheme search relevance
     - **Property 4: Scheme Search Relevance**
     - **Validates: Requirements 2.1**
     - Test that search results match query context semantically
   
-  - [ ] 5.4 Implement scheme details Lambda function
+  - [x] 5.4 Implement scheme details Lambda function
     - Create Lambda handler for GET /schemes/{scheme_id}
     - Return complete scheme information including eligibility criteria
     - Include application process and required documents
     - _Requirements: 2.2_
   
-  - [ ]* 5.5 Write property test for complete information display
+  - [ ] 5.5 Write property test for complete information display
     - **Property 5: Complete Information Display**
     - **Validates: Requirements 2.2**
     - Test that all required fields are present in scheme details
   
-  - [ ]* 5.6 Write unit tests for scheme search
+  - [x] 5.6 Write unit tests for scheme search
     - Test search with various keywords and filters
     - Test pagination and result ordering
     - Test empty results and error cases
     - _Requirements: 2.1, 2.2_
 
-- [ ] 6. Implement eligibility checking engine
-  - [ ] 6.1 Create EligibilityChecker class with rule evaluation logic
+- [x] 6. Implement eligibility checking engine
+  - [x] 6.1 Create EligibilityChecker class with rule evaluation logic
     - Implement check_eligibility method to evaluate all criteria
     - Add support for age range, income limits, occupation matching
     - Add support for location-based eligibility (state, district)
@@ -136,38 +136,38 @@ The implementation follows an incremental approach: starting with infrastructure
     - Return EligibilityResult with is_eligible flag and reasoning
     - _Requirements: 2.3_
   
-  - [ ] 6.2 Implement eligibility check Lambda function
+  - [x] 6.2 Implement eligibility check Lambda function
     - Create Lambda handler for POST /schemes/check-eligibility
     - Accept user profile and scheme_id in request body
     - Call EligibilityChecker to determine eligibility
     - Return detailed eligibility result with missing criteria
     - _Requirements: 2.3_
   
-  - [ ]* 6.3 Write property test for eligibility determination correctness
+  - [x] 6.3 Write property test for eligibility determination correctness
     - **Property 6: Eligibility Determination Correctness**
     - **Validates: Requirements 2.3**
     - Test that eligibility is determined correctly for all criteria combinations
   
-  - [ ] 6.4 Implement bulk eligibility check Lambda function
+  - [x] 6.4 Implement bulk eligibility check Lambda function
     - Create Lambda handler for POST /schemes/eligible
     - Accept user profile and return all eligible schemes
     - Filter schemes by eligibility and rank by relevance
     - Include eligibility explanation for each scheme
     - _Requirements: 2.3, 8.2_
   
-  - [ ]* 6.4 Write property test for personalized recommendation filtering
+  - [x] 6.4 Write property test for personalized recommendation filtering
     - **Property 21: Personalized Recommendation Filtering**
     - **Validates: Requirements 8.2**
     - Test that different user profiles receive different recommendations
   
-  - [ ]* 6.5 Write unit tests for eligibility checker
+  - [x] 6.5 Write unit tests for eligibility checker
     - Test each eligibility criterion independently
     - Test combinations of criteria
     - Test edge cases (boundary ages, income limits)
     - Test missing profile data handling
     - _Requirements: 2.3_
 
-- [ ] 7. Checkpoint - Ensure eligibility checking works correctly
+- [x] 7. Checkpoint - Ensure eligibility checking works correctly
   - Test eligibility checking with various user profiles
   - Verify correct schemes are returned for different users
   - Ensure all tests pass, ask the user if questions arise

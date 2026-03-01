@@ -89,7 +89,56 @@ python infrastructure/scripts/setup_cognito.py \
 
 See [../docs/COGNITO_SETUP.md](../docs/COGNITO_SETUP.md) for detailed documentation.
 
-### 4. Deployment Script
+### 4. Scheme Data Loader
+
+Loads government scheme data from JSON/CSV files or sample data into DynamoDB.
+
+```bash
+# Load sample schemes (20+ schemes across all categories)
+python infrastructure/scripts/load_schemes.py --source sample
+
+# Load from JSON file
+python infrastructure/scripts/load_schemes.py \
+  --source json \
+  --file infrastructure/scripts/sample_schemes.json
+
+# Load from CSV file
+python infrastructure/scripts/load_schemes.py \
+  --source csv \
+  --file infrastructure/scripts/sample_schemes.csv
+
+# Dry run (validate without inserting)
+python infrastructure/scripts/load_schemes.py \
+  --source sample \
+  --dry-run
+
+# Specify custom table and region
+python infrastructure/scripts/load_schemes.py \
+  --source sample \
+  --table Schemes \
+  --region us-east-1
+```
+
+**Features:**
+- Supports JSON and CSV input formats
+- Validates scheme data before insertion
+- Includes 20+ sample schemes across all categories:
+  - Agriculture (5 schemes)
+  - Health (5 schemes)
+  - Education (5 schemes)
+  - Employment (5 schemes)
+  - Social Welfare (5 schemes)
+- Bulk insert with error handling
+- Dry-run mode for validation
+
+**Sample Data Included:**
+- PM-KISAN, PMFBY, KCC (Agriculture)
+- Ayushman Bharat, JSY (Health)
+- NSP, MDM (Education)
+- MGNREGA, PMEGP (Employment)
+- NSAP, PMAY (Social Welfare)
+
+### 5. Deployment Script
 
 Automated deployment script for the entire stack.
 
@@ -136,7 +185,13 @@ When setting up a new environment, follow this order:
    python infrastructure/scripts/setup_s3_bucket.py --environment dev --create-sample-structure
    ```
 
-5. **Verify Deployment**
+5. **Load Scheme Data**
+   ```bash
+   # Load sample schemes for testing
+   python infrastructure/scripts/load_schemes.py --source sample --table Schemes
+   ```
+
+6. **Verify Deployment**
    ```bash
    # Check API endpoint
    curl https://{api-id}.execute-api.ap-south-1.amazonaws.com/dev/health

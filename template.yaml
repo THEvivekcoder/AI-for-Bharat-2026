@@ -232,6 +232,164 @@ Resources:
                   - schemes/*
                   - documents/*
 
+  # Lambda Functions
+  
+  # Auth: User Registration
+  RegisterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-register-${Environment}
+      CodeUri: .
+      Handler: src.api.auth_register.lambda_handler
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref UserPool
+          USER_POOL_CLIENT_ID: !Ref UserPoolClient
+          USERS_TABLE: !Ref UsersTable
+          PROFILES_TABLE: !Ref UserProfilesTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserProfilesTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:SignUp
+                - cognito-idp:AdminCreateUser
+                - cognito-idp:AdminSetUserPassword
+              Resource: !GetAtt UserPool.Arn
+      Events:
+        RegisterApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /auth/register
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  # Auth: OTP Verification
+  VerifyOTPFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-verify-otp-${Environment}
+      CodeUri: .
+      Handler: src.api.auth_verify.lambda_handler
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref UserPool
+          USER_POOL_CLIENT_ID: !Ref UserPoolClient
+          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:ConfirmSignUp
+                - cognito-idp:InitiateAuth
+                - cognito-idp:RespondToAuthChallenge
+                - cognito-idp:AdminGetUser
+              Resource: !GetAtt UserPool.Arn
+      Events:
+        VerifyApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /auth/verify
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  # User Profile: Get
+  GetProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-get-profile-${Environment}
+      CodeUri: .
+      Handler: src.api.user_profile_get.lambda_handler
+      Environment:
+        Variables:
+          PROFILES_TABLE: !Ref UserProfilesTable
+          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref UserProfilesTable
+      Events:
+        GetProfileApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /user/profile
+            Method: GET
+
+  # User Profile: Update
+  UpdateProfileFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-update-profile-${Environment}
+      CodeUri: .
+      Handler: src.api.user_profile_update.lambda_handler
+      Environment:
+        Variables:
+          PROFILES_TABLE: !Ref UserProfilesTable
+          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UserProfilesTable
+      Events:
+        UpdateProfileApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /user/profile
+            Method: PUT
+
+  # Schemes: Search
+  SearchSchemesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-search-schemes-${Environment}
+      CodeUri: .
+      Handler: src.api.schemes_search.lambda_handler
+      Environment:
+        Variables:
+          SCHEMES_TABLE: !Ref SchemesTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SchemesTable
+      Events:
+        SearchSchemesApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /schemes
+            Method: GET
+            Auth:
+              Authorizer: NONE
+
+  # Schemes: Get Details
+  GetSchemeDetailsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-scheme-details-${Environment}
+      CodeUri: .
+      Handler: src.api.scheme_details.lambda_handler
+      Environment:
+        Variables:
+          SCHEMES_TABLE: !Ref SchemesTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SchemesTable
+      Events:
+        GetSchemeDetailsApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /schemes/{scheme_id}
+            Method: GET
+            Auth:
+              Authorizer: NONE
+
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL
