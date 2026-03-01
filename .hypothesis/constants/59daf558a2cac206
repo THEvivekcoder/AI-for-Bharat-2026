@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/fertilizer_advisor.py
-# hypothesis_version: 6.151.9
-
-[5.5, 8.0, '.', '. ', '0:0:50 (Potash)', '0:52:34', '0:52:34 (DAP)', '100 kg/acre', '10:26:26', '12:32:16', '15 kg/acre', '19:19:19', '20 kg/acre', '30 kg/acre', '40 kg/acre', '50 kg/acre', '60 kg/acre', '80 kg/acre', 'At flowering', 'At flowering stage', 'At fruiting stage', 'At maturity stage', 'At planting', 'At sowing', 'Band placement', 'Drilling with seed', 'Foliar spray', 'Side dressing', 'Top dressing', 'Urea (46% N)', 'clay', 'cotton', 'drip', 'flowering', 'fruiting', 'high', 'laterite', 'low', 'maize', 'maturity', 'method', 'npk_ratio', 'pulses', 'quantity', 'rainfed', 'rice', 'sandy', 'sowing', 'sugarcane', 'timing', 'vegetables', 'vegetative', 'wheat']

@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/api/voice.py
-# hypothesis_version: 6.151.9
-
-[200, 400, 500, '/api', '/languages', '/text-to-voice', '/voice-to-text', 'Audio file is empty', 'Bengali', 'Content-Disposition', 'EMPTY_AUDIO_FILE', 'English', 'Gujarati', 'Hindi', 'INTERNAL_ERROR', 'INVALID_AUDIO_FORMAT', 'INVALID_TEXT', 'Kannada', 'Malayalam', 'Marathi', 'Punjabi', 'TTS_SYNTHESIS_ERROR', 'Tamil', 'Telugu', 'UNSUPPORTED_LANGUAGE', 'audio/', 'audio/mpeg', 'bn', 'content', 'description', 'en', 'error', 'gu', 'hi', 'kn', 'message', 'message_translations', 'ml', 'model', 'mr', 'pa', 'retry_allowed', 'supported_languages', 'ta', 'te', 'voice', 'ऑडियो फ़ाइल खाली है']

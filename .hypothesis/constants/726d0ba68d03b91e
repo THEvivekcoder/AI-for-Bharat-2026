@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/integration_orchestrator.py
-# hypothesis_version: 6.151.9
-
-[0.7, 200, 'answer_length', 'confidence', 'content', 'count', 'crop_name', 'doc_id', 'en', 'facilities_found', 'facility_id', 'facility_name', 'facility_type', 'job_id', 'job_title', 'language', 'prices_found', 'program_id', 'program_name', 'query', 'recommendations', 'scheme_id', 'scheme_name', 'score', 'source', 'source_type', 'sources_count', 'symptoms', 'urgency_level']

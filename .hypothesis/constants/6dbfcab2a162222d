@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/error_translator.py
-# hypothesis_version: 6.151.9
-
-['An error occurred', 'DATABASE_ERROR', 'DATA_NOT_FOUND', 'INVALID_OTP', 'RATE_LIMIT_EXCEEDED', 'SCHEME_NOT_FOUND', 'VALIDATION_ERROR', 'bn', 'en', 'hi', 'mr', 'te']

@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/schemas/integrated.py
-# hypothesis_version: 6.151.9
-
-[0.0, 1.0, 'Additional data', 'Confidence score', 'Job posting UUID', 'Job title', 'List of symptoms', 'Response message', 'Scheme UUID', 'Scheme name', "User's language", 'en']

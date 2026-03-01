@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/schemas/language.py
-# hypothesis_version: 6.151.9
-
-['Original input text', 'Romanized text', 'Source language code', 'Source script name', 'Target language code', 'Target script name', 'Text in Indic script', 'Text to analyze', 'Text to translate', 'Translated text', 'Transliterated text', 'devanagari']

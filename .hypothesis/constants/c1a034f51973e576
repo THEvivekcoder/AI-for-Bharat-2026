@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/middleware/error_handling.py
-# hypothesis_version: 6.151.9
-
-[',', 'APPLICATION_ERROR', 'AUTHENTICATION_ERROR', 'Accept-Language', 'Bearer', 'DATA_NOT_FOUND', 'RATE_LIMIT_EXCEEDED', 'Retry-After', 'Try again later', 'VALIDATION_ERROR', 'WWW-Authenticate', 'details', 'en', 'error_code', 'retry_after', 'suggestions']

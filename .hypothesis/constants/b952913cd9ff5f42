@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/security/rbac.py
-# hypothesis_version: 6.151.9
-
-['admin', 'analyst', 'delete:all_users', 'delete:own_data', 'export:data', 'manage:content', 'manage:schemes', 'query:farmer', 'query:health', 'query:rag', 'query:schemes', 'query:skills', 'read:all_users', 'read:analytics', 'read:impact_metrics', 'read:own_profile', 'role', 'user', 'write:all_users', 'write:own_profile']

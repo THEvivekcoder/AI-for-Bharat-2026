@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/exceptions.py
-# hypothesis_version: 6.151.9
-
-[400, 401, 404, 429, 500, 503, 'CACHE_ERROR', 'DATABASE_ERROR', 'DATA_NOT_FOUND', 'RATE_LIMIT_EXCEEDED', 'VALIDATION_ERROR', 'quota_limit', 'remaining_attempts', 'retry_after', 'service_name']

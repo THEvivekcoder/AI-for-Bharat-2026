@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/eligibility_checker.py
-# hypothesis_version: 6.151.9
-
-[0.5, 0.7, 0.8, 1.0, ', ', '-', 'age', 'age_max', 'age_min', 'caste', 'custom_criteria', 'district', 'education', 'education_level', 'en', 'gender', 'hi', 'income_bracket', 'income_max', 'location', 'location (state)', 'occupation', 'state']

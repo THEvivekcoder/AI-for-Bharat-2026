@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/security/encryption.py
-# hypothesis_version: 6.151.9
-
-[128, 'aadhar_number', 'address', 'bank_account', 'email', 'pan_number', 'phone_number', 'utf-8']

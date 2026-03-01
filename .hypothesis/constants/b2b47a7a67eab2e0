@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/integrations/government_schemes_api.py
-# hypothesis_version: 6.151.9
-
-[30.0, 100, 1000, 'api-key', 'filters[category]', 'filters[id]', 'filters[state]', 'format', 'json', 'limit', 'name', 'records']

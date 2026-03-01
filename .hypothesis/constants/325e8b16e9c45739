@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/impact_tracker.py
-# hypothesis_version: 6.151.9
-
-[0.0, 'district', 'facility_located', 'farmer', 'health', 'job_discovered', 'market_price_checked', 'region', 'scheme_accessed', 'schemes', 'skill_program_viewed', 'skills', 'state']

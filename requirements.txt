@@ -1,12 +1,12 @@
 # Core FastAPI dependencies
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
-pydantic==2.5.3
-pydantic-settings==2.1.0
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.3
+pydantic-settings>=2.1.0
 
 # Database
 sqlalchemy==2.0.25
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.10
 alembic==1.13.1
 
 # Redis
@@ -31,14 +31,14 @@ phonenumbers==8.13.27
 librosa==0.10.1
 soundfile==0.12.1
 pydub==0.25.1
-numpy==1.26.3
+numpy>=1.26.0
 gTTS==2.5.0
 # For speech recognition alternative (lighter than Whisper)
 SpeechRecognition==3.10.1
 
 # RAG and LLM dependencies
 sentence-transformers==2.3.1
-faiss-cpu==1.7.4
+faiss-cpu>=1.7.4
 langchain==0.1.0
 langchain-community==0.0.13
 openai==1.7.2

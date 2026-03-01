@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/api/schemes.py
-# hypothesis_version: 6.151.9
-
-[100, 404, 500, '/api/schemes', '/check-eligibility', '/eligible', '/{scheme_id}', 'Check the scheme ID', 'Filter by category', 'Filter by department', 'Filter by state', 'SCHEME_NOT_FOUND', 'benefits', 'category', 'department', 'description', 'eligibility_criteria', 'error', 'language', 'message', 'name', 'scheme_id', 'schemes', 'state', 'suggestions']

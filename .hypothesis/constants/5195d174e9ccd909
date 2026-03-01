@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/middleware/impact_tracking.py
-# hypothesis_version: 6.151.9
-
-[200, 300, ',', '/', '/api/health/check', '/api/jobs/', '/api/schemes/', '/api/skills/', '/check-eligibility', '/eligible', 'Accept-Language', 'GET', 'POST', 'crop_name', 'en', 'endpoint', 'facility_type', 'job_id', 'program_id', 'scheme_id', 'user_id']

@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/schemas/errors.py
-# hypothesis_version: 6.151.9
-
-['CACHE_ERROR', 'DATABASE_ERROR', 'DATA_NOT_FOUND', 'RATE_LIMIT_EXCEEDED', 'VALIDATION_ERROR']

@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/schemas/farmer.py
-# hypothesis_version: 6.151.9
-
-[200, 'Land size in acres', 'alluvial', 'black', 'borewell', 'canal', 'clay', 'drip', 'flowering', 'fruiting', 'growth_stage', 'irrigation_type', 'kharif', 'laterite', 'loam', 'low, medium, high', 'maturity', 'rabi', 'rainfed', 'red', 'sandy', 'season', 'silt', 'soil_type', 'sowing', 'sprinkler', 'vegetative', 'well', 'zaid']

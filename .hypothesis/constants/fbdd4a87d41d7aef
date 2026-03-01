@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/api/skills.py
-# hypothesis_version: 6.151.9
-
-[100, 404, 500, '/api', '/jobs', '/jobs/alerts', '/jobs/search', '/jobs/{job_id}', '/skills', '/skills/match', '/skills/{program_id}', 'Check the job ID', 'Check the program ID', 'Filter by category', 'Filter by department', 'Filter by district', 'Filter by state', 'JOB_ALERTS_ERROR', 'JOB_NOT_FOUND', 'JOB_SEARCH_ERROR', 'MATCHING_ERROR', 'PROGRAM_NOT_FOUND', 'Search in job title', 'details', 'error', 'message', 'skills', 'suggestions']

@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/services/user_manager.py
-# hypothesis_version: 6.151.9
-
-[600, 'Profile not found', 'Registration failed', 'User already exists', 'User deletion failed', 'User not found', 'language', 'phone', 'sub']

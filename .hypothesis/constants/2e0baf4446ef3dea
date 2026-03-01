@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/integrations/mandi_price_api.py
-# hypothesis_version: 6.151.9
-
-[30.0, 1000, '%Y-%m-%d', 'api-key', 'commodity', 'filters[commodity]', 'filters[district]', 'filters[from_date]', 'filters[state]', 'format', 'json', 'limit', 'records']

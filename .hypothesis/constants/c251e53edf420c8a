@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/api/integrated.py
-# hypothesis_version: 6.151.9
-
-[500, '/api/integrated', '/health/check', '/job/discover', '/scheme/access', '/scheme/apply', '/voice-query', '/voice-query/audio', 'Audio file is empty', 'Content-Disposition', 'Integrated Flows', 'X-Detected-Language', 'X-Session-ID', 'X-Text-Answer', 'X-Text-Query', 'audio/', 'audio/mpeg', 'data/faiss_index', 'en', 'gpt-3.5-turbo', 'job_id', 'openai', 'openai_api_key', 'scheme_id', 'symptoms_count', 'utf-8']

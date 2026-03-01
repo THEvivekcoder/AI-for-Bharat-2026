@@ -1,4 +1,0 @@
-# file: /Users/vivekkumar/Desktop/AI-for-Bharat-Project/app/security/tls_config.py
-# hypothesis_version: 6.151.9
-
-['ssl_ca_certs', 'ssl_certfile', 'ssl_keyfile', 'ssl_version', 'tls_ca_cert_path', 'tls_cert_path', 'tls_key_path']
