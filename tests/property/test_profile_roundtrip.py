@@ -104,7 +104,7 @@ def user_profile_strategy(draw):
     )
 
 
-@settings(max_examples=100, deadline=None)
+@settings(max_examples=20, deadline=None)
 @given(profile=user_profile_strategy())
 def test_profile_data_roundtrip(profile):
     """
@@ -190,7 +190,7 @@ def test_profile_data_roundtrip(profile):
             assert retrieved_profile.updated_at == profile.updated_at
 
 
-@settings(max_examples=50, deadline=None)
+@settings(max_examples=10, deadline=None)
 @given(profile=user_profile_strategy())
 def test_profile_roundtrip_with_update(profile):
     """

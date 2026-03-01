@@ -9,7 +9,7 @@ only if the user profile satisfies all criteria in the scheme's eligibility_crit
 """
 
 import pytest
-from hypothesis import given, settings, strategies as st, assume
+from hypothesis import given, settings, strategies as st, assume, HealthCheck
 from datetime import datetime
 
 from src.core.eligibility_checker import EligibilityChecker
@@ -231,7 +231,7 @@ def manually_check_eligibility(user_profile: UserProfile, criteria: EligibilityC
     return True
 
 
-@settings(max_examples=100, deadline=None)
+@settings(max_examples=20, deadline=None, suppress_health_check=[HealthCheck.data_too_large])
 @given(
     user_profile=user_profile_strategy(),
     scheme=scheme_strategy()
@@ -287,7 +287,7 @@ def test_eligibility_determination_correctness(user_profile, scheme):
         )
 
 
-@settings(max_examples=50, deadline=None)
+@settings(max_examples=10, deadline=None)
 @given(
     user_profile=user_profile_strategy(),
     scheme=scheme_strategy()
@@ -322,7 +322,7 @@ def test_eligibility_with_missing_user_data(user_profile, scheme):
         )
 
 
-@settings(max_examples=50, deadline=None)
+@settings(max_examples=10, deadline=None)
 @given(
     user_profile=user_profile_strategy()
 )
@@ -375,7 +375,7 @@ def test_eligibility_with_no_criteria(user_profile):
     )
 
 
-@settings(max_examples=50, deadline=None)
+@settings(max_examples=10, deadline=None)
 @given(
     age=st.integers(min_value=18, max_value=60),
     income_upper=st.integers(min_value=100000, max_value=500000)

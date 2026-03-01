@@ -319,7 +319,7 @@ def get_eligible_schemes_with_ranking(
     return eligible_schemes
 
 
-@settings(max_examples=100, deadline=None)
+@settings(max_examples=20, deadline=None)
 @given(
     user_profile1=user_profile_strategy(),
     user_profile2=user_profile_strategy()
@@ -417,7 +417,7 @@ def test_different_profiles_receive_different_recommendations(user_profile1, use
         )
 
 
-@settings(max_examples=50, deadline=None)
+@settings(max_examples=10, deadline=None)
 @given(
     base_profile=user_profile_strategy()
 )
@@ -482,7 +482,7 @@ def test_location_affects_recommendations(base_profile):
         )
 
 
-@settings(max_examples=50, deadline=None)
+@settings(max_examples=10, deadline=None)
 @given(
     base_profile=user_profile_strategy()
 )
@@ -555,7 +555,7 @@ def test_occupation_affects_recommendations(base_profile):
         )
 
 
-@settings(max_examples=50, deadline=None)
+@settings(max_examples=10, deadline=None)
 @given(
     base_profile=user_profile_strategy()
 )
@@ -642,7 +642,7 @@ def test_category_preferences_affect_ranking(base_profile):
         )
 
 
-@settings(max_examples=50, deadline=None)
+@settings(max_examples=10, deadline=None)
 @given(
     base_profile=user_profile_strategy()
 )

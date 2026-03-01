@@ -9,8 +9,14 @@ Globals:
     Runtime: python3.11
     Environment:
       Variables:
-        ENVIRONMENT: dev
-        LOG_LEVEL: INFO
+        ENVIRONMENT: !Ref Environment
+        LOG_LEVEL: !If [IsProd, INFO, DEBUG]
+        ENABLE_XRAY: !If [IsProd, 'true', 'false']
+    Tracing: !If [IsProd, Active, PassThrough]
+
+Conditions:
+  IsProd: !Equals [!Ref Environment, prod]
+  IsDev: !Equals [!Ref Environment, dev]
 
 Parameters:
   Environment:
@@ -28,15 +34,109 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: !Ref Environment
+      Variables:
+        Environment: !Ref Environment
+        LogLevel: !If [IsProd, INFO, DEBUG]
+        EnableCaching: !If [IsProd, 'true', 'false']
+        CacheTTL: !If [IsProd, '300', '60']
       Cors:
         AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
-        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Requested-With'"
         AllowOrigin: "'*'"
+        MaxAge: "'600'"
       Auth:
         DefaultAuthorizer: CognitoAuthorizer
         Authorizers:
           CognitoAuthorizer:
             UserPoolArn: !GetAtt UserPool.Arn
+      MethodSettings:
+        - ResourcePath: '/*'
+          HttpMethod: '*'
+          ThrottlingBurstLimit: 100
+          ThrottlingRateLimit: 50
+          LoggingLevel: INFO
+          DataTraceEnabled: true
+          MetricsEnabled: true
+        - ResourcePath: '/schemes'
+          HttpMethod: GET
+          CachingEnabled: !If [IsProd, true, false]
+          CacheTtlInSeconds: !If [IsProd, 300, 0]
+          CacheDataEncrypted: true
+        - ResourcePath: '/schemes/{scheme_id}'
+          HttpMethod: GET
+          CachingEnabled: !If [IsProd, true, false]
+          CacheTtlInSeconds: !If [IsProd, 300, 0]
+          CacheDataEncrypted: true
+      Models:
+        UserProfileModel:
+          type: object
+          required:
+            - phone_number
+            - language
+          properties:
+            phone_number:
+              type: string
+              pattern: '^\+?[1-9]\d{1,14}$'
+            language:
+              type: string
+              enum: [hi, en, bn, te, mr, ta, gu, kn, ml, pa]
+            location:
+              type: object
+              properties:
+                state:
+                  type: string
+                district:
+                  type: string
+                pincode:
+                  type: string
+            age:
+              type: integer
+              minimum: 0
+              maximum: 150
+            gender:
+              type: string
+              enum: [male, female, other]
+            education_level:
+              type: string
+            occupation:
+              type: string
+            income_bracket:
+              type: string
+        EligibilityCheckRequest:
+          type: object
+          required:
+            - scheme_id
+            - user_profile
+          properties:
+            scheme_id:
+              type: string
+            user_profile:
+              $ref: '#/definitions/UserProfileModel'
+        ErrorResponse:
+          type: object
+          properties:
+            error:
+              type: string
+            message:
+              type: string
+            details:
+              type: object
+      GatewayResponses:
+        DEFAULT_4XX:
+          ResponseParameters:
+            gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+            gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        DEFAULT_5XX:
+          ResponseParameters:
+            gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+            gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+        THROTTLED:
+          StatusCode: 429
+          ResponseParameters:
+            gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+            gatewayresponse.header.Retry-After: "'60'"
+          ResponseTemplates:
+            application/json: '{"error":"RATE_LIMIT_EXCEEDED","message":"Too many requests. Please try again in 60 seconds.","retry_after_seconds":60}'
 
   # Cognito User Pool
   UserPool:
@@ -390,18 +490,74 @@ Resources:
             Auth:
               Authorizer: NONE
 
+  # Eligibility: Check Single Scheme
+  CheckEligibilityFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-check-eligibility-${Environment}
+      CodeUri: .
+      Handler: src.api.check_eligibility.lambda_handler
+      Environment:
+        Variables:
+          SCHEMES_TABLE: !Ref SchemesTable
+          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SchemesTable
+      Events:
+        CheckEligibilityApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /schemes/check-eligibility
+            Method: POST
+
+  # Eligibility: Get All Eligible Schemes
+  GetEligibleSchemesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-eligible-schemes-${Environment}
+      CodeUri: .
+      Handler: src.api.eligible_schemes.lambda_handler
+      Environment:
+        Variables:
+          SCHEMES_TABLE: !Ref SchemesTable
+          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SchemesTable
+      Events:
+        GetEligibleSchemesApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /schemes/eligible
+            Method: POST
+
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL
     Value: !Sub https://${BharatSahayakApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/
+    Export:
+      Name: !Sub ${AWS::StackName}-ApiEndpoint
+  
+  ApiStage:
+    Description: API Gateway deployment stage
+    Value: !Ref Environment
+    Export:
+      Name: !Sub ${AWS::StackName}-ApiStage
   
   UserPoolId:
     Description: Cognito User Pool ID
     Value: !Ref UserPool
+    Export:
+      Name: !Sub ${AWS::StackName}-UserPoolId
   
   UserPoolClientId:
     Description: Cognito User Pool Client ID
     Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub ${AWS::StackName}-UserPoolClientId
   
   UsersTableName:
     Description: DynamoDB Users Table Name

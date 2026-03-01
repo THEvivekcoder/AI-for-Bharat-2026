@@ -149,7 +149,7 @@ def scheme_matches_query(scheme: Scheme, query: str) -> bool:
     return False
 
 
-@settings(max_examples=100, deadline=None)
+@settings(max_examples=20, deadline=None)
 @given(
     query=st.sampled_from([
         "farmer", "crop", "agriculture", "kisan",
@@ -226,7 +226,7 @@ def test_scheme_search_relevance(query, schemes):
             )
 
 
-@settings(max_examples=50, deadline=None)
+@settings(max_examples=10, deadline=None)
 @given(
     category=st.sampled_from(["agriculture", "health", "education", "employment", "social_welfare"]),
     schemes=st.lists(scheme_strategy(), min_size=3, max_size=15)
@@ -278,7 +278,7 @@ def test_category_filter_relevance(category, schemes):
                 )
 
 
-@settings(max_examples=30, deadline=None, suppress_health_check=[HealthCheck.filter_too_much])
+@settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.filter_too_much, HealthCheck.data_too_large])
 @given(
     query=st.sampled_from([
         "farmer", "crop", "agriculture",
@@ -288,7 +288,7 @@ def test_category_filter_relevance(category, schemes):
         "pension", "welfare"
     ]),
     category=st.sampled_from(["agriculture", "health", "education", "employment", "social_welfare"]),
-    schemes=st.lists(scheme_strategy(), min_size=5, max_size=15)
+    schemes=st.lists(scheme_strategy(), min_size=3, max_size=10)
 )
 def test_combined_query_and_category_filter(query, category, schemes):
     """

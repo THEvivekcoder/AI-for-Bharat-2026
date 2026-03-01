@@ -172,62 +172,62 @@ The implementation follows an incremental approach: starting with infrastructure
   - Verify correct schemes are returned for different users
   - Ensure all tests pass, ask the user if questions arise
 
-- [ ] 8. Set up API Gateway and integrate Lambda functions
-  - [ ] 8.1 Create API Gateway REST API
+- [x] 8. Set up API Gateway and integrate Lambda functions
+  - [x] 8.1 Create API Gateway REST API
     - Define API resources and methods for all endpoints
     - Configure CORS for web client access
     - Set up request/response models and validation
     - _Requirements: 10.1, 10.4_
   
-  - [ ] 8.2 Integrate Lambda functions with API Gateway
+  - [x] 8.2 Integrate Lambda functions with API Gateway
     - Connect all Lambda functions to API Gateway endpoints
     - Configure Lambda proxy integration
     - Set up authorization with Cognito User Pool
     - Add request throttling and rate limiting
     - _Requirements: 10.1, 10.4_
   
-  - [ ] 8.3 Configure API Gateway stages and deployment
+  - [x] 8.3 Configure API Gateway stages and deployment
     - Create dev and prod stages
     - Set up stage variables for environment configuration
     - Deploy API and test all endpoints
     - _Requirements: 10.1_
   
-  - [ ]* 8.4 Write integration tests for API endpoints
+  - [x] 8.4 Write integration tests for API endpoints
     - Test complete request/response flow for each endpoint
     - Test authentication and authorization
     - Test error responses and status codes
     - _Requirements: 10.1, 11.1_
 
-- [ ] 9. Implement impact tracking and analytics
-  - [ ] 9.1 Create InteractionEvent and OutcomeEvent models
+- [x] 9. Implement impact tracking and analytics
+  - [x] 9.1 Create InteractionEvent and OutcomeEvent models
     - Define event types: query_submitted, scheme_accessed, scheme_applied
     - Add event_data field for flexible metadata storage
     - _Requirements: 9.1, 9.3_
   
-  - [ ] 9.2 Implement event recording Lambda function
+  - [x] 9.2 Implement event recording Lambda function
     - Create Lambda handler for POST /impact/event
     - Store events in DynamoDB Interactions table
     - Add timestamp and user_id to all events
     - _Requirements: 9.1, 9.3_
   
-  - [ ]* 9.3 Write property test for interaction event recording
+  - [x] 9.3 Write property test for interaction event recording
     - **Property 23: Interaction Event Recording**
     - **Validates: Requirements 9.1, 9.3**
     - Test that all events are recorded with required fields
   
-  - [ ] 9.4 Implement analytics query Lambda function
+  - [x] 9.4 Implement analytics query Lambda function
     - Create Lambda handler for GET /impact with filters
     - Aggregate events by user, category, and time period
     - Calculate metrics: total users, schemes accessed, success rate
     - Anonymize user data in results
     - _Requirements: 9.2, 9.4_
   
-  - [ ]* 9.5 Write property test for analytics data anonymization
+  - [x] 9.5 Write property test for analytics data anonymization
     - **Property 25: Analytics Data Anonymization**
     - **Validates: Requirements 9.4**
     - Test that PII is not present in analytics results
   
-  - [ ]* 9.6 Write unit tests for impact tracking
+  - [x] 9.6 Write unit tests for impact tracking
     - Test event recording with various event types
     - Test analytics aggregation and filtering
     - Test anonymization of sensitive data
