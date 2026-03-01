@@ -41,9 +41,9 @@ The implementation follows an incremental approach: starting with infrastructure
     - Implement serialization/deserialization methods
     - _Requirements: 8.1, 2.1, 2.3_
   
-  - [ ]* 2.2 Write property test for data model round-trip
+  - [ ] 2.2 Write property test for data model round-trip
     - **Property 20: Profile Data Round-Trip**
-    - **Validates: Requirements 8.1**
+    - **Validates: Requirements 8.1** 
     - Test that storing and retrieving user profiles preserves all fields
   
   - [x] 2.3 Create DynamoDB repository classes
@@ -53,7 +53,7 @@ The implementation follows an incremental approach: starting with infrastructure
     - Add error handling for DynamoDB exceptions
     - _Requirements: 8.1, 2.1, 2.5_
   
-  - [ ]* 2.4 Write unit tests for repository classes
+  - [x] 2.4 Write unit tests for repository classes
     - Test CRUD operations with mocked DynamoDB
     - Test error handling for network failures
     - Test query filters and pagination

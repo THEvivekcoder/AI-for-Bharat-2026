@@ -325,3 +325,176 @@ def test_get_schemes_by_state(scheme_repository, mock_table):
     
     assert len(results) == 1
     assert results[0].state == "Maharashtra"
+
+
+# Error Handling Tests for Network Failures
+
+def test_create_scheme_network_error(scheme_repository, mock_table, sample_scheme):
+    """Test handling of network errors during scheme creation."""
+    mock_table.put_item.side_effect = ClientError(
+        {'Error': {'Code': 'RequestTimeout', 'Message': 'Request timed out'}},
+        'PutItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        scheme_repository.create(sample_scheme)
+
+
+def test_get_scheme_network_error(scheme_repository, mock_table):
+    """Test handling of network errors during scheme retrieval."""
+    mock_table.get_item.side_effect = ClientError(
+        {'Error': {'Code': 'ServiceUnavailable', 'Message': 'Service unavailable'}},
+        'GetItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        scheme_repository.get('PM-KISAN-2024')
+
+
+def test_update_scheme_network_error(scheme_repository, mock_table, sample_scheme):
+    """Test handling of network errors during scheme update."""
+    mock_table.put_item.side_effect = ClientError(
+        {'Error': {'Code': 'InternalServerError', 'Message': 'Internal server error'}},
+        'PutItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        scheme_repository.update(sample_scheme)
+
+
+def test_delete_scheme_network_error(scheme_repository, mock_table):
+    """Test handling of network errors during scheme deletion."""
+    mock_table.delete_item.side_effect = ClientError(
+        {'Error': {'Code': 'ProvisionedThroughputExceededException', 'Message': 'Throughput exceeded'}},
+        'DeleteItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        scheme_repository.delete('PM-KISAN-2024')
+
+
+def test_search_schemes_network_error(scheme_repository, mock_table):
+    """Test handling of network errors during scheme search."""
+    mock_table.scan.side_effect = ClientError(
+        {'Error': {'Code': 'RequestTimeout', 'Message': 'Request timed out'}},
+        'Scan'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        scheme_repository.search_schemes(query="farmer")
+
+
+def test_resource_not_found_error(scheme_repository, mock_table):
+    """Test handling of ResourceNotFoundException (table doesn't exist)."""
+    mock_table.get_item.side_effect = ClientError(
+        {'Error': {'Code': 'ResourceNotFoundException', 'Message': 'Table not found'}},
+        'GetItem'
+    )
+    
+    with pytest.raises(ItemNotFoundError, match="Table .* not found"):
+        scheme_repository.get('PM-KISAN-2024')
+
+
+# Pagination and Limit Tests
+
+def test_search_schemes_with_limit(scheme_repository, mock_table):
+    """Test searching schemes with custom limit."""
+    mock_table.scan.return_value = {
+        'Items': [
+            {
+                'scheme_id': f'SCHEME-{i}',
+                'name': f'Scheme {i}',
+                'name_translations': {},
+                'category': 'agriculture',
+                'description': f'Description {i}',
+                'description_translations': {},
+                'benefits': [],
+                'eligibility_criteria': {'custom_criteria': {}},
+                'required_documents': [],
+                'application_process': [],
+                'department': 'Dept',
+                'last_updated': '2024-01-01T00:00:00',
+                'source_url': 'https://example.com'
+            }
+            for i in range(10)
+        ]
+    }
+    
+    results = scheme_repository.search_schemes(query="scheme", limit=10)
+    
+    assert len(results) == 10
+    # Verify limit was passed to scan
+    call_kwargs = mock_table.scan.call_args.kwargs
+    assert call_kwargs['Limit'] == 10
+
+
+def test_get_all_schemes_with_limit(scheme_repository, mock_table):
+    """Test getting all schemes with custom limit."""
+    mock_table.scan.return_value = {
+        'Items': [
+            {
+                'scheme_id': f'SCHEME-{i}',
+                'name': f'Scheme {i}',
+                'name_translations': {},
+                'category': 'agriculture',
+                'description': f'Description {i}',
+                'description_translations': {},
+                'benefits': [],
+                'eligibility_criteria': {'custom_criteria': {}},
+                'required_documents': [],
+                'application_process': [],
+                'department': 'Dept',
+                'last_updated': '2024-01-01T00:00:00',
+                'source_url': 'https://example.com'
+            }
+            for i in range(20)
+        ]
+    }
+    
+    results = scheme_repository.get_all_schemes(limit=20)
+    
+    assert len(results) == 20
+
+
+def test_search_schemes_multiple_filters(scheme_repository, mock_table):
+    """Test searching schemes with multiple filters combined."""
+    mock_table.query.return_value = {
+        'Items': [{
+            'scheme_id': 'MH-AGRI-2024',
+            'name': 'Maharashtra Agriculture Scheme',
+            'name_translations': {},
+            'category': 'agriculture',
+            'description': 'State agriculture scheme',
+            'description_translations': {},
+            'benefits': [],
+            'eligibility_criteria': {'custom_criteria': {}},
+            'required_documents': [],
+            'application_process': [],
+            'department': 'State Agriculture',
+            'state': 'Maharashtra',
+            'last_updated': '2024-01-01T00:00:00',
+            'source_url': 'https://example.com'
+        }]
+    }
+    
+    filters = SchemeFilters(
+        category="agriculture",
+        state="Maharashtra",
+        department="State Agriculture"
+    )
+    results = scheme_repository.search_schemes(query="agriculture", filters=filters)
+    
+    assert len(results) == 1
+    assert results[0].category == "agriculture"
+    assert results[0].state == "Maharashtra"
+    assert results[0].department == "State Agriculture"
+
+
+def test_search_schemes_empty_results(scheme_repository, mock_table):
+    """Test searching schemes with no matching results."""
+    mock_table.scan.return_value = {'Items': []}
+    
+    results = scheme_repository.search_schemes(query="nonexistent")
+    
+    assert len(results) == 0
+    assert results == []

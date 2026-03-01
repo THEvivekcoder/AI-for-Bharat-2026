@@ -310,3 +310,197 @@ def test_profile_exists_error_handling(profile_repository, mock_table):
     result = profile_repository.profile_exists('test_user_123')
     
     assert result is False
+
+
+# Error Handling Tests for Network Failures
+
+def test_get_profile_network_error(profile_repository, mock_table):
+    """Test handling of network errors during profile retrieval."""
+    mock_table.get_item.side_effect = ClientError(
+        {'Error': {'Code': 'RequestTimeout', 'Message': 'Request timed out'}},
+        'GetItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        profile_repository.get_profile('test_user_123')
+
+
+def test_update_profile_network_error(profile_repository, mock_table):
+    """Test handling of network errors during profile update."""
+    mock_table.update_item.side_effect = ClientError(
+        {'Error': {'Code': 'ServiceUnavailable', 'Message': 'Service unavailable'}},
+        'UpdateItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        profile_repository.update_profile('test_user_123', {'age': 36})
+
+
+def test_create_profile_network_error(profile_repository, mock_table, sample_profile):
+    """Test handling of network errors during profile creation."""
+    mock_table.put_item.side_effect = ClientError(
+        {'Error': {'Code': 'InternalServerError', 'Message': 'Internal server error'}},
+        'PutItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        profile_repository.create_profile(sample_profile)
+
+
+def test_delete_profile_network_error(profile_repository, mock_table):
+    """Test handling of network errors during profile deletion."""
+    mock_table.delete_item.side_effect = ClientError(
+        {'Error': {'Code': 'ProvisionedThroughputExceededException', 'Message': 'Throughput exceeded'}},
+        'DeleteItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        profile_repository.delete_profile('test_user_123')
+
+
+def test_update_location_network_error(profile_repository, mock_table):
+    """Test handling of network errors during location update."""
+    mock_table.update_item.side_effect = ClientError(
+        {'Error': {'Code': 'RequestTimeout', 'Message': 'Request timed out'}},
+        'UpdateItem'
+    )
+    
+    new_location = {
+        'state': 'Karnataka',
+        'district': 'Bangalore',
+        'pincode': '560001'
+    }
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        profile_repository.update_location('test_user_123', new_location)
+
+
+def test_update_preferences_network_error(profile_repository, mock_table):
+    """Test handling of network errors during preferences update."""
+    mock_table.update_item.side_effect = ClientError(
+        {'Error': {'Code': 'ServiceUnavailable', 'Message': 'Service unavailable'}},
+        'UpdateItem'
+    )
+    
+    new_preferences = {
+        'notification_enabled': False,
+        'preferred_categories': ['agriculture']
+    }
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        profile_repository.update_preferences('test_user_123', new_preferences)
+
+
+def test_resource_not_found_error(profile_repository, mock_table):
+    """Test handling of ResourceNotFoundException (table doesn't exist)."""
+    mock_table.get_item.side_effect = ClientError(
+        {'Error': {'Code': 'ResourceNotFoundException', 'Message': 'Table not found'}},
+        'GetItem'
+    )
+    
+    with pytest.raises(ItemNotFoundError, match="Table .* not found"):
+        profile_repository.get_profile('test_user_123')
+
+
+# Additional Edge Case Tests
+
+def test_update_profile_with_empty_updates(profile_repository, mock_table):
+    """Test updating profile with empty updates dictionary."""
+    mock_table.update_item.return_value = {
+        'Attributes': {
+            'user_id': 'test_user_123',
+            'phone_number': '+919876543210',
+            'language': 'hi',
+            'location': {
+                'state': 'Maharashtra',
+                'district': 'Pune',
+                'pincode': '411014'
+            },
+            'preferences': {
+                'notification_enabled': True,
+                'preferred_categories': [],
+                'voice_enabled': True,
+                'data_sharing_consent': False
+            },
+            'created_at': '2024-01-01T00:00:00',
+            'updated_at': '2024-01-15T10:30:00'
+        }
+    }
+    
+    # Empty updates should still update the updated_at timestamp
+    result = profile_repository.update_profile('test_user_123', {})
+    
+    assert result.user_id == 'test_user_123'
+    mock_table.update_item.assert_called_once()
+
+
+def test_update_profile_with_nested_dict(profile_repository, mock_table):
+    """Test updating profile with nested dictionary values."""
+    mock_table.update_item.return_value = {
+        'Attributes': {
+            'user_id': 'test_user_123',
+            'phone_number': '+919876543210',
+            'language': 'hi',
+            'location': {
+                'state': 'Karnataka',
+                'district': 'Bangalore',
+                'pincode': '560001',
+                'latitude': 12.9716,
+                'longitude': 77.5946
+            },
+            'preferences': {
+                'notification_enabled': True,
+                'preferred_categories': [],
+                'voice_enabled': True,
+                'data_sharing_consent': False
+            },
+            'created_at': '2024-01-01T00:00:00',
+            'updated_at': '2024-01-15T10:30:00'
+        }
+    }
+    
+    new_location = {
+        'state': 'Karnataka',
+        'district': 'Bangalore',
+        'pincode': '560001',
+        'latitude': 12.9716,
+        'longitude': 77.5946
+    }
+    
+    result = profile_repository.update_profile('test_user_123', {'location': new_location})
+    
+    assert result.location.state == 'Karnataka'
+    assert result.location.latitude == 12.9716
+
+
+def test_update_profile_with_list_values(profile_repository, mock_table):
+    """Test updating profile with list values."""
+    mock_table.update_item.return_value = {
+        'Attributes': {
+            'user_id': 'test_user_123',
+            'phone_number': '+919876543210',
+            'language': 'hi',
+            'location': {
+                'state': 'Maharashtra',
+                'district': 'Pune',
+                'pincode': '411014'
+            },
+            'preferences': {
+                'notification_enabled': True,
+                'preferred_categories': ['agriculture', 'health', 'education'],
+                'voice_enabled': True,
+                'data_sharing_consent': False
+            },
+            'created_at': '2024-01-01T00:00:00',
+            'updated_at': '2024-01-15T10:30:00'
+        }
+    }
+    
+    new_preferences = {
+        'preferred_categories': ['agriculture', 'health', 'education']
+    }
+    
+    result = profile_repository.update_profile('test_user_123', {'preferences': new_preferences})
+    
+    assert len(result.preferences.preferred_categories) == 3
+    assert 'agriculture' in result.preferences.preferred_categories

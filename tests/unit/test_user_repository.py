@@ -239,3 +239,71 @@ def test_get_by_phone_number_fallback_to_scan(user_repository, mock_table):
     assert result is not None
     assert result.phone_number == '+919876543210'
     mock_table.scan.assert_called_once()
+
+
+# Error Handling Tests for Network Failures
+
+def test_create_user_network_error(user_repository, mock_table, sample_user_profile):
+    """Test handling of network errors during user creation."""
+    mock_table.put_item.side_effect = ClientError(
+        {'Error': {'Code': 'RequestTimeout', 'Message': 'Request timed out'}},
+        'PutItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        user_repository.create(sample_user_profile)
+
+
+def test_get_user_network_error(user_repository, mock_table):
+    """Test handling of network errors during user retrieval."""
+    mock_table.get_item.side_effect = ClientError(
+        {'Error': {'Code': 'ServiceUnavailable', 'Message': 'Service unavailable'}},
+        'GetItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        user_repository.get('test_user_123')
+
+
+def test_update_user_network_error(user_repository, mock_table, sample_user_profile):
+    """Test handling of network errors during user update."""
+    mock_table.put_item.side_effect = ClientError(
+        {'Error': {'Code': 'InternalServerError', 'Message': 'Internal server error'}},
+        'PutItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        user_repository.update(sample_user_profile)
+
+
+def test_delete_user_network_error(user_repository, mock_table):
+    """Test handling of network errors during user deletion."""
+    mock_table.delete_item.side_effect = ClientError(
+        {'Error': {'Code': 'ProvisionedThroughputExceededException', 'Message': 'Throughput exceeded'}},
+        'DeleteItem'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        user_repository.delete('test_user_123')
+
+
+def test_get_by_phone_number_network_error(user_repository, mock_table):
+    """Test handling of network errors during phone number query."""
+    mock_table.query.side_effect = ClientError(
+        {'Error': {'Code': 'RequestTimeout', 'Message': 'Request timed out'}},
+        'Query'
+    )
+    
+    with pytest.raises(DynamoDBRepositoryError, match="DynamoDB error"):
+        user_repository.get_by_phone_number('+919876543210')
+
+
+def test_resource_not_found_error(user_repository, mock_table):
+    """Test handling of ResourceNotFoundException (table doesn't exist)."""
+    mock_table.get_item.side_effect = ClientError(
+        {'Error': {'Code': 'ResourceNotFoundException', 'Message': 'Table not found'}},
+        'GetItem'
+    )
+    
+    with pytest.raises(ItemNotFoundError, match="Table .* not found"):
+        user_repository.get('test_user_123')
