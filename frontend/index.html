@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BharatSahayak - Testing Interface</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🇮🇳 BharatSahayak</h1>
+            <p class="subtitle">Government Scheme Eligibility Checker - Testing Interface</p>
+        </header>
+
+        <!-- Configuration Section -->
+        <section id="config-section" class="card">
+            <h2>⚙️ API Configuration</h2>
+            <div class="form-group">
+                <label for="api-endpoint">API Endpoint:</label>
+                <input type="text" id="api-endpoint" placeholder="https://your-api.execute-api.region.amazonaws.com/dev">
+            </div>
+            <div class="form-group">
+                <label for="user-pool-id">Cognito User Pool ID:</label>
+                <input type="text" id="user-pool-id" placeholder="ap-south-1_xxxxxxxxx">
+            </div>
+            <div class="form-group">
+                <label for="client-id">Cognito Client ID:</label>
+                <input type="text" id="client-id" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxx">
+            </div>
+            <button onclick="saveConfig()" class="btn btn-primary">Save Configuration</button>
+            <span id="config-status" class="status-message"></span>
+        </section>
+
+        <!-- Authentication Section -->
+        <section id="auth-section" class="card">
+            <h2>🔐 Authentication</h2>
+            
+            <!-- Registration -->
+            <div class="auth-panel">
+                <h3>Register New User</h3>
+                <div class="form-group">
+                    <label for="reg-phone">Phone Number:</label>
+                    <input type="tel" id="reg-phone" placeholder="+919876543210">
+                </div>
+                <div class="form-group">
+                    <label for="reg-language">Preferred Language:</label>
+                    <select id="reg-language">
+                        <option value="hi">Hindi (हिंदी)</option>
+                        <option value="en">English</option>
+                        <option value="bn">Bengali (বাংলা)</option>
+                        <option value="te">Telugu (తెలుగు)</option>
+                        <option value="mr">Marathi (मराठी)</option>
+                        <option value="ta">Tamil (தமிழ்)</option>
+                        <option value="gu">Gujarati (ગુજરાતી)</option>
+                        <option value="kn">Kannada (ಕನ್ನಡ)</option>
+                        <option value="ml">Malayalam (മലയാളം)</option>
+                        <option value="pa">Punjabi (ਪੰਜਾਬੀ)</option>
+                    </select>
+                </div>
+                <button onclick="register()" class="btn btn-primary">Register</button>
+                <span id="reg-status" class="status-message"></span>
+            </div>
+
+            <!-- Login -->
+            <div class="auth-panel">
+                <h3>Login</h3>
+                <div class="form-group">
+                    <label for="login-phone">Phone Number:</label>
+                    <input type="tel" id="login-phone" placeholder="+919876543210">
+                </div>
+                <div class="form-group">
+                    <label for="login-otp">OTP:</label>
+                    <input type="text" id="login-otp" placeholder="123456">
+                </div>
+                <button onclick="verifyOTP()" class="btn btn-primary">Verify & Login</button>
+                <span id="login-status" class="status-message"></span>
+            </div>
+
+            <div id="auth-info" class="info-box" style="display: none;">
+                <p><strong>Logged in as:</strong> <span id="current-user"></span></p>
+                <button onclick="logout()" class="btn btn-secondary">Logout</button>
+            </div>
+        </section>
+
+        <!-- User Profile Section -->
+        <section id="profile-section" class="card" style="display: none;">
+            <h2>👤 User Profile</h2>
+            
+            <div class="form-group">
+                <label for="profile-age">Age:</label>
+                <input type="number" id="profile-age" min="0" max="150">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-gender">Gender:</label>
+                <select id="profile-gender">
+                    <option value="">Select...</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-education">Education Level:</label>
+                <input type="text" id="profile-education" placeholder="e.g., 10th Pass, Graduate">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-occupation">Occupation:</label>
+                <input type="text" id="profile-occupation" placeholder="e.g., Farmer, Student">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-income">Income Bracket:</label>
+                <input type="text" id="profile-income" placeholder="e.g., Below 1 Lakh, 1-3 Lakhs">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-state">State:</label>
+                <input type="text" id="profile-state" placeholder="e.g., Maharashtra">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-district">District:</label>
+                <input type="text" id="profile-district" placeholder="e.g., Pune">
+            </div>
+            
+            <div class="form-group">
+                <label for="profile-pincode">Pincode:</label>
+                <input type="text" id="profile-pincode" placeholder="e.g., 411001">
+            </div>
+            
+            <button onclick="updateProfile()" class="btn btn-primary">Update Profile</button>
+            <button onclick="getProfile()" class="btn btn-secondary">Load Profile</button>
+            <span id="profile-status" class="status-message"></span>
+        </section>
+
+        <!-- Scheme Search Section -->
+        <section id="search-section" class="card">
+            <h2>🔍 Search Government Schemes</h2>
+            
+            <div class="form-group">
+                <label for="search-query">Search Keywords:</label>
+                <input type="text" id="search-query" placeholder="e.g., agriculture, education, health">
+            </div>
+            
+            <div class="form-group">
+                <label for="search-category">Category:</label>
+                <select id="search-category">
+                    <option value="">All Categories</option>
+                    <option value="agriculture">Agriculture</option>
+                    <option value="health">Health</option>
+                    <option value="education">Education</option>
+                    <option value="employment">Employment</option>
+                    <option value="social_welfare">Social Welfare</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="search-state">State:</label>
+                <input type="text" id="search-state" placeholder="Leave empty for all states">
+            </div>
+            
+            <button onclick="searchSchemes()" class="btn btn-primary">Search Schemes</button>
+            <button onclick="browseAllSchemes()" class="btn btn-secondary">Browse All</button>
+            <span id="search-status" class="status-message"></span>
+            
+            <div id="search-results" class="results-container"></div>
+        </section>
+
+        <!-- Eligibility Check Section -->
+        <section id="eligibility-section" class="card" style="display: none;">
+            <h2>✅ Check Eligibility</h2>
+            
+            <div class="form-group">
+                <label for="scheme-id">Scheme ID:</label>
+                <input type="text" id="scheme-id" placeholder="Enter scheme ID or select from search results">
+            </div>
+            
+            <button onclick="checkEligibility()" class="btn btn-primary">Check Eligibility</button>
+            <button onclick="getAllEligibleSchemes()" class="btn btn-secondary">Get All Eligible Schemes</button>
+            <span id="eligibility-status" class="status-message"></span>
+            
+            <div id="eligibility-results" class="results-container"></div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section id="analytics-section" class="card" style="display: none;">
+            <h2>📊 Analytics & Impact Tracking</h2>
+            
+            <div class="form-group">
+                <label for="event-type">Event Type:</label>
+                <select id="event-type">
+                    <option value="query_submitted">Query Submitted</option>
+                    <option value="scheme_accessed">Scheme Accessed</option>
+                    <option value="scheme_applied">Scheme Applied</option>
+                    <option value="eligibility_checked">Eligibility Checked</option>
+                </select>
+            </div>
+            
+            <button onclick="recordEvent()" class="btn btn-primary">Record Event</button>
+            <button onclick="getAnalytics()" class="btn btn-secondary">View Analytics</button>
+            <span id="analytics-status" class="status-message"></span>
+            
+            <div id="analytics-results" class="results-container"></div>
+        </section>
+
+        <footer>
+            <p>BharatSahayak - BTech Project Testing Interface</p>
+            <p>Built with AWS Lambda, API Gateway, DynamoDB, and Cognito</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
