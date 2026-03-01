@@ -1,0 +1,30 @@
+{
+  "body": "{\"query\": \"मुझे कृषि योजनाओं के बारे में बताएं\", \"language\": \"hi\"}",
+  "resource": "/api/ask",
+  "path": "/api/ask",
+  "httpMethod": "POST",
+  "isBase64Encoded": false,
+  "queryStringParameters": null,
+  "pathParameters": null,
+  "stageVariables": null,
+  "headers": {
+    "Accept": "application/json",
+    "Content-Type": "application/json",
+    "User-Agent": "Mozilla/5.0"
+  },
+  "requestContext": {
+    "accountId": "123456789012",
+    "apiId": "1234567890",
+    "protocol": "HTTP/1.1",
+    "httpMethod": "POST",
+    "path": "/dev/api/ask",
+    "stage": "dev",
+    "requestId": "test-request-id",
+    "requestTime": "09/Jan/2024:12:34:56 +0000",
+    "requestTimeEpoch": 1704800096000,
+    "identity": {
+      "sourceIp": "127.0.0.1",
+      "userAgent": "Mozilla/5.0"
+    }
+  }
+}
