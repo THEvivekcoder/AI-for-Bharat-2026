@@ -413,30 +413,30 @@ The implementation follows an incremental approach: starting with infrastructure
     - Verify translation quality and accuracy
     - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ] 17. Optional: Implement offline caching with DynamoDB and S3
-  - [ ]* 17.1 Create offline cache data export Lambda function
+- [x] 17. Optional: Implement offline caching with DynamoDB and S3
+  - [x] 17.1 Create offline cache data export Lambda function
     - Export frequently accessed schemes to JSON files
     - Store cache files in S3 for download
     - Include timestamp and version information
     - _Requirements: 7.1, 7.3_
   
-  - [ ]* 17.2 Write property test for offline cache priority
+  - [x] 17.2 Write property test for offline cache priority
     - **Property 19: Offline Cache Priority**
     - **Validates: Requirements 7.3**
     - Test that high-priority content is cached first
   
-  - [ ]* 17.3 Implement cache sync Lambda function
+  - [x] 17.3 Implement cache sync Lambda function
     - Create endpoint to check for cache updates
     - Return list of updated schemes since last sync
     - Support incremental updates to minimize bandwidth
     - _Requirements: 7.4_
   
-  - [ ]* 17.4 Write property test for bandwidth constraint compliance
+  - [x] 17.4 Write property test for bandwidth constraint compliance
     - **Property 18: Bandwidth Constraint Compliance**
     - **Validates: Requirements 7.2**
     - Test that API responses are under 100KB when compressed
 
-- [ ] 18. Optional: Add RAG-based conversational AI
+- [-] 18. Optional: Add RAG-based conversational AI
   - [ ]* 18.1 Set up vector database with Amazon OpenSearch
     - Create OpenSearch domain for document embeddings
     - Index scheme documents with vector embeddings

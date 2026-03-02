@@ -884,6 +884,66 @@ Resources:
             Auth:
               Authorizer: NONE
 
+  # Offline Cache: Export Cache Data
+  CacheExportFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-cache-export-${Environment}
+      CodeUri: .
+      Handler: src.api.cache_export.lambda_handler
+      Timeout: 300
+      MemorySize: 1024
+      Environment:
+        Variables:
+          SCHEMES_TABLE: !Ref SchemesTable
+          INTERACTIONS_TABLE: !Ref InteractionsTable
+          STATIC_CONTENT_BUCKET: !Ref StaticContentBucket
+          CACHE_VERSION: '1.0.0'
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SchemesTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref InteractionsTable
+        - S3CrudPolicy:
+            BucketName: !Ref StaticContentBucket
+      Events:
+        CacheExportApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /cache/export
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  # Offline Cache: Sync Cache Data
+  CacheSyncFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-cache-sync-${Environment}
+      CodeUri: .
+      Handler: src.api.cache_sync.lambda_handler
+      Timeout: 60
+      MemorySize: 512
+      Environment:
+        Variables:
+          SCHEMES_TABLE: !Ref SchemesTable
+          STATIC_CONTENT_BUCKET: !Ref StaticContentBucket
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SchemesTable
+        - S3ReadPolicy:
+            BucketName: !Ref StaticContentBucket
+      Events:
+        CacheSyncApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /cache/sync
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL
