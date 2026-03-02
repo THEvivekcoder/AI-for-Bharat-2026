@@ -77,6 +77,24 @@ def get_authorization_header(event: Dict[str, Any]) -> Optional[str]:
     return auth_header
 
 
+def extract_user_id(event: Dict[str, Any]) -> Optional[str]:
+    """
+    Extract user ID from API Gateway event JWT token.
+    
+    Args:
+        event: API Gateway event
+        
+    Returns:
+        User ID if token is valid, None otherwise
+    """
+    auth_header = get_authorization_header(event)
+    
+    if not auth_header:
+        return None
+    
+    return extract_user_id_from_token(auth_header)
+
+
 def require_auth(handler_func):
     """
     Decorator to require authentication for Lambda handlers.

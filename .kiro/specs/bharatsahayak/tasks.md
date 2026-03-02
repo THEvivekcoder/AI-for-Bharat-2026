@@ -436,36 +436,36 @@ The implementation follows an incremental approach: starting with infrastructure
     - **Validates: Requirements 7.2**
     - Test that API responses are under 100KB when compressed
 
-- [-] 18. Optional: Add RAG-based conversational AI
-  - [ ]* 18.1 Set up vector database with Amazon OpenSearch
+- [x] 18. Optional: Add RAG-based conversational AI
+  - [x] 18.1 Set up vector database with Amazon OpenSearch
     - Create OpenSearch domain for document embeddings
     - Index scheme documents with vector embeddings
     - Configure search with semantic similarity
     - _Requirements: 6.1, 6.2_
   
-  - [ ]* 18.2 Integrate with Amazon Bedrock for LLM
+  - [x] 18.2 Integrate with Amazon Bedrock for LLM
     - Use Bedrock to access foundation models (Claude, Llama)
     - Implement RAG pipeline: retrieve → augment → generate
     - Maintain conversation context across turns
     - _Requirements: 6.1, 6.2_
   
-  - [ ]* 18.3 Write property test for conversation context preservation
+  - [x] 18.3 Write property test for conversation context preservation
     - **Property 15: Conversation Context Preservation**
     - **Validates: Requirements 6.1**
     - Test that follow-up queries maintain context
   
-  - [ ]* 18.4 Write property test for semantic search relevance
+  - [x] 18.4 Write property test for semantic search relevance
     - **Property 16: Semantic Search Relevance**
     - **Validates: Requirements 6.2**
     - Test that retrieved documents have high similarity scores
   
-  - [ ]* 18.5 Implement conversational query Lambda function
+  - [x] 18.5 Implement conversational query Lambda function
     - Create Lambda handler for POST /ask
     - Process natural language queries with RAG
     - Return AI-generated responses with source citations
     - _Requirements: 6.1, 6.2, 6.5_
   
-  - [ ]* 18.6 Write property test for official source prioritization
+  - [x] 18.6 Write property test for official source prioritization
     - **Property 17: Official Source Prioritization**
     - **Validates: Requirements 6.5**
     - Test that government sources rank higher than general sources
