@@ -1,16 +1,17 @@
-"""Lambda handler for skill program matching."""
+"""Lambda handler for matching skill development programs to user profile."""
 
 import json
 import os
 import logging
+from typing import Dict, Any, List, Tuple
+
 import boto3
-from typing import Dict, Any, List
-from decimal import Decimal
+from botocore.exceptions import ClientError
 
 from src.models.skill import SkillProgram
-from src.models.eligibility import EligibilityCriteria
-from src.models.location import Location
 from src.models.user import UserProfile
+from src.models.location import Location
+from src.models.eligibility import EligibilityCriteria
 
 # Configure logging
 logger = logging.getLogger()
@@ -18,273 +19,337 @@ logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO'))
 
 # Initialize DynamoDB
 dynamodb = boto3.resource('dynamodb')
-table_name = os.environ.get('SKILL_PROGRAMS_TABLE', 'SkillPrograms')
-table = dynamodb.Table(table_name)
+PROGRAMS_TABLE = os.environ.get('SKILL_PROGRAMS_TABLE', 'bharatsahayak-skill-programs-dev')
+programs_table = dynamodb.Table(PROGRAMS_TABLE)
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     Handle POST /skills/match requests.
     
+    Matches skill development programs based on user education, interests, and location.
+    
     Request Body:
     {
         "user_profile": {
+            "user_id": "user_123",
+            "education_level": "10th pass",
+            "location": {
+                "state": "Maharashtra",
+                "district": "Pune",
+                "pincode": "411014"
+            },
             "age": 25,
-            "education_level": "12th pass",
-            "location": {"state": "Maharashtra", "district": "Pune", "pincode": "411001"},
-            "interests": ["technical", "digital"],
-            "current_skills": ["basic computer"],
-            "preferred_mode": "hybrid"  // optional
-        }
+            "preferences": {
+                "interests": ["technical", "digital"],
+                "max_cost": 5000,
+                "preferred_mode": "in-person"
+            }
+        },
+        "category": "technical",  // Optional filter
+        "limit": 10  // Optional: max results (default 10)
     }
     
     Response:
     {
         "matched_programs": [
             {
-                "program_id": "...",
-                "name": "...",
-                "provider": "...",
-                "category": "...",
+                "program_id": "PMKVY-ELEC-2024",
+                "name": "Electrician Training Program",
+                "provider": "NSDC",
+                "category": "technical",
+                "description": "...",
+                "duration_weeks": 12,
+                "cost": 0,
+                "location": {...},
+                "mode": "in-person",
+                "certification": true,
+                "placement_support": true,
                 "match_score": 0.85,
-                "match_reasons": [...]
+                "match_reasoning": [
+                    "Matches interest: technical",
+                    "Within budget: Rs. 0",
+                    "Preferred mode: in-person"
+                ]
             }
-        ]
+        ],
+        "total_count": 5
     }
-    
-    Error Responses:
-    - 400: Invalid request body
-    - 500: Internal server error
     """
     try:
         # Parse request body
-        body = json.loads(event.get('body', '{}'))
+        body = _parse_request_body(event)
+        if isinstance(body, dict) and 'error' in body:
+            return error_response(400, body['error'])
         
-        # Validate required fields
-        if 'user_profile' not in body:
+        # Extract required fields
+        user_profile_data = body.get('user_profile')
+        category_filter = body.get('category')
+        limit = body.get('limit', 10)
+        
+        if not user_profile_data:
             return error_response(400, "Missing required field: user_profile")
         
-        user_data = body['user_profile']
-        required_fields = ['age', 'education_level', 'location', 'interests']
-        missing_fields = [field for field in required_fields if field not in user_data]
+        # Validate limit
+        if not isinstance(limit, int) or limit < 1 or limit > 50:
+            return error_response(400, "Invalid limit: must be between 1 and 50")
         
-        if missing_fields:
-            return error_response(400, f"Missing required fields in user_profile: {', '.join(missing_fields)}")
+        # Parse user profile
+        try:
+            user_profile = _parse_user_profile(user_profile_data)
+        except ValueError as e:
+            return error_response(400, f"Invalid user_profile: {str(e)}")
         
-        logger.info(f"Matching skill programs for user with interests: {user_data.get('interests')}")
+        logger.info(f"Matching programs: user_id={user_profile.user_id}, category={category_filter}")
         
-        # Get all skill programs from DynamoDB
-        programs = _get_all_programs()
-        
-        if not programs:
-            logger.warning("No skill programs found in database")
-            return success_response({'matched_programs': []})
+        # Retrieve programs from DynamoDB
+        programs = _get_programs(category_filter)
+        logger.info(f"Retrieved {len(programs)} programs")
         
         # Match and rank programs
-        matched_programs = _match_programs(user_data, programs)
-        
+        matched_programs = _match_programs(programs, user_profile)
         logger.info(f"Matched {len(matched_programs)} programs")
-        return success_response({'matched_programs': matched_programs})
         
-    except json.JSONDecodeError:
-        logger.error("Invalid JSON in request body")
-        return error_response(400, "Invalid JSON in request body")
-    
+        # Limit results
+        matched_programs = matched_programs[:limit]
+        
+        # Build response
+        response_data = {
+            'matched_programs': [
+                _build_program_response(program, score, reasoning)
+                for program, score, reasoning in matched_programs
+            ],
+            'total_count': len(matched_programs)
+        }
+        
+        return success_response(response_data)
+        
     except Exception as e:
         logger.error(f"Unexpected error: {str(e)}", exc_info=True)
         return error_response(500, "Internal server error")
 
 
-def _get_all_programs() -> List[Dict[str, Any]]:
-    """Retrieve all skill programs from DynamoDB."""
+
+def _parse_request_body(event: Dict[str, Any]) -> Dict[str, Any]:
+    """Parse and validate request body from API Gateway event."""
     try:
-        response = table.scan()
-        programs = response.get('Items', [])
+        body = event.get('body')
+        if not body:
+            return {'error': 'Request body is required'}
         
-        # Handle pagination
-        while 'LastEvaluatedKey' in response:
-            response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'])
-            programs.extend(response.get('Items', []))
+        if isinstance(body, str):
+            body = json.loads(body)
         
-        logger.info(f"Retrieved {len(programs)} programs from DynamoDB")
+        return body
+    except json.JSONDecodeError as e:
+        return {'error': f'Invalid JSON in request body: {str(e)}'}
+
+
+def _parse_user_profile(profile_data: Dict[str, Any]) -> UserProfile:
+    """Parse and validate user profile data."""
+    try:
+        location_data = profile_data.get('location')
+        if not location_data:
+            raise ValueError("Missing required field: location")
+        
+        location = Location(**location_data)
+        profile_data['location'] = location
+        user_profile = UserProfile(**profile_data)
+        
+        return user_profile
+    except Exception as e:
+        raise ValueError(f"Failed to parse user profile: {str(e)}")
+
+
+def _get_programs(category: str = None) -> List[SkillProgram]:
+    """Retrieve skill programs from DynamoDB."""
+    try:
+        if category:
+            # Query by category using GSI
+            response = programs_table.query(
+                IndexName='category-index',
+                KeyConditionExpression='category = :cat',
+                ExpressionAttributeValues={':cat': category}
+            )
+        else:
+            # Scan all programs
+            response = programs_table.scan()
+        
+        items = response.get('Items', [])
+        
+        # Convert to SkillProgram objects
+        programs = []
+        for item in items:
+            try:
+                # Convert nested dicts to model objects
+                item['location'] = Location(**item['location'])
+                item['eligibility_criteria'] = EligibilityCriteria(**item['eligibility_criteria'])
+                program = SkillProgram(**item)
+                programs.append(program)
+            except Exception as e:
+                logger.warning(f"Failed to parse program {item.get('program_id')}: {e}")
+                continue
+        
         return programs
         
-    except Exception as e:
-        logger.error(f"Error retrieving programs from DynamoDB: {str(e)}")
-        return []
+    except ClientError as e:
+        logger.error(f"DynamoDB error: {e}")
+        raise
 
 
-
-def _match_programs(user_data: Dict[str, Any], programs: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+def _match_programs(
+    programs: List[SkillProgram],
+    user_profile: UserProfile
+) -> List[Tuple[SkillProgram, float, List[str]]]:
     """
-    Match and rank skill programs based on user profile.
+    Match and rank programs based on user profile.
     
     Matching criteria:
-    - Category matches user interests
-    - User meets eligibility criteria
+    - Education level compatibility
+    - Interest/category match
+    - Cost within budget
     - Location proximity
-    - Preferred mode (if specified)
+    - Age eligibility
+    - Preferred mode
+    
+    Returns:
+        List of (program, match_score, reasoning) tuples, sorted by score
     """
     matched = []
     
-    user_age = user_data.get('age')
-    user_education = user_data.get('education_level', '').lower()
-    user_interests = [interest.lower() for interest in user_data.get('interests', [])]
-    user_location = user_data.get('location', {})
-    user_state = user_location.get('state', '').lower()
-    user_district = user_location.get('district', '').lower()
-    preferred_mode = user_data.get('preferred_mode', '').lower()
-    current_skills = [skill.lower() for skill in user_data.get('current_skills', [])]
-    
     for program in programs:
-        match_score = 0.0
-        match_reasons = []
+        score = 0.0
+        reasoning = []
         
-        # Convert Decimal to float for DynamoDB compatibility
-        program = _convert_decimals(program)
+        # Check basic eligibility
+        if not _check_eligibility(program, user_profile):
+            continue  # Skip ineligible programs
         
-        # Check category match with interests
-        program_category = program.get('category', '').lower()
-        if program_category in user_interests:
-            match_score += 0.4
-            match_reasons.append(f"Matches your interest in {program_category}")
+        # Interest/category match (30% weight)
+        if user_profile.preferences and user_profile.preferences.interests:
+            if program.category in user_profile.preferences.interests:
+                score += 0.3
+                reasoning.append(f"Matches interest: {program.category}")
         
-        # Check eligibility
-        eligibility = program.get('eligibility', {})
-        is_eligible, eligibility_reason = _check_eligibility(user_age, user_education, eligibility)
+        # Cost within budget (25% weight)
+        max_cost = None
+        if user_profile.preferences and hasattr(user_profile.preferences, 'max_cost'):
+            max_cost = user_profile.preferences.max_cost
         
-        if not is_eligible:
-            # Skip programs user is not eligible for
-            continue
-        
-        match_score += 0.3
-        match_reasons.append("You meet the eligibility criteria")
-        
-        # Check location match
-        program_location = program.get('location', {})
-        program_state = program_location.get('state', '').lower()
-        program_district = program_location.get('district', '').lower()
-        
-        if program_state == user_state:
-            match_score += 0.15
-            if program_district == user_district:
-                match_score += 0.1
-                match_reasons.append("Program available in your district")
+        if max_cost is not None:
+            if program.cost <= max_cost:
+                score += 0.25
+                reasoning.append(f"Within budget: Rs. {program.cost}")
             else:
-                match_reasons.append("Program available in your state")
+                score += 0.1  # Partial credit if over budget
+                reasoning.append(f"Cost Rs. {program.cost} exceeds budget")
+        else:
+            # No budget specified, prefer free programs
+            if program.cost == 0:
+                score += 0.25
+                reasoning.append("Free program")
+            else:
+                score += 0.15
         
-        # Check mode preference
-        program_mode = program.get('mode', '').lower()
-        if preferred_mode and program_mode == preferred_mode:
-            match_score += 0.05
-            match_reasons.append(f"Matches your preferred {preferred_mode} mode")
-        elif program_mode == 'online':
-            # Online programs are accessible from anywhere
-            match_score += 0.05
-            match_reasons.append("Available online from anywhere")
+        # Location match (20% weight)
+        if program.location.state.lower() == user_profile.location.state.lower():
+            score += 0.15
+            reasoning.append(f"Same state: {program.location.state}")
+            
+            if program.location.district.lower() == user_profile.location.district.lower():
+                score += 0.05
+                reasoning.append(f"Same district: {program.location.district}")
         
-        # Bonus for free programs
-        if program.get('cost', 0) == 0:
-            match_reasons.append("Free training program")
+        # Mode preference (15% weight)
+        preferred_mode = None
+        if user_profile.preferences and hasattr(user_profile.preferences, 'preferred_mode'):
+            preferred_mode = user_profile.preferences.preferred_mode
         
-        # Bonus for placement support
-        if program.get('placement_support', False):
-            match_reasons.append("Includes placement assistance")
+        if preferred_mode:
+            if program.mode == preferred_mode:
+                score += 0.15
+                reasoning.append(f"Preferred mode: {program.mode}")
+        else:
+            # No preference, slight bonus for online (more accessible)
+            if program.mode == "online":
+                score += 0.1
+                reasoning.append("Online mode (accessible)")
         
-        # Bonus for certification
-        if program.get('certification', False):
-            match_reasons.append("Provides industry certification")
+        # Placement support bonus (10% weight)
+        if program.placement_support:
+            score += 0.1
+            reasoning.append("Placement support available")
         
-        # Only include programs with reasonable match score
-        if match_score >= 0.3:
-            matched.append({
-                'program_id': program.get('program_id'),
-                'name': program.get('name'),
-                'provider': program.get('provider'),
-                'category': program.get('category'),
-                'description': program.get('description'),
-                'duration_weeks': program.get('duration_weeks'),
-                'cost': program.get('cost'),
-                'location': program.get('location'),
-                'mode': program.get('mode'),
-                'certification': program.get('certification'),
-                'placement_support': program.get('placement_support'),
-                'registration_url': program.get('registration_url'),
-                'contact': program.get('contact'),
-                'match_score': round(match_score, 2),
-                'match_reasons': match_reasons
-            })
+        # Normalize score to 0-1
+        score = min(1.0, score)
+        
+        if score > 0:  # Only include programs with some match
+            matched.append((program, score, reasoning))
     
     # Sort by match score (descending)
-    matched.sort(key=lambda x: x['match_score'], reverse=True)
+    matched.sort(key=lambda x: x[1], reverse=True)
     
     return matched
 
 
-
-def _check_eligibility(user_age: int, user_education: str, eligibility: Dict[str, Any]) -> tuple:
-    """
-    Check if user meets eligibility criteria.
+def _check_eligibility(program: SkillProgram, user_profile: UserProfile) -> bool:
+    """Check if user meets basic eligibility criteria for program."""
+    criteria = program.eligibility_criteria
     
-    Returns:
-        Tuple of (is_eligible: bool, reason: str)
-    """
     # Check age
-    age_min = eligibility.get('age_min')
-    age_max = eligibility.get('age_max')
+    if criteria.age_min and user_profile.age:
+        if user_profile.age < criteria.age_min:
+            return False
     
-    if age_min and user_age < age_min:
-        return False, f"Minimum age requirement is {age_min}"
+    if criteria.age_max and user_profile.age:
+        if user_profile.age > criteria.age_max:
+            return False
     
-    if age_max and user_age > age_max:
-        return False, f"Maximum age limit is {age_max}"
+    # Check education level
+    if criteria.education and user_profile.education_level:
+        # Simple check: if user's education is in the list, they're eligible
+        if user_profile.education_level not in criteria.education:
+            return False
     
-    # Check education
-    eligible_education = eligibility.get('education', [])
-    if eligible_education:
-        # Normalize education levels
-        education_hierarchy = {
-            'primary': 1,
-            '8th pass': 2,
-            '10th pass': 3,
-            'secondary': 3,
-            '12th pass': 4,
-            'higher_secondary': 4,
-            'undergraduate': 5,
-            'postgraduate': 6
-        }
-        
-        user_level = education_hierarchy.get(user_education, 0)
-        
-        # Check if user meets any of the eligible education levels
-        meets_education = False
-        for edu in eligible_education:
-            edu_normalized = edu.lower()
-            required_level = education_hierarchy.get(edu_normalized, 0)
-            if user_level >= required_level:
-                meets_education = True
-                break
-        
-        if not meets_education:
-            return False, f"Required education: {', '.join(eligible_education)}"
+    # Check gender
+    if criteria.gender and user_profile.gender:
+        if criteria.gender.lower() != user_profile.gender.lower():
+            return False
     
-    return True, "Eligible"
+    return True
 
 
-def _convert_decimals(obj: Any) -> Any:
-    """Convert Decimal objects to float for JSON serialization."""
-    if isinstance(obj, list):
-        return [_convert_decimals(item) for item in obj]
-    elif isinstance(obj, dict):
-        return {key: _convert_decimals(value) for key, value in obj.items()}
-    elif isinstance(obj, Decimal):
-        return float(obj)
-    else:
-        return obj
+def _build_program_response(
+    program: SkillProgram,
+    match_score: float,
+    reasoning: List[str]
+) -> Dict[str, Any]:
+    """Build response object for a matched program."""
+    return {
+        'program_id': program.program_id,
+        'name': program.name,
+        'provider': program.provider,
+        'category': program.category,
+        'description': program.description,
+        'duration_weeks': program.duration_weeks,
+        'cost': program.cost,
+        'location': {
+            'state': program.location.state,
+            'district': program.location.district,
+            'pincode': program.location.pincode
+        },
+        'mode': program.mode,
+        'certification': program.certification,
+        'placement_support': program.placement_support,
+        'registration_url': program.registration_url,
+        'contact': program.contact,
+        'match_score': round(match_score, 2),
+        'match_reasoning': reasoning
+    }
 
 
 def success_response(data: Dict[str, Any], status_code: int = 200) -> Dict[str, Any]:
-    """Generate success response."""
+    """Create a successful API response."""
     return {
         'statusCode': status_code,
         'headers': {
@@ -296,12 +361,14 @@ def success_response(data: Dict[str, Any], status_code: int = 200) -> Dict[str, 
 
 
 def error_response(status_code: int, message: str) -> Dict[str, Any]:
-    """Generate error response."""
+    """Create an error API response."""
     return {
         'statusCode': status_code,
         'headers': {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
         },
-        'body': json.dumps({'error': message})
+        'body': json.dumps({
+            'error': message
+        })
     }

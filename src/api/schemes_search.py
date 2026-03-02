@@ -26,6 +26,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         category: Filter by category (agriculture, health, education, employment, social_welfare)
         state: Filter by state (empty string or omit for central schemes)
         department: Filter by government department
+        lang: Language code for translated content (hi, ta, te, bn). Falls back to English if unavailable.
         page: Page number for pagination (default: 1)
         limit: Results per page (default: 20, max: 100)
     
@@ -61,6 +62,9 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         category = query_params.get('category')
         state = query_params.get('state')
         department = query_params.get('department')
+        
+        # Extract language parameter
+        language = query_params.get('lang', 'en')
         
         # Extract pagination parameters
         page = int(query_params.get('page', '1'))
@@ -103,7 +107,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         # Convert schemes to summary format (exclude some verbose fields)
         scheme_summaries = [
-            _scheme_to_summary(scheme) for scheme in page_schemes
+            _scheme_to_summary(scheme, language) for scheme in page_schemes
         ]
         
         # Build pagination metadata
@@ -134,22 +138,30 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return error_response(500, "Internal server error")
 
 
-def _scheme_to_summary(scheme: Scheme) -> Dict[str, Any]:
+def _scheme_to_summary(scheme: Scheme, language: str = 'en') -> Dict[str, Any]:
     """
     Convert a Scheme object to a summary dictionary.
     Excludes verbose fields like translations and detailed application process.
     
+    If a language is specified and translations are available, the name and description
+    will be replaced with the translated versions. Falls back to English if translation unavailable.
+    
     Args:
         scheme: Scheme object
+        language: Language code for translated content (default: 'en')
         
     Returns:
         Dictionary with scheme summary
     """
+    # Get translated name and description if available
+    name = scheme.name_translations.get(language, scheme.name) if language != 'en' else scheme.name
+    description = scheme.description_translations.get(language, scheme.description) if language != 'en' else scheme.description
+    
     return {
         'scheme_id': scheme.scheme_id,
-        'name': scheme.name,
+        'name': name,
         'category': scheme.category,
-        'description': scheme.description,
+        'description': description,
         'department': scheme.department,
         'state': scheme.state,
         'benefits': scheme.benefits,

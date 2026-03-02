@@ -319,6 +319,33 @@ Resources:
           Projection:
             ProjectionType: ALL
 
+  HealthFacilitiesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub bharatsahayak-health-facilities-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: facility_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: facility_id
+          KeyType: HASH
+
+  TranslationCacheTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub bharatsahayak-translation-cache-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: cache_key
+          AttributeType: S
+      KeySchema:
+        - AttributeName: cache_key
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
   # S3 Buckets
   VoiceDataBucket:
     Type: AWS::S3::Bucket
@@ -695,6 +722,168 @@ Resources:
             Auth:
               Authorizer: NONE
 
+  # Health: Facility Search
+  HealthFacilitiesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-health-facilities-${Environment}
+      CodeUri: .
+      Handler: src.api.health_facilities.lambda_handler
+      Environment:
+        Variables:
+          HEALTH_FACILITIES_TABLE: !Ref HealthFacilitiesTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref HealthFacilitiesTable
+      Events:
+        HealthFacilitiesApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /health/facilities
+            Method: GET
+            Auth:
+              Authorizer: NONE
+
+  # Health: Symptom Checker
+  HealthCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-health-check-${Environment}
+      CodeUri: .
+      Handler: src.api.health_check.lambda_handler
+      Events:
+        HealthCheckApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /health/check
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  # Voice Interface: Speech-to-Text
+  VoiceToTextFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-voice-to-text-${Environment}
+      CodeUri: .
+      Handler: src.api.voice_to_text.lambda_handler
+      Timeout: 300
+      MemorySize: 1024
+      Environment:
+        Variables:
+          S3_BUCKET_NAME: !Ref VoiceDataBucket
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref VoiceDataBucket
+        - Statement:
+            - Effect: Allow
+              Action:
+                - transcribe:StartTranscriptionJob
+                - transcribe:GetTranscriptionJob
+                - transcribe:DeleteTranscriptionJob
+              Resource: '*'
+      Events:
+        VoiceToTextApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /voice/transcribe
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  # Voice Interface: Text-to-Speech
+  TextToVoiceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-text-to-voice-${Environment}
+      CodeUri: .
+      Handler: src.api.text_to_voice.lambda_handler
+      Timeout: 60
+      MemorySize: 512
+      Environment:
+        Variables:
+          S3_BUCKET_NAME: !Ref VoiceDataBucket
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref VoiceDataBucket
+        - Statement:
+            - Effect: Allow
+              Action:
+                - polly:SynthesizeSpeech
+              Resource: '*'
+      Events:
+        TextToVoiceApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /voice/synthesize
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  # Voice Interface: Language Detection
+  DetectLanguageFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-detect-language-${Environment}
+      CodeUri: .
+      Handler: src.api.detect_language.lambda_handler
+      Timeout: 30
+      MemorySize: 256
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - comprehend:DetectDominantLanguage
+                - comprehend:BatchDetectDominantLanguage
+              Resource: '*'
+      Events:
+        DetectLanguageApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /voice/detect-language
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  # Multilingual: Translate Scheme Content
+  TranslateSchemeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-translate-scheme-${Environment}
+      CodeUri: .
+      Handler: src.api.translate_scheme.lambda_handler
+      Timeout: 60
+      MemorySize: 512
+      Environment:
+        Variables:
+          TRANSLATION_CACHE_TABLE: !Ref TranslationCacheTable
+          SCHEMES_TABLE: !Ref SchemesTable
+          UPDATE_DYNAMODB: 'true'
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TranslationCacheTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SchemesTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - translate:TranslateText
+              Resource: '*'
+      Events:
+        TranslateSchemeApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /translate/scheme
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL
@@ -755,3 +944,15 @@ Outputs:
     Value: !Sub https://${StaticContentBucket}.s3.${AWS::Region}.amazonaws.com
     Export:
       Name: !Sub ${AWS::StackName}-StaticContentBucketUrl
+
+  VoiceDataBucketName:
+    Description: S3 Bucket for Voice Data (Audio Files)
+    Value: !Ref VoiceDataBucket
+    Export:
+      Name: !Sub ${AWS::StackName}-VoiceDataBucket
+
+  TranslationCacheTableName:
+    Description: DynamoDB Translation Cache Table Name
+    Value: !Ref TranslationCacheTable
+    Export:
+      Name: !Sub ${AWS::StackName}-TranslationCacheTable

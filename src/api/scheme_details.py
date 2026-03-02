@@ -24,6 +24,9 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     Path Parameters:
         scheme_id: Unique scheme identifier
     
+    Query Parameters:
+        lang: Language code for translated content (hi, ta, te, bn). Falls back to English if unavailable.
+    
     Response:
     {
         "scheme_id": "...",
@@ -53,6 +56,10 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         path_params = event.get('pathParameters') or {}
         scheme_id = path_params.get('scheme_id')
         
+        # Extract language parameter
+        query_params = event.get('queryStringParameters') or {}
+        language = query_params.get('lang', 'en')
+        
         # Validate scheme_id
         if not scheme_id:
             return error_response(400, "Missing scheme_id parameter")
@@ -61,11 +68,11 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             return error_response(400, "Invalid scheme_id: cannot be empty")
         
         # Retrieve scheme from repository
-        logger.info(f"Retrieving scheme details: scheme_id={scheme_id}")
+        logger.info(f"Retrieving scheme details: scheme_id={scheme_id}, language={language}")
         scheme = scheme_repo.get(scheme_id)
         
         # Convert scheme to complete dictionary (all fields)
-        scheme_dict = _scheme_to_dict(scheme)
+        scheme_dict = _scheme_to_dict(scheme, language)
         
         logger.info(f"Successfully retrieved scheme: {scheme_id}")
         return success_response(scheme_dict)
@@ -83,12 +90,15 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         return error_response(500, "Internal server error")
 
 
-def _scheme_to_dict(scheme: Scheme) -> Dict[str, Any]:
+def _scheme_to_dict(scheme: Scheme, language: str = 'en') -> Dict[str, Any]:
     """
     Convert a Scheme object to a complete dictionary with all fields.
     
+    If a language is specified and translations are available, the name and description
+    will be replaced with the translated versions. Falls back to English if translation unavailable.
+    
     This includes:
-    - Basic information (name, category, description)
+    - Basic information (name, category, description) - translated if available
     - Translations (name_translations, description_translations)
     - Benefits list
     - Complete eligibility criteria with all conditions
@@ -101,16 +111,21 @@ def _scheme_to_dict(scheme: Scheme) -> Dict[str, Any]:
     
     Args:
         scheme: Scheme object
+        language: Language code for translated content (default: 'en')
         
     Returns:
         Dictionary with complete scheme information
     """
+    # Get translated name and description if available
+    name = scheme.name_translations.get(language, scheme.name) if language != 'en' else scheme.name
+    description = scheme.description_translations.get(language, scheme.description) if language != 'en' else scheme.description
+    
     return {
         'scheme_id': scheme.scheme_id,
-        'name': scheme.name,
+        'name': name,
         'name_translations': scheme.name_translations,
         'category': scheme.category,
-        'description': scheme.description,
+        'description': description,
         'description_translations': scheme.description_translations,
         'benefits': scheme.benefits,
         'eligibility_criteria': scheme.eligibility_criteria.model_dump(),

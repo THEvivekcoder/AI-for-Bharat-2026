@@ -1,0 +1,117 @@
+[
+  {
+    "facility_id": "PHC-MH-PUNE-001",
+    "name": "Primary Health Centre Kharadi",
+    "facility_type": "PHC",
+    "location": {
+      "state": "Maharashtra",
+      "district": "Pune",
+      "block": "Haveli",
+      "village": "Kharadi",
+      "pincode": "411014",
+      "latitude": 18.5511,
+      "longitude": 73.9467
+    },
+    "address": "Kharadi Road, Near Bus Stand, Kharadi, Pune 411014",
+    "contact": "020-12345678",
+    "services": [
+      "General consultation",
+      "Maternal health",
+      "Child immunization",
+      "Basic diagnostics"
+    ]
+  },
+  {
+    "facility_id": "CHC-MH-PUNE-001",
+    "name": "Community Health Centre Hadapsar",
+    "facility_type": "CHC",
+    "location": {
+      "state": "Maharashtra",
+      "district": "Pune",
+      "block": "Haveli",
+      "village": null,
+      "pincode": "411028",
+      "latitude": 18.5089,
+      "longitude": 73.9260
+    },
+    "address": "Hadapsar Main Road, Hadapsar, Pune 411028",
+    "contact": "020-23456789",
+    "services": [
+      "General consultation",
+      "Emergency care",
+      "Surgery",
+      "Laboratory services",
+      "X-ray"
+    ]
+  },
+  {
+    "facility_id": "DH-MH-PUNE-001",
+    "name": "Sassoon General Hospital",
+    "facility_type": "District Hospital",
+    "location": {
+      "state": "Maharashtra",
+      "district": "Pune",
+      "block": null,
+      "village": null,
+      "pincode": "411001",
+      "latitude": 18.5204,
+      "longitude": 73.8567
+    },
+    "address": "Near Pune Railway Station, Pune 411001",
+    "contact": "020-26053333",
+    "services": [
+      "Emergency care",
+      "Surgery",
+      "ICU",
+      "Cardiology",
+      "Orthopedics",
+      "Pediatrics",
+      "Gynecology"
+    ]
+  },
+  {
+    "facility_id": "PHC-MH-PUNE-002",
+    "name": "Primary Health Centre Wagholi",
+    "facility_type": "PHC",
+    "location": {
+      "state": "Maharashtra",
+      "district": "Pune",
+      "block": "Haveli",
+      "village": "Wagholi",
+      "pincode": "412207",
+      "latitude": 18.5793,
+      "longitude": 73.9804
+    },
+    "address": "Wagholi Village, Pune 412207",
+    "contact": "020-34567890",
+    "services": [
+      "General consultation",
+      "Maternal health",
+      "Child immunization",
+      "Basic diagnostics",
+      "Family planning"
+    ]
+  },
+  {
+    "facility_id": "PHC-KA-BANG-001",
+    "name": "Primary Health Centre Whitefield",
+    "facility_type": "PHC",
+    "location": {
+      "state": "Karnataka",
+      "district": "Bangalore Urban",
+      "block": "Bangalore East",
+      "village": "Whitefield",
+      "pincode": "560066",
+      "latitude": 12.9698,
+      "longitude": 77.7499
+    },
+    "address": "Whitefield Main Road, Bangalore 560066",
+    "contact": "080-12345678",
+    "services": [
+      "General consultation",
+      "Maternal health",
+      "Child immunization",
+      "Basic diagnostics"
+    ]
+  }
+]

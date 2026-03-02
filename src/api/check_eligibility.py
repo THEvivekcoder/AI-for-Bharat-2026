@@ -27,6 +27,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     Request Body:
     {
         "scheme_id": "PM-KISAN-2024",
+        "language": "hi",  // Optional: language code for translated scheme name (default: 'en')
         "user_profile": {
             "user_id": "user_123",
             "phone_number": "+919876543210",
@@ -55,7 +56,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         "missing_criteria": [],
         "confidence": 1.0,
         "scheme_id": "PM-KISAN-2024",
-        "scheme_name": "Pradhan Mantri Kisan Samman Nidhi"
+        "scheme_name": "प्रधानमंत्री किसान सम्मान निधि"  // Translated if language specified
     }
     
     Error Responses:
@@ -72,6 +73,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         # Extract and validate required fields
         scheme_id = body.get('scheme_id')
         user_profile_data = body.get('user_profile')
+        language = body.get('language', 'en')  # Optional language parameter
         
         if not scheme_id:
             return error_response(400, "Missing required field: scheme_id")
@@ -92,6 +94,9 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         # Check eligibility
         result = eligibility_checker.check_eligibility(user_profile, scheme)
         
+        # Get translated scheme name if available
+        scheme_name = scheme.name_translations.get(language, scheme.name) if language != 'en' else scheme.name
+        
         # Build response
         response_data = {
             'is_eligible': result.is_eligible,
@@ -99,7 +104,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'missing_criteria': result.missing_criteria,
             'confidence': result.confidence,
             'scheme_id': scheme.scheme_id,
-            'scheme_name': scheme.name
+            'scheme_name': scheme_name
         }
         
         logger.info(f"Eligibility check complete: eligible={result.is_eligible}, confidence={result.confidence}")

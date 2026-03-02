@@ -28,417 +28,629 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def load_from_json(file_path: str) -> List[Dict[str, Any]]:
-    """Load data from JSON file."""
-    logger.info(f"Loading data from JSON: {file_path}")
-    
-    with open(file_path, 'r', encoding='utf-8') as f:
-        data = json.load(f)
-    
-    if isinstance(data, dict):
-        return [data]
-    return data
-
-
 def get_sample_skill_programs() -> List[Dict[str, Any]]:
-    """Generate sample skill development programs for testing."""
-    current_time = datetime.now(timezone.utc).isoformat()
-
+    """
+    Generate sample skill development programs for testing.
     
+    Returns:
+        List of 10+ sample skill program dictionaries
+    """
     programs = [
         {
-            "program_id": "PMKVY-ELECT-2024",
+            "program_id": "PMKVY-ELEC-2024",
             "name": "Electrician Training Program",
-            "name_translations": {"hi": "इलेक्ट्रीशियन प्रशिक्षण कार्यक्रम"},
             "provider": "National Skill Development Corporation",
             "category": "technical",
-            "description": "Comprehensive electrician training covering residential and commercial electrical work",
-            "description_translations": {"hi": "आवासीय और वाणिज्यिक विद्युत कार्य को कवर करने वाला व्यापक इलेक्ट्रीशियन प्रशिक्षण"},
+            "description": "Comprehensive electrician training covering residential and commercial wiring, safety protocols, and electrical maintenance",
             "duration_weeks": 12,
             "cost": 0,
-            "location": {"state": "Maharashtra", "district": "Pune", "pincode": "411001"},
+            "location": {
+                "state": "Maharashtra",
+                "district": "Pune",
+                "block": "Haveli",
+                "village": None,
+                "pincode": "411014",
+                "latitude": 18.5204,
+                "longitude": 73.8567
+            },
             "mode": "in-person",
-            "eligibility": {"age_min": 18, "age_max": 35, "education": ["10th pass", "12th pass"], "custom_criteria": {}},
+            "eligibility_criteria": {
+                "age_min": 18,
+                "age_max": 35,
+                "education": ["8th pass", "10th pass", "12th pass"],
+                "custom_criteria": {}
+            },
             "certification": True,
             "placement_support": True,
-            "registration_url": "https://pmkvyofficial.org",
-            "contact": "1800-123-9626",
-            "created_at": current_time
+            "registration_url": "https://pmkvyofficial.org/electrician",
+            "contact": "1800-123-9626"
         },
         {
             "program_id": "PMKVY-PLUMB-2024",
             "name": "Plumbing Training Program",
-            "name_translations": {"hi": "प्लंबिंग प्रशिक्षण कार्यक्रम"},
             "provider": "National Skill Development Corporation",
             "category": "technical",
-            "description": "Professional plumbing training for residential and commercial installations",
-            "description_translations": {"hi": "आवासीय और वाणिज्यिक प्रतिष्ठानों के लिए पेशेवर प्लंबिंग प्रशिक्षण"},
+            "description": "Professional plumbing training including pipe fitting, drainage systems, and water supply installation",
             "duration_weeks": 10,
             "cost": 0,
-            "location": {"state": "Karnataka", "district": "Bangalore", "pincode": "560001"},
+            "location": {
+                "state": "Maharashtra",
+                "district": "Mumbai",
+                "block": None,
+                "village": None,
+                "pincode": "400001",
+                "latitude": 18.9388,
+                "longitude": 72.8354
+            },
             "mode": "in-person",
-            "eligibility": {"age_min": 18, "age_max": 35, "education": ["8th pass", "10th pass"], "custom_criteria": {}},
+            "eligibility_criteria": {
+                "age_min": 18,
+                "age_max": 40,
+                "education": ["8th pass", "10th pass"],
+                "custom_criteria": {}
+            },
             "certification": True,
             "placement_support": True,
-            "registration_url": "https://pmkvyofficial.org",
-            "contact": "1800-123-9626",
-            "created_at": current_time
+            "registration_url": "https://pmkvyofficial.org/plumbing",
+            "contact": "1800-123-9626"
         },
         {
-            "program_id": "ITI-WELD-2024",
-            "name": "Welding Technology Course",
-            "name_translations": {"hi": "वेल्डिंग प्रौद्योगिकी पाठ्यक्रम"},
-            "provider": "Industrial Training Institute",
+            "program_id": "DDU-GKY-RETAIL-2024",
+            "name": "Retail Sales Associate Training",
+            "provider": "Deen Dayal Upadhyaya Grameen Kaushalya Yojana",
             "category": "vocational",
-            "description": "Advanced welding techniques for construction and manufacturing industries",
-            "description_translations": {"hi": "निर्माण और विनिर्माण उद्योगों के लिए उन्नत वेल्डिंग तकनीक"},
-            "duration_weeks": 24,
-            "cost": 5000,
-            "location": {"state": "Gujarat", "district": "Ahmedabad", "pincode": "380001"},
-            "mode": "in-person",
-            "eligibility": {"age_min": 18, "age_max": 40, "education": ["10th pass"], "custom_criteria": {}},
-            "certification": True,
-            "placement_support": True,
-            "registration_url": "https://ncvtmis.gov.in",
-            "contact": "079-2754-1234",
-            "created_at": current_time
-        },
-        {
-            "program_id": "NIELIT-WEB-2024",
-            "name": "Web Development Bootcamp",
-            "name_translations": {"hi": "वेब विकास बूटकैंप"},
-            "provider": "NIELIT",
-            "category": "digital",
-            "description": "Full-stack web development training with HTML, CSS, JavaScript, and frameworks",
-            "description_translations": {"hi": "HTML, CSS, JavaScript और फ्रेमवर्क के साथ फुल-स्टैक वेब विकास प्रशिक्षण"},
-            "duration_weeks": 16,
-            "cost": 15000,
-            "location": {"state": "Delhi", "district": "New Delhi", "pincode": "110001"},
-            "mode": "hybrid",
-            "eligibility": {"age_min": 18, "age_max": 35, "education": ["12th pass", "undergraduate"], "custom_criteria": {}},
-            "certification": True,
-            "placement_support": True,
-            "registration_url": "https://nielit.gov.in",
-            "contact": "011-2430-5555",
-            "created_at": current_time
-        },
-        {
-            "program_id": "NIELIT-DATA-2024",
-            "name": "Data Analytics and Visualization",
-            "name_translations": {"hi": "डेटा एनालिटिक्स और विज़ुअलाइज़ेशन"},
-            "provider": "NIELIT",
-            "category": "digital",
-            "description": "Learn data analysis, SQL, Python, and visualization tools like Tableau",
-            "description_translations": {"hi": "डेटा विश्लेषण, SQL, Python और Tableau जैसे विज़ुअलाइज़ेशन टूल सीखें"},
-            "duration_weeks": 20,
-            "cost": 20000,
-            "location": {"state": "Tamil Nadu", "district": "Chennai", "pincode": "600001"},
-            "mode": "online",
-            "eligibility": {"age_min": 20, "age_max": 40, "education": ["undergraduate", "postgraduate"], "custom_criteria": {}},
-            "certification": True,
-            "placement_support": False,
-            "registration_url": "https://nielit.gov.in",
-            "contact": "044-2852-1234",
-            "created_at": current_time
-        },
-        {
-            "program_id": "RSETI-TAILOR-2024",
-            "name": "Tailoring and Fashion Design",
-            "name_translations": {"hi": "दर्जी और फैशन डिजाइन"},
-            "provider": "Rural Self Employment Training Institute",
-            "category": "vocational",
-            "description": "Professional tailoring and basic fashion design skills for self-employment",
-            "description_translations": {"hi": "स्व-रोजगार के लिए पेशेवर दर्जी और बुनियादी फैशन डिजाइन कौशल"},
+            "description": "Training for retail sales including customer service, inventory management, and point-of-sale operations",
             "duration_weeks": 8,
             "cost": 0,
-            "location": {"state": "Uttar Pradesh", "district": "Lucknow", "pincode": "226001"},
-            "mode": "in-person",
-            "eligibility": {"age_min": 18, "age_max": 45, "education": ["primary", "secondary"], "custom_criteria": {}},
-            "certification": True,
-            "placement_support": False,
-            "registration_url": "https://rseti.in",
-            "contact": "0522-2234-567",
-            "created_at": current_time
-        },
-        {
-            "program_id": "MUDRA-ENTREP-2024",
-            "name": "Entrepreneurship Development Program",
-            "name_translations": {"hi": "उद्यमिता विकास कार्यक्रम"},
-            "provider": "MUDRA Institute",
-            "category": "entrepreneurship",
-            "description": "Business planning, financial management, and marketing for aspiring entrepreneurs",
-            "description_translations": {"hi": "इच्छुक उद्यमियों के लिए व्यवसाय योजना, वित्तीय प्रबंधन और विपणन"},
-            "duration_weeks": 6,
-            "cost": 3000,
-            "location": {"state": "Rajasthan", "district": "Jaipur", "pincode": "302001"},
+            "location": {
+                "state": "Karnataka",
+                "district": "Bangalore",
+                "block": None,
+                "village": None,
+                "pincode": "560001",
+                "latitude": 12.9716,
+                "longitude": 77.5946
+            },
             "mode": "hybrid",
-            "eligibility": {"age_min": 21, "age_max": 50, "education": ["12th pass", "undergraduate"], "custom_criteria": {}},
+            "eligibility_criteria": {
+                "age_min": 18,
+                "age_max": 35,
+                "education": ["10th pass", "12th pass"],
+                "income_max": 100000,
+                "custom_criteria": {}
+            },
             "certification": True,
-            "placement_support": False,
-            "registration_url": "https://mudra.org.in",
-            "contact": "0141-2234-567",
-            "created_at": current_time
+            "placement_support": True,
+            "registration_url": "https://ddugky.gov.in/retail",
+            "contact": "1800-300-9626"
         },
         {
             "program_id": "PMKVY-BEAUTY-2024",
-            "name": "Beauty and Wellness Training",
-            "name_translations": {"hi": "सौंदर्य और कल्याण प्रशिक्षण"},
+            "name": "Beauty & Wellness Training",
             "provider": "Beauty & Wellness Sector Skill Council",
             "category": "vocational",
-            "description": "Professional beauty therapy, hairstyling, and wellness services training",
-            "description_translations": {"hi": "पेशेवर सौंदर्य चिकित्सा, हेयरस्टाइलिंग और कल्याण सेवाओं का प्रशिक्षण"},
+            "description": "Professional training in beauty therapy, hair styling, makeup, and salon management",
+            "duration_weeks": 16,
+            "cost": 5000,
+            "location": {
+                "state": "Delhi",
+                "district": "New Delhi",
+                "block": None,
+                "village": None,
+                "pincode": "110001",
+                "latitude": 28.6139,
+                "longitude": 77.2090
+            },
+            "mode": "in-person",
+            "eligibility_criteria": {
+                "age_min": 18,
+                "age_max": 35,
+                "gender": "female",
+                "education": ["8th pass", "10th pass", "12th pass"],
+                "custom_criteria": {}
+            },
+            "certification": True,
+            "placement_support": True,
+            "registration_url": "https://bwssc.in/training",
+            "contact": "011-4567-8900"
+        },
+        {
+            "program_id": "NIELIT-CCC-2024",
+            "name": "Course on Computer Concepts (CCC)",
+            "provider": "National Institute of Electronics & IT",
+            "category": "digital",
+            "description": "Basic computer literacy course covering MS Office, internet, email, and digital payments",
+            "duration_weeks": 12,
+            "cost": 500,
+            "location": {
+                "state": "Uttar Pradesh",
+                "district": "Lucknow",
+                "block": None,
+                "village": None,
+                "pincode": "226001",
+                "latitude": 26.8467,
+                "longitude": 80.9462
+            },
+            "mode": "online",
+            "eligibility_criteria": {
+                "age_min": 15,
+                "age_max": 60,
+                "education": ["8th pass", "10th pass", "12th pass"],
+                "custom_criteria": {}
+            },
+            "certification": True,
+            "placement_support": False,
+            "registration_url": "https://student.nielit.gov.in",
+            "contact": "0522-233-0084"
+        },
+        {
+            "program_id": "PMKVY-TAILORING-2024",
+            "name": "Tailoring & Garment Making",
+            "provider": "Apparel Made-ups & Home Furnishing Sector Skill Council",
+            "category": "vocational",
+            "description": "Professional tailoring training including pattern making, stitching, and garment finishing",
+            "duration_weeks": 14,
+            "cost": 0,
+            "location": {
+                "state": "Tamil Nadu",
+                "district": "Chennai",
+                "block": None,
+                "village": None,
+                "pincode": "600001",
+                "latitude": 13.0827,
+                "longitude": 80.2707
+            },
+            "mode": "in-person",
+            "eligibility_criteria": {
+                "age_min": 18,
+                "age_max": 45,
+                "education": ["5th pass", "8th pass", "10th pass"],
+                "custom_criteria": {}
+            },
+            "certification": True,
+            "placement_support": True,
+            "registration_url": "https://amhssc.in/tailoring",
+            "contact": "044-2345-6789"
+        },
+        {
+            "program_id": "PMKVY-MOBILE-2024",
+            "name": "Mobile Phone Repair Technician",
+            "provider": "Electronics Sector Skills Council",
+            "category": "technical",
+            "description": "Training in mobile phone hardware and software repair, troubleshooting, and maintenance",
+            "duration_weeks": 10,
+            "cost": 2000,
+            "location": {
+                "state": "Gujarat",
+                "district": "Ahmedabad",
+                "block": None,
+                "village": None,
+                "pincode": "380001",
+                "latitude": 23.0225,
+                "longitude": 72.5714
+            },
+            "mode": "in-person",
+            "eligibility_criteria": {
+                "age_min": 18,
+                "age_max": 35,
+                "education": ["10th pass", "12th pass"],
+                "custom_criteria": {}
+            },
+            "certification": True,
+            "placement_support": True,
+            "registration_url": "https://essc-india.org/mobile-repair",
+            "contact": "079-2658-4321"
+        },
+        {
+            "program_id": "NIELIT-OLEVELS-2024",
+            "name": "O Level Computer Course",
+            "provider": "National Institute of Electronics & IT",
+            "category": "digital",
+            "description": "Advanced computer course covering programming, databases, web design, and networking",
+            "duration_weeks": 52,
+            "cost": 3000,
+            "location": {
+                "state": "West Bengal",
+                "district": "Kolkata",
+                "block": None,
+                "village": None,
+                "pincode": "700001",
+                "latitude": 22.5726,
+                "longitude": 88.3639
+            },
+            "mode": "hybrid",
+            "eligibility_criteria": {
+                "age_min": 18,
+                "age_max": 40,
+                "education": ["12th pass"],
+                "custom_criteria": {}
+            },
+            "certification": True,
+            "placement_support": False,
+            "registration_url": "https://student.nielit.gov.in",
+            "contact": "033-2357-8901"
+        },
+        {
+            "program_id": "PMKVY-HOSPITALITY-2024",
+            "name": "Food & Beverage Service Training",
+            "provider": "Tourism & Hospitality Skill Council",
+            "category": "vocational",
+            "description": "Training for hotel and restaurant service including table service, customer interaction, and food safety",
             "duration_weeks": 12,
             "cost": 0,
-            "location": {"state": "West Bengal", "district": "Kolkata", "pincode": "700001"},
+            "location": {
+                "state": "Rajasthan",
+                "district": "Jaipur",
+                "block": None,
+                "village": None,
+                "pincode": "302001",
+                "latitude": 26.9124,
+                "longitude": 75.7873
+            },
             "mode": "in-person",
-            "eligibility": {"age_min": 18, "age_max": 35, "education": ["8th pass", "10th pass"], "custom_criteria": {}},
+            "eligibility_criteria": {
+                "age_min": 18,
+                "age_max": 30,
+                "education": ["10th pass", "12th pass"],
+                "custom_criteria": {}
+            },
             "certification": True,
             "placement_support": True,
-            "registration_url": "https://pmkvyofficial.org",
-            "contact": "1800-123-9626",
-            "created_at": current_time
+            "registration_url": "https://thsc.co.in/hospitality",
+            "contact": "0141-2345-6789"
         },
         {
-            "program_id": "NIELIT-CYBER-2024",
-            "name": "Cybersecurity Fundamentals",
-            "name_translations": {"hi": "साइबर सुरक्षा मूल बातें"},
-            "provider": "NIELIT",
-            "category": "digital",
-            "description": "Network security, ethical hacking, and cybersecurity best practices",
-            "description_translations": {"hi": "नेटवर्क सुरक्षा, एथिकल हैकिंग और साइबर सुरक्षा सर्वोत्तम प्रथाएं"},
-            "duration_weeks": 18,
-            "cost": 25000,
-            "location": {"state": "Telangana", "district": "Hyderabad", "pincode": "500001"},
-            "mode": "online",
-            "eligibility": {"age_min": 20, "age_max": 40, "education": ["undergraduate", "postgraduate"], "custom_criteria": {}},
-            "certification": True,
-            "placement_support": True,
-            "registration_url": "https://nielit.gov.in",
-            "contact": "040-2345-6789",
-            "created_at": current_time
-        },
-        {
-            "program_id": "ITI-AUTO-2024",
-            "name": "Automobile Mechanic Training",
-            "name_translations": {"hi": "ऑटोमोबाइल मैकेनिक प्रशिक्षण"},
-            "provider": "Industrial Training Institute",
-            "category": "technical",
-            "description": "Vehicle maintenance, repair, and diagnostics for cars and motorcycles",
-            "description_translations": {"hi": "कारों और मोटरसाइकिलों के लिए वाहन रखरखाव, मरम्मत और निदान"},
-            "duration_weeks": 24,
-            "cost": 8000,
-            "location": {"state": "Punjab", "district": "Ludhiana", "pincode": "141001"},
+            "program_id": "RSETI-ENTREPRENEUR-2024",
+            "name": "Rural Entrepreneurship Development",
+            "provider": "Rural Self Employment Training Institute",
+            "category": "entrepreneurship",
+            "description": "Training for starting and managing small businesses including business planning, marketing, and finance",
+            "duration_weeks": 6,
+            "cost": 0,
+            "location": {
+                "state": "Bihar",
+                "district": "Patna",
+                "block": None,
+                "village": None,
+                "pincode": "800001",
+                "latitude": 25.5941,
+                "longitude": 85.1376
+            },
             "mode": "in-person",
-            "eligibility": {"age_min": 18, "age_max": 35, "education": ["10th pass", "12th pass"], "custom_criteria": {}},
+            "eligibility_criteria": {
+                "age_min": 18,
+                "age_max": 45,
+                "education": ["8th pass", "10th pass", "12th pass"],
+                "custom_criteria": {}
+            },
             "certification": True,
-            "placement_support": True,
-            "registration_url": "https://ncvtmis.gov.in",
-            "contact": "0161-2345-678",
-            "created_at": current_time
+            "placement_support": False,
+            "registration_url": "https://rseti.in/entrepreneurship",
+            "contact": "0612-2234-5678"
         }
     ]
     
     return programs
 
 
+
 def get_sample_job_postings() -> List[Dict[str, Any]]:
-    """Generate sample government job postings for testing."""
-    current_time = datetime.now(timezone.utc).isoformat()
-    today = date.today()
+    """
+    Generate sample government job postings for testing.
     
+    Returns:
+        List of 10+ sample job posting dictionaries
+    """
     jobs = [
         {
-            "job_id": "UPSC-JE-CIVIL-2024",
+            "job_id": "MAHA-PWD-2024-001",
             "title": "Junior Engineer (Civil)",
-            "title_translations": {"hi": "कनिष्ठ अभियंता (सिविल)"},
-            "department": "Ministry of Railways",
-            "description": "Junior Engineer position for civil engineering work in railway construction and maintenance",
-            "description_translations": {"hi": "रेलवे निर्माण और रखरखाव में सिविल इंजीनियरिंग कार्य के लिए कनिष्ठ अभियंता पद"},
-            "qualifications": ["Diploma in Civil Engineering", "B.Tech in Civil Engineering"],
-            "experience_years": 0,
-            "location": {"state": "Maharashtra", "district": "Mumbai", "pincode": "400001"},
-            "salary_range": "35000-45000 per month",
+            "department": "Maharashtra Public Works Department",
+            "description": "Junior Engineer position for civil engineering projects including road construction, building maintenance, and infrastructure development",
+            "qualifications": {
+                "education": ["Diploma in Civil Engineering", "B.E./B.Tech in Civil Engineering"],
+                "experience": ["Freshers welcome", "0-2 years experience"],
+                "skills": ["AutoCAD", "Site supervision", "Quality control"]
+            },
+            "location": {
+                "state": "Maharashtra",
+                "district": "Pune",
+                "block": None,
+                "village": None,
+                "pincode": "411001",
+                "latitude": 18.5204,
+                "longitude": 73.8567
+            },
             "application_deadline": "2024-06-30",
-            "application_url": "https://www.rrbcdg.gov.in",
+            "application_url": "https://mahapwd.gov.in/recruitment",
             "posted_date": "2024-01-15",
-            "vacancies": 50,
-            "job_type": "permanent",
-            "created_at": current_time
+            "salary_range": "Rs. 35,000 - 50,000 per month",
+            "vacancies": 25
         },
         {
-            "job_id": "SSC-STENO-2024",
-            "title": "Stenographer Grade C",
-            "title_translations": {"hi": "आशुलिपिक ग्रेड सी"},
+            "job_id": "UPSC-SSC-2024-002",
+            "title": "Staff Selection Commission - Multi Tasking Staff",
             "department": "Staff Selection Commission",
-            "description": "Stenographer position for various central government departments",
-            "description_translations": {"hi": "विभिन्न केंद्र सरकार के विभागों के लिए आशुलिपिक पद"},
-            "qualifications": ["12th pass", "Typing speed 80 wpm"],
-            "experience_years": 0,
-            "location": {"state": "Delhi", "district": "New Delhi", "pincode": "110001"},
-            "salary_range": "25000-35000 per month",
+            "description": "Multi Tasking Staff positions in various government departments for general administrative support",
+            "qualifications": {
+                "education": ["10th pass"],
+                "experience": ["No experience required"],
+                "skills": ["Basic computer knowledge", "Communication skills"]
+            },
+            "location": {
+                "state": "All India",
+                "district": "Various",
+                "block": None,
+                "village": None,
+                "pincode": "000000",
+                "latitude": None,
+                "longitude": None
+            },
             "application_deadline": "2024-05-31",
             "application_url": "https://ssc.nic.in",
             "posted_date": "2024-01-20",
-            "vacancies": 100,
-            "job_type": "permanent",
-            "created_at": current_time
+            "salary_range": "Rs. 18,000 - 22,000 per month",
+            "vacancies": 500
         },
         {
-            "job_id": "IBPS-PO-2024",
-            "title": "Probationary Officer",
-            "title_translations": {"hi": "प्रोबेशनरी ऑफिसर"},
-            "department": "Institute of Banking Personnel Selection",
-            "description": "Banking officer position in public sector banks across India",
-            "description_translations": {"hi": "भारत भर में सार्वजनिक क्षेत्र के बैंकों में बैंकिंग अधिकारी पद"},
-            "qualifications": ["Bachelor's degree in any discipline"],
-            "experience_years": 0,
-            "location": {"state": "Karnataka", "district": "Bangalore", "pincode": "560001"},
-            "salary_range": "40000-50000 per month",
+            "job_id": "RAILWAY-RRB-2024-003",
+            "title": "Railway Recruitment Board - Assistant Loco Pilot",
+            "department": "Indian Railways",
+            "description": "Assistant Loco Pilot for operating and maintaining locomotives on Indian Railways network",
+            "qualifications": {
+                "education": ["ITI in relevant trade", "Diploma in Mechanical/Electrical Engineering"],
+                "experience": ["Freshers welcome"],
+                "skills": ["Mechanical aptitude", "Safety awareness", "Physical fitness"]
+            },
+            "location": {
+                "state": "All India",
+                "district": "Various",
+                "block": None,
+                "village": None,
+                "pincode": "000000",
+                "latitude": None,
+                "longitude": None
+            },
             "application_deadline": "2024-07-15",
-            "application_url": "https://www.ibps.in",
+            "application_url": "https://rrbcdg.gov.in",
             "posted_date": "2024-02-01",
-            "vacancies": 200,
-            "job_type": "permanent",
-            "created_at": current_time
+            "salary_range": "Rs. 19,900 - 63,200 per month",
+            "vacancies": 1000
         },
         {
-            "job_id": "UPSC-ASST-2024",
-            "title": "Assistant Section Officer",
-            "title_translations": {"hi": "सहायक अनुभाग अधिकारी"},
-            "department": "Union Public Service Commission",
-            "description": "Administrative position in central government ministries",
-            "description_translations": {"hi": "केंद्र सरकार के मंत्रालयों में प्रशासनिक पद"},
-            "qualifications": ["Bachelor's degree"],
-            "experience_years": 0,
-            "location": {"state": "Delhi", "district": "New Delhi", "pincode": "110001"},
-            "salary_range": "44900-142400 per month",
-            "application_deadline": "2024-08-31",
-            "application_url": "https://www.upsc.gov.in",
-            "posted_date": "2024-02-15",
-            "vacancies": 75,
-            "job_type": "permanent",
-            "created_at": current_time
-        },
-        {
-            "job_id": "POLICE-CONST-2024",
+            "job_id": "KARNATAKA-POLICE-2024-004",
             "title": "Police Constable",
-            "title_translations": {"hi": "पुलिस कांस्टेबल"},
-            "department": "State Police Department",
-            "description": "Police constable position for law enforcement duties",
-            "description_translations": {"hi": "कानून प्रवर्तन कर्तव्यों के लिए पुलिस कांस्टेबल पद"},
-            "qualifications": ["12th pass", "Physical fitness requirements"],
-            "experience_years": 0,
-            "location": {"state": "Uttar Pradesh", "district": "Lucknow", "pincode": "226001"},
-            "salary_range": "21700-69100 per month",
+            "department": "Karnataka State Police",
+            "description": "Police Constable positions for law enforcement, crime prevention, and public safety duties",
+            "qualifications": {
+                "education": ["12th pass"],
+                "experience": ["No experience required"],
+                "skills": ["Physical fitness", "Communication", "Local language proficiency"]
+            },
+            "location": {
+                "state": "Karnataka",
+                "district": "Bangalore",
+                "block": None,
+                "village": None,
+                "pincode": "560001",
+                "latitude": 12.9716,
+                "longitude": 77.5946
+            },
             "application_deadline": "2024-06-15",
-            "application_url": "https://uppbpb.gov.in",
+            "application_url": "https://ksp.gov.in/recruitment",
             "posted_date": "2024-01-25",
-            "vacancies": 500,
-            "job_type": "permanent",
-            "created_at": current_time
+            "salary_range": "Rs. 25,000 - 35,000 per month",
+            "vacancies": 150
         },
         {
-            "job_id": "TEACHER-TGT-2024",
-            "title": "Trained Graduate Teacher",
-            "title_translations": {"hi": "प्रशिक्षित स्नातक शिक्षक"},
-            "department": "Department of Education",
-            "description": "Teaching position for secondary schools in government schools",
-            "description_translations": {"hi": "सरकारी स्कूलों में माध्यमिक विद्यालयों के लिए शिक्षण पद"},
-            "qualifications": ["B.Ed", "Bachelor's degree in relevant subject"],
-            "experience_years": 0,
-            "location": {"state": "Tamil Nadu", "district": "Chennai", "pincode": "600001"},
-            "salary_range": "35000-45000 per month",
-            "application_deadline": "2024-07-31",
-            "application_url": "https://trb.tn.gov.in",
-            "posted_date": "2024-02-10",
-            "vacancies": 150,
-            "job_type": "permanent",
-            "created_at": current_time
-        },
-        {
-            "job_id": "NURSE-STAFF-2024",
-            "title": "Staff Nurse",
-            "title_translations": {"hi": "स्टाफ नर्स"},
-            "department": "Ministry of Health and Family Welfare",
-            "description": "Nursing position in government hospitals and health centers",
-            "description_translations": {"hi": "सरकारी अस्पतालों और स्वास्थ्य केंद्रों में नर्सिंग पद"},
-            "qualifications": ["B.Sc Nursing", "GNM", "Registered Nurse"],
-            "experience_years": 0,
-            "location": {"state": "West Bengal", "district": "Kolkata", "pincode": "700001"},
-            "salary_range": "30000-40000 per month",
-            "application_deadline": "2024-05-15",
-            "application_url": "https://wbhrb.in",
-            "posted_date": "2024-01-30",
-            "vacancies": 80,
-            "job_type": "permanent",
-            "created_at": current_time
-        },
-        {
-            "job_id": "CLERK-LDC-2024",
-            "title": "Lower Division Clerk",
-            "title_translations": {"hi": "लोअर डिवीजन क्लर्क"},
-            "department": "Staff Selection Commission",
-            "description": "Clerical position in various central government offices",
-            "description_translations": {"hi": "विभिन्न केंद्र सरकार के कार्यालयों में लिपिक पद"},
-            "qualifications": ["12th pass", "Computer knowledge"],
-            "experience_years": 0,
-            "location": {"state": "Rajasthan", "district": "Jaipur", "pincode": "302001"},
-            "salary_range": "19900-63200 per month",
-            "application_deadline": "2024-06-30",
-            "application_url": "https://ssc.nic.in",
+            "job_id": "DELHI-TEACHER-2024-005",
+            "title": "Primary School Teacher",
+            "department": "Delhi Directorate of Education",
+            "description": "Primary school teacher for government schools teaching classes 1-5",
+            "qualifications": {
+                "education": ["B.Ed or equivalent", "CTET qualified"],
+                "experience": ["Freshers welcome", "Teaching experience preferred"],
+                "skills": ["Child psychology", "Classroom management", "Subject knowledge"]
+            },
+            "location": {
+                "state": "Delhi",
+                "district": "New Delhi",
+                "block": None,
+                "village": None,
+                "pincode": "110001",
+                "latitude": 28.6139,
+                "longitude": 77.2090
+            },
+            "application_deadline": "2024-05-20",
+            "application_url": "https://edudel.nic.in/recruitment",
             "posted_date": "2024-02-05",
-            "vacancies": 300,
-            "job_type": "permanent",
-            "created_at": current_time
+            "salary_range": "Rs. 44,900 - 1,42,400 per month",
+            "vacancies": 200
         },
         {
-            "job_id": "TECH-ASST-2024",
-            "title": "Technical Assistant",
-            "title_translations": {"hi": "तकनीकी सहायक"},
-            "department": "Council of Scientific and Industrial Research",
-            "description": "Technical support position in CSIR laboratories",
-            "description_translations": {"hi": "CSIR प्रयोगशालाओं में तकनीकी सहायता पद"},
-            "qualifications": ["B.Tech", "M.Sc in relevant field"],
-            "experience_years": 1,
-            "location": {"state": "Delhi", "district": "New Delhi", "pincode": "110001"},
-            "salary_range": "35000-50000 per month",
-            "application_deadline": "2024-07-20",
-            "application_url": "https://www.csir.res.in",
-            "posted_date": "2024-02-12",
-            "vacancies": 40,
-            "job_type": "contract",
-            "created_at": current_time
+            "job_id": "UPSC-CAPF-2024-006",
+            "title": "Central Armed Police Forces - Sub Inspector",
+            "department": "Union Public Service Commission",
+            "description": "Sub Inspector positions in CRPF, BSF, CISF, ITBP, and SSB for security and law enforcement",
+            "qualifications": {
+                "education": ["Bachelor's degree"],
+                "experience": ["No experience required"],
+                "skills": ["Physical fitness", "Leadership", "Decision making"]
+            },
+            "location": {
+                "state": "All India",
+                "district": "Various",
+                "block": None,
+                "village": None,
+                "pincode": "000000",
+                "latitude": None,
+                "longitude": None
+            },
+            "application_deadline": "2024-08-31",
+            "application_url": "https://upsc.gov.in",
+            "posted_date": "2024-02-10",
+            "salary_range": "Rs. 35,400 - 1,12,400 per month",
+            "vacancies": 300
         },
         {
-            "job_id": "AGRI-OFFICER-2024",
-            "title": "Agriculture Field Officer",
-            "title_translations": {"hi": "कृषि क्षेत्र अधिकारी"},
-            "department": "Ministry of Agriculture and Farmers Welfare",
-            "description": "Field officer position for agricultural extension services",
-            "description_translations": {"hi": "कृषि विस्तार सेवाओं के लिए क्षेत्र अधिकारी पद"},
-            "qualifications": ["B.Sc Agriculture", "Diploma in Agriculture"],
-            "experience_years": 0,
-            "location": {"state": "Punjab", "district": "Ludhiana", "pincode": "141001"},
-            "salary_range": "30000-40000 per month",
-            "application_deadline": "2024-08-15",
-            "application_url": "https://agricoop.nic.in",
-            "posted_date": "2024-02-20",
-            "vacancies": 60,
-            "job_type": "permanent",
-            "created_at": current_time
+            "job_id": "TAMILNADU-CLERK-2024-007",
+            "title": "Office Assistant/Clerk",
+            "department": "Tamil Nadu Public Service Commission",
+            "description": "Office Assistant positions in various government departments for clerical and administrative work",
+            "qualifications": {
+                "education": ["12th pass", "Bachelor's degree preferred"],
+                "experience": ["Freshers welcome"],
+                "skills": ["Computer knowledge", "Tamil typing", "MS Office"]
+            },
+            "location": {
+                "state": "Tamil Nadu",
+                "district": "Chennai",
+                "block": None,
+                "village": None,
+                "pincode": "600001",
+                "latitude": 13.0827,
+                "longitude": 80.2707
+            },
+            "application_deadline": "2024-06-10",
+            "application_url": "https://tnpsc.gov.in",
+            "posted_date": "2024-01-30",
+            "salary_range": "Rs. 19,500 - 62,000 per month",
+            "vacancies": 100
+        },
+        {
+            "job_id": "BANK-IBPS-2024-008",
+            "title": "IBPS - Probationary Officer",
+            "department": "Institute of Banking Personnel Selection",
+            "description": "Probationary Officer positions in public sector banks for banking operations and customer service",
+            "qualifications": {
+                "education": ["Bachelor's degree in any discipline"],
+                "experience": ["Freshers welcome"],
+                "skills": ["Banking knowledge", "Computer proficiency", "Communication"]
+            },
+            "location": {
+                "state": "All India",
+                "district": "Various",
+                "block": None,
+                "village": None,
+                "pincode": "000000",
+                "latitude": None,
+                "longitude": None
+            },
+            "application_deadline": "2024-07-31",
+            "application_url": "https://ibps.in",
+            "posted_date": "2024-02-15",
+            "salary_range": "Rs. 23,700 - 42,020 per month",
+            "vacancies": 400
+        },
+        {
+            "job_id": "GUJARAT-HEALTH-2024-009",
+            "title": "Staff Nurse",
+            "department": "Gujarat Health Department",
+            "description": "Staff Nurse positions in government hospitals and health centers for patient care",
+            "qualifications": {
+                "education": ["B.Sc Nursing", "GNM"],
+                "experience": ["Freshers welcome", "1-2 years preferred"],
+                "skills": ["Patient care", "Medical procedures", "Emergency response"]
+            },
+            "location": {
+                "state": "Gujarat",
+                "district": "Ahmedabad",
+                "block": None,
+                "village": None,
+                "pincode": "380001",
+                "latitude": 23.0225,
+                "longitude": 72.5714
+            },
+            "application_deadline": "2024-05-25",
+            "application_url": "https://gujhealth.gov.in/recruitment",
+            "posted_date": "2024-02-01",
+            "salary_range": "Rs. 25,000 - 40,000 per month",
+            "vacancies": 75
+        },
+        {
+            "job_id": "UP-AGRICULTURE-2024-010",
+            "title": "Agriculture Extension Officer",
+            "department": "Uttar Pradesh Agriculture Department",
+            "description": "Agriculture Extension Officer for providing technical guidance to farmers and implementing agricultural schemes",
+            "qualifications": {
+                "education": ["B.Sc Agriculture", "Diploma in Agriculture"],
+                "experience": ["Freshers welcome"],
+                "skills": ["Farming knowledge", "Communication", "Field work"]
+            },
+            "location": {
+                "state": "Uttar Pradesh",
+                "district": "Lucknow",
+                "block": None,
+                "village": None,
+                "pincode": "226001",
+                "latitude": 26.8467,
+                "longitude": 80.9462
+            },
+            "application_deadline": "2024-06-20",
+            "application_url": "https://upagriculture.gov.in/recruitment",
+            "posted_date": "2024-02-08",
+            "salary_range": "Rs. 30,000 - 45,000 per month",
+            "vacancies": 50
         }
     ]
     
     return jobs
 
 
+
+# Simple repository classes for DynamoDB operations
+import boto3
+from botocore.exceptions import ClientError
+
+
+class SkillProgramRepository:
+    """Repository for skill program DynamoDB operations."""
+    
+    def __init__(self, table_name: str = "SkillPrograms", region_name: str = "us-east-1"):
+        """Initialize repository with DynamoDB table."""
+        self.dynamodb = boto3.resource('dynamodb', region_name=region_name)
+        self.table = self.dynamodb.Table(table_name)
+        logger.info(f"Connected to DynamoDB table: {table_name}")
+    
+    def create(self, program: SkillProgram) -> None:
+        """Insert skill program into DynamoDB."""
+        item = program.model_dump()
+        # Convert nested models to dicts
+        item['location'] = dict(item['location'])
+        item['eligibility_criteria'] = dict(item['eligibility_criteria'])
+        
+        self.table.put_item(Item=item)
+
+
+class JobPostingRepository:
+    """Repository for job posting DynamoDB operations."""
+    
+    def __init__(self, table_name: str = "JobPostings", region_name: str = "us-east-1"):
+        """Initialize repository with DynamoDB table."""
+        self.dynamodb = boto3.resource('dynamodb', region_name=region_name)
+        self.table = self.dynamodb.Table(table_name)
+        logger.info(f"Connected to DynamoDB table: {table_name}")
+    
+    def create(self, job: JobPosting) -> None:
+        """Insert job posting into DynamoDB."""
+        item = job.model_dump()
+        # Convert nested models to dicts
+        item['location'] = dict(item['location'])
+        # Convert date objects to strings
+        item['application_deadline'] = item['application_deadline'].isoformat()
+        item['posted_date'] = item['posted_date'].isoformat()
+        
+        self.table.put_item(Item=item)
+
+
+
 def validate_skill_program(program_dict: Dict[str, Any]) -> bool:
     """Validate skill program data before insertion."""
     try:
         location = Location(**program_dict['location'])
-        eligibility = EligibilityCriteria(**program_dict['eligibility'])
+        eligibility = EligibilityCriteria(**program_dict['eligibility_criteria'])
         program_dict['location'] = location
-        program_dict['eligibility'] = eligibility
+        program_dict['eligibility_criteria'] = eligibility
         program = SkillProgram(**program_dict)
         logger.debug(f"Validated program: {program.program_id}")
         return True
@@ -452,13 +664,11 @@ def validate_job_posting(job_dict: Dict[str, Any]) -> bool:
     try:
         location = Location(**job_dict['location'])
         job_dict['location'] = location
-        
         # Convert date strings to date objects
         if isinstance(job_dict['application_deadline'], str):
             job_dict['application_deadline'] = date.fromisoformat(job_dict['application_deadline'])
         if isinstance(job_dict['posted_date'], str):
             job_dict['posted_date'] = date.fromisoformat(job_dict['posted_date'])
-        
         job = JobPosting(**job_dict)
         logger.debug(f"Validated job: {job.job_id}")
         return True
@@ -467,14 +677,8 @@ def validate_job_posting(job_dict: Dict[str, Any]) -> bool:
         return False
 
 
-
-def bulk_insert_programs(programs: List[Dict[str, Any]], table_name: str, region: str) -> tuple:
+def bulk_insert_programs(programs: List[Dict[str, Any]], repository: SkillProgramRepository) -> tuple:
     """Bulk insert skill programs into DynamoDB."""
-    import boto3
-    
-    dynamodb = boto3.resource('dynamodb', region_name=region)
-    table = dynamodb.Table(table_name)
-    
     success_count = 0
     failure_count = 0
     
@@ -485,23 +689,10 @@ def bulk_insert_programs(programs: List[Dict[str, Any]], table_name: str, region
                 failure_count += 1
                 continue
             
-            # Convert to dict for DynamoDB
-            location = Location(**program_dict['location'])
-            eligibility = EligibilityCriteria(**program_dict['eligibility'])
-            program_dict['location'] = location.model_dump()
-            program_dict['eligibility'] = eligibility.model_dump()
-            
             program = SkillProgram(**program_dict)
-            item = program.model_dump()
-            
-            # Convert datetime to string for DynamoDB
-            if 'created_at' in item and isinstance(item['created_at'], datetime):
-                item['created_at'] = item['created_at'].isoformat()
-            
-            table.put_item(Item=item)
+            repository.create(program)
             logger.info(f"Successfully inserted program: {program.program_id}")
             success_count += 1
-            
         except Exception as e:
             logger.error(f"Failed to insert program {program_dict.get('program_id', 'UNKNOWN')}: {e}")
             failure_count += 1
@@ -509,13 +700,8 @@ def bulk_insert_programs(programs: List[Dict[str, Any]], table_name: str, region
     return success_count, failure_count
 
 
-def bulk_insert_jobs(jobs: List[Dict[str, Any]], table_name: str, region: str) -> tuple:
+def bulk_insert_jobs(jobs: List[Dict[str, Any]], repository: JobPostingRepository) -> tuple:
     """Bulk insert job postings into DynamoDB."""
-    import boto3
-    
-    dynamodb = boto3.resource('dynamodb', region_name=region)
-    table = dynamodb.Table(table_name)
-    
     success_count = 0
     failure_count = 0
     
@@ -526,31 +712,10 @@ def bulk_insert_jobs(jobs: List[Dict[str, Any]], table_name: str, region: str) -
                 failure_count += 1
                 continue
             
-            # Convert to dict for DynamoDB
-            location = Location(**job_dict['location'])
-            job_dict['location'] = location.model_dump()
-            
-            # Convert date strings to date objects
-            if isinstance(job_dict['application_deadline'], str):
-                job_dict['application_deadline'] = date.fromisoformat(job_dict['application_deadline'])
-            if isinstance(job_dict['posted_date'], str):
-                job_dict['posted_date'] = date.fromisoformat(job_dict['posted_date'])
-            
             job = JobPosting(**job_dict)
-            item = job.model_dump()
-            
-            # Convert dates and datetime to strings for DynamoDB
-            if 'application_deadline' in item and isinstance(item['application_deadline'], date):
-                item['application_deadline'] = item['application_deadline'].isoformat()
-            if 'posted_date' in item and isinstance(item['posted_date'], date):
-                item['posted_date'] = item['posted_date'].isoformat()
-            if 'created_at' in item and isinstance(item['created_at'], datetime):
-                item['created_at'] = item['created_at'].isoformat()
-            
-            table.put_item(Item=item)
+            repository.create(job)
             logger.info(f"Successfully inserted job: {job.job_id}")
             success_count += 1
-            
         except Exception as e:
             logger.error(f"Failed to insert job {job_dict.get('job_id', 'UNKNOWN')}: {e}")
             failure_count += 1
@@ -569,17 +734,6 @@ def main():
         choices=['programs', 'jobs', 'both'],
         default='both',
         help='Data type to load: programs, jobs, or both (default: both)'
-    )
-    parser.add_argument(
-        '--source',
-        choices=['json', 'sample'],
-        default='sample',
-        help='Data source: json file or sample data (default: sample)'
-    )
-    parser.add_argument(
-        '--file',
-        type=str,
-        help='Path to JSON file (required for json source)'
     )
     parser.add_argument(
         '--programs-table',
@@ -607,36 +761,37 @@ def main():
     
     args = parser.parse_args()
     
-    # Load data based on source
+    # Load data
     programs = []
     jobs = []
     
-    if args.source == 'sample':
-        if args.type in ['programs', 'both']:
-            logger.info("Loading sample skill programs...")
-            programs = get_sample_skill_programs()
-        if args.type in ['jobs', 'both']:
-            logger.info("Loading sample job postings...")
-            jobs = get_sample_job_postings()
-    elif args.source == 'json':
-        if not args.file:
-            logger.error("--file argument required for json source")
-            sys.exit(1)
-        data = load_from_json(args.file)
-        if args.type in ['programs', 'both']:
-            programs = data if isinstance(data, list) else [data]
-        if args.type in ['jobs', 'both']:
-            jobs = data if isinstance(data, list) else [data]
+    if args.type in ['programs', 'both']:
+        logger.info("Loading sample skill programs...")
+        programs = get_sample_skill_programs()
+        logger.info(f"Loaded {len(programs)} skill programs")
     
-    logger.info(f"Loaded {len(programs)} programs and {len(jobs)} jobs")
+    if args.type in ['jobs', 'both']:
+        logger.info("Loading sample job postings...")
+        jobs = get_sample_job_postings()
+        logger.info(f"Loaded {len(jobs)} job postings")
     
     # Validate data
-    logger.info("Validating data...")
-    valid_programs = [p for p in programs if validate_skill_program(p.copy())]
-    valid_jobs = [j for j in jobs if validate_job_posting(j.copy())]
+    valid_programs = []
+    valid_jobs = []
     
-    logger.info(f"Validated {len(valid_programs)}/{len(programs)} programs")
-    logger.info(f"Validated {len(valid_jobs)}/{len(jobs)} jobs")
+    if programs:
+        logger.info("Validating skill programs...")
+        for program_dict in programs:
+            if validate_skill_program(program_dict):
+                valid_programs.append(program_dict)
+        logger.info(f"Validated {len(valid_programs)}/{len(programs)} programs")
+    
+    if jobs:
+        logger.info("Validating job postings...")
+        for job_dict in jobs:
+            if validate_job_posting(job_dict):
+                valid_jobs.append(job_dict)
+        logger.info(f"Validated {len(valid_jobs)}/{len(jobs)} jobs")
     
     if args.dry_run:
         logger.info("Dry run mode - skipping DynamoDB insertion")
@@ -644,37 +799,38 @@ def main():
         return
     
     # Insert data
-    prog_success = prog_failure = 0
-    job_success = job_failure = 0
+    program_success = 0
+    program_failure = 0
+    job_success = 0
+    job_failure = 0
     
     if valid_programs:
-        logger.info(f"Inserting programs into DynamoDB table '{args.programs_table}'...")
-        prog_success, prog_failure = bulk_insert_programs(valid_programs, args.programs_table, args.region)
+        logger.info(f"Connecting to DynamoDB table '{args.programs_table}'...")
+        program_repo = SkillProgramRepository(table_name=args.programs_table, region_name=args.region)
+        logger.info("Inserting skill programs...")
+        program_success, program_failure = bulk_insert_programs(valid_programs, program_repo)
     
     if valid_jobs:
-        logger.info(f"Inserting jobs into DynamoDB table '{args.jobs_table}'...")
-        job_success, job_failure = bulk_insert_jobs(valid_jobs, args.jobs_table, args.region)
+        logger.info(f"Connecting to DynamoDB table '{args.jobs_table}'...")
+        job_repo = JobPostingRepository(table_name=args.jobs_table, region_name=args.region)
+        logger.info("Inserting job postings...")
+        job_success, job_failure = bulk_insert_jobs(valid_jobs, job_repo)
     
     # Summary
     logger.info("=" * 60)
     logger.info("SUMMARY")
     logger.info("=" * 60)
-    logger.info(f"Programs loaded: {len(programs)}")
-    logger.info(f"Programs validated: {len(valid_programs)}")
-    logger.info(f"Programs inserted: {prog_success}")
-    logger.info(f"Programs failed: {prog_failure}")
-    logger.info("-" * 60)
-    logger.info(f"Jobs loaded: {len(jobs)}")
-    logger.info(f"Jobs validated: {len(valid_jobs)}")
-    logger.info(f"Jobs inserted: {job_success}")
-    logger.info(f"Jobs failed: {job_failure}")
+    if programs:
+        logger.info(f"Skill Programs - Loaded: {len(programs)}, Valid: {len(valid_programs)}, Inserted: {program_success}, Failed: {program_failure}")
+    if jobs:
+        logger.info(f"Job Postings - Loaded: {len(jobs)}, Valid: {len(valid_jobs)}, Inserted: {job_success}, Failed: {job_failure}")
     logger.info("=" * 60)
     
-    if prog_failure > 0 or job_failure > 0:
-        logger.warning(f"Some items failed to insert. Check logs for details.")
+    if program_failure > 0 or job_failure > 0:
+        logger.warning(f"Some insertions failed. Check logs for details.")
         sys.exit(1)
     else:
-        logger.info("All items inserted successfully!")
+        logger.info("All data inserted successfully!")
 
 
 if __name__ == '__main__':

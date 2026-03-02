@@ -130,7 +130,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         # Build response
         response_data = {
             'eligible_schemes': [
-                _build_scheme_response(scheme, result, relevance_score)
+                _build_scheme_response(scheme, result, relevance_score, user_profile.language)
                 for scheme, result, relevance_score in ranked_schemes
             ],
             'total_count': len(ranked_schemes),
@@ -267,25 +267,34 @@ def _rank_schemes_by_relevance(
 def _build_scheme_response(
     scheme: Scheme,
     result: EligibilityResult,
-    relevance_score: float
+    relevance_score: float,
+    language: str = 'en'
 ) -> Dict[str, Any]:
     """
     Build response object for a single eligible scheme.
+    
+    If a language is specified and translations are available, the name and description
+    will be replaced with the translated versions. Falls back to English if translation unavailable.
     
     Args:
         scheme: Scheme object
         result: EligibilityResult
         relevance_score: Relevance score (0-1)
+        language: Language code for translated content (default: 'en')
         
     Returns:
         Dictionary with scheme information and eligibility explanation
     """
+    # Get translated name and description if available
+    name = scheme.name_translations.get(language, scheme.name) if language != 'en' else scheme.name
+    description = scheme.description_translations.get(language, scheme.description) if language != 'en' else scheme.description
+    
     return {
         'scheme_id': scheme.scheme_id,
-        'name': scheme.name,
+        'name': name,
         'name_translations': scheme.name_translations,
         'category': scheme.category,
-        'description': scheme.description,
+        'description': description,
         'description_translations': scheme.description_translations,
         'benefits': scheme.benefits,
         'required_documents': scheme.required_documents,

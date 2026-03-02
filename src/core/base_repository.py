@@ -62,7 +62,7 @@ class BaseRepository:
     def _serialize_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
         """
         Serialize item for DynamoDB storage.
-        Converts datetime objects to ISO format strings.
+        Converts datetime and date objects to ISO format strings.
         
         Args:
             item: Dictionary to serialize
@@ -70,11 +70,13 @@ class BaseRepository:
         Returns:
             Serialized dictionary
         """
-        from datetime import datetime
+        from datetime import datetime, date
         
         serialized = {}
         for key, value in item.items():
             if isinstance(value, datetime):
+                serialized[key] = value.isoformat()
+            elif isinstance(value, date):
                 serialized[key] = value.isoformat()
             elif isinstance(value, dict):
                 serialized[key] = self._serialize_item(value)
@@ -90,7 +92,7 @@ class BaseRepository:
     def _deserialize_item(self, item: Dict[str, Any]) -> Dict[str, Any]:
         """
         Deserialize item from DynamoDB storage.
-        Converts ISO format strings back to datetime objects where appropriate.
+        Converts ISO format strings back to datetime or date objects where appropriate.
         
         Args:
             item: Dictionary to deserialize
@@ -98,7 +100,7 @@ class BaseRepository:
         Returns:
             Deserialized dictionary
         """
-        from datetime import datetime
+        from datetime import datetime, date
         
         deserialized = {}
         for key, value in item.items():
@@ -106,6 +108,12 @@ class BaseRepository:
             if isinstance(value, str) and key in ['created_at', 'updated_at', 'last_updated']:
                 try:
                     deserialized[key] = datetime.fromisoformat(value.replace('Z', '+00:00'))
+                except (ValueError, AttributeError):
+                    deserialized[key] = value
+            # Try to parse date fields
+            elif isinstance(value, str) and key in ['application_deadline', 'posted_date', 'date']:
+                try:
+                    deserialized[key] = date.fromisoformat(value)
                 except (ValueError, AttributeError):
                     deserialized[key] = value
             elif isinstance(value, dict):
