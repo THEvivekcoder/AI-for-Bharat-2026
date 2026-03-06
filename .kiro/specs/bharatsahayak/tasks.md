@@ -6,6 +6,59 @@ This implementation plan breaks down the BharatSahayak project into manageable t
 
 The implementation follows an incremental approach: starting with infrastructure setup, then building core data models and APIs, implementing the eligibility engine, and finally adding optional enhancements.
 
+## API Endpoints Overview
+
+The system exposes the following REST API endpoints through AWS API Gateway:
+
+**Authentication & User Management:**
+- POST /auth/register - Register new user with phone number
+- POST /auth/verify - Verify OTP and authenticate
+- GET /user/profile - Get user profile (authenticated)
+- PUT /user/profile - Update user profile (authenticated)
+
+**Government Schemes:**
+- GET /schemes - List/search schemes with filters
+- GET /schemes/{scheme_id} - Get scheme details
+- POST /schemes/check-eligibility - Check eligibility for specific scheme
+- POST /schemes/eligible - Get all eligible schemes for user
+
+**Farmer Advisory:**
+- POST /farmer/crop-advice - Get crop recommendations
+- POST /farmer/fertilizer-advice - Get fertilizer guidance
+- GET /farmer/market-price - Get mandi prices
+- GET /farmer/crop-calendar - Get crop calendar
+
+**Skills & Employment:**
+- GET /skills - List skill development programs
+- POST /skills/match - Get personalized program recommendations
+- GET /jobs - Search government jobs
+- POST /jobs/alerts - Get job alerts for user
+
+**Health Advisory:**
+- POST /health/check - Submit symptoms, receive guidance
+- GET /health/facilities - Find nearby health facilities
+- GET /health/schemes - Get health insurance schemes
+
+**Impact Tracking:**
+- POST /impact/event - Record interaction or outcome event
+- GET /impact - Get impact metrics with filters
+- GET /impact/report - Generate impact report
+
+**Optional - Voice Interface:**
+- POST /voice/transcribe - Convert speech to text
+- POST /voice/synthesize - Convert text to speech
+- POST /voice/detect-language - Detect language from audio
+
+**Optional - Translation:**
+- POST /translate - Translate text between languages
+- POST /detect-language - Detect language from text
+- POST /transliterate - Convert between scripts
+
+**Optional - Conversational AI:**
+- POST /ask - Submit natural language query
+- POST /session/create - Create conversation session
+- DELETE /session/{session_id} - Clear conversation session
+
 ## Tasks
 
 - [ ] 1. Set up AWS infrastructure and project foundation
@@ -173,29 +226,117 @@ The implementation follows an incremental approach: starting with infrastructure
   - Ensure all tests pass, ask the user if questions arise
 
 - [x] 8. Set up API Gateway and integrate Lambda functions
-  - [x] 8.1 Create API Gateway REST API
-    - Define API resources and methods for all endpoints
-    - Configure CORS for web client access
-    - Set up request/response models and validation
+  - [x] 8.1 Create API Gateway REST API structure
+    - Create new REST API in API Gateway console or via SAM/CloudFormation
+    - Define root resource and base path structure (/api)
+    - Configure API Gateway settings (binary media types, minimum compression size)
+    - Enable CloudWatch logging for API Gateway
     - _Requirements: 10.1, 10.4_
   
-  - [x] 8.2 Integrate Lambda functions with API Gateway
-    - Connect all Lambda functions to API Gateway endpoints
-    - Configure Lambda proxy integration
-    - Set up authorization with Cognito User Pool
-    - Add request throttling and rate limiting
+  - [x] 8.2 Configure authentication and authorization endpoints
+    - Create /auth resource with POST /auth/register endpoint
+    - Create POST /auth/verify endpoint for OTP verification
+    - Configure Cognito User Pool authorizer for protected endpoints
+    - Set up request validators for authentication payloads
+    - _Requirements: 11.1_
+  
+  - [x] 8.3 Configure user profile management endpoints
+    - Create /user resource with GET /user/profile endpoint
+    - Create PUT /user/profile endpoint for profile updates
+    - Attach Cognito authorizer to require authentication
+    - Configure request/response models for profile data
+    - _Requirements: 8.1_
+  
+  - [x] 8.4 Configure scheme service endpoints
+    - Create /schemes resource with GET /schemes endpoint (list/search)
+    - Create GET /schemes/{scheme_id} endpoint for scheme details
+    - Create POST /schemes/check-eligibility endpoint
+    - Create POST /schemes/eligible endpoint for bulk eligibility check
+    - Add query string parameters for filtering (category, state, department)
+    - Configure pagination parameters (limit, offset)
+    - _Requirements: 2.1, 2.2, 2.3_
+  
+  - [x] 8.5 Configure farmer advisory endpoints
+    - Create /farmer resource with POST /farmer/crop-advice endpoint
+    - Create POST /farmer/fertilizer-advice endpoint
+    - Create GET /farmer/market-price endpoint with query parameters
+    - Create GET /farmer/crop-calendar endpoint
+    - Configure request validators for farm profile data
+    - _Requirements: 3.1, 3.2, 3.3_
+  
+  - [x] 8.6 Configure skills and employment endpoints
+    - Create /skills resource with GET /skills endpoint
+    - Create POST /skills/match endpoint for personalized matching
+    - Create /jobs resource with GET /jobs endpoint
+    - Create POST /jobs/alerts endpoint
+    - Add query parameters for filtering and search
+    - _Requirements: 4.1, 4.3_
+  
+  - [x] 8.7 Configure health advisory endpoints
+    - Create /health resource with POST /health/check endpoint
+    - Create GET /health/facilities endpoint with location parameters
+    - Create GET /health/schemes endpoint
+    - Configure request validators for symptom data
+    - _Requirements: 5.1, 5.2_
+  
+  - [x] 8.8 Configure impact tracking endpoints
+    - Create /impact resource with POST /impact/event endpoint
+    - Create GET /impact endpoint with filter parameters
+    - Create GET /impact/report endpoint
+    - Configure request validators for event data
+    - _Requirements: 9.1, 9.2_
+  
+  - [x] 8.9 Configure CORS for all endpoints
+    - Enable CORS on all API Gateway resources
+    - Set allowed origins (frontend domain, localhost for dev)
+    - Set allowed methods (GET, POST, PUT, DELETE, OPTIONS)
+    - Set allowed headers (Content-Type, Authorization, X-Api-Key)
+    - Configure preflight OPTIONS responses
     - _Requirements: 10.1, 10.4_
   
-  - [x] 8.3 Configure API Gateway stages and deployment
-    - Create dev and prod stages
-    - Set up stage variables for environment configuration
-    - Deploy API and test all endpoints
+  - [x] 8.10 Integrate Lambda functions with endpoints
+    - Connect each Lambda function to its corresponding API Gateway endpoint
+    - Configure Lambda proxy integration for all endpoints
+    - Set up integration request/response mappings
+    - Configure timeout settings (29 seconds max for API Gateway)
     - _Requirements: 10.1_
   
-  - [x] 8.4 Write integration tests for API endpoints
+  - [x] 8.11 Configure request validation and models
+    - Define request/response models using JSON Schema
+    - Create models for UserProfile, Scheme, FarmProfile, etc.
+    - Enable request validation on POST/PUT endpoints
+    - Configure error responses for validation failures
+    - _Requirements: 10.1_
+  
+  - [x] 8.12 Set up rate limiting and throttling
+    - Configure usage plans with rate limits (requests per second)
+    - Set burst limits for handling traffic spikes
+    - Create API keys for different client types if needed
+    - Configure throttling per endpoint based on expected load
+    - _Requirements: 10.4_
+  
+  - [x] 8.13 Configure API Gateway stages
+    - Create dev stage for development testing
+    - Create prod stage for production deployment
+    - Set up stage variables (DB_TABLE_PREFIX, LAMBDA_ALIAS, etc.)
+    - Configure stage-specific settings (caching, logging levels)
+    - Enable API Gateway caching for GET endpoints in prod
+    - _Requirements: 10.1_
+  
+  - [x] 8.14 Deploy and test API Gateway
+    - Deploy API to dev stage and verify all endpoints
+    - Test each endpoint with sample requests
+    - Verify CORS headers in responses
+    - Test authentication flow with Cognito tokens
+    - Document API Gateway URL and endpoint paths
+    - _Requirements: 10.1_
+  
+  - [x] 8.15 Write integration tests for API endpoints
     - Test complete request/response flow for each endpoint
-    - Test authentication and authorization
-    - Test error responses and status codes
+    - Test authentication and authorization with valid/invalid tokens
+    - Test error responses and HTTP status codes
+    - Test CORS preflight requests
+    - Test rate limiting behavior
     - _Requirements: 10.1, 11.1_
 
 - [x] 9. Implement impact tracking and analytics
@@ -368,28 +509,37 @@ The implementation follows an incremental approach: starting with infrastructure
     - Return transcribed text with confidence scores
     - _Requirements: 1.1_
   
-  - [x] 15.2 Write property test for voice-to-text accuracy
+  - [x] 15.2 Configure voice interface API endpoints
+    - Create /voice resource with POST /voice/transcribe endpoint
+    - Create POST /voice/synthesize endpoint for TTS
+    - Create POST /voice/detect-language endpoint
+    - Configure multipart/form-data support for audio uploads
+    - Set up S3 integration for storing audio files
+    - Configure larger payload limits for audio data (10MB)
+    - _Requirements: 1.1, 1.2, 1.3_
+  
+  - [x] 15.3 Write property test for voice-to-text accuracy
     - **Property 1: Voice-to-Text Transcription Accuracy**
     - **Validates: Requirements 1.1**
     - Test transcription accuracy with sample audio files
   
-  - [x] 15.3 Integrate Amazon Polly for text-to-speech
+  - [x] 15.4 Integrate Amazon Polly for text-to-speech
     - Create Lambda function to generate speech from text
     - Use Amazon Polly with Hindi and English voices
     - Return audio file URL from S3
     - _Requirements: 1.2_
   
-  - [x] 15.4 Write property test for text-to-speech generation
+  - [x] 15.5 Write property test for text-to-speech generation
     - **Property 2: Text-to-Speech Audio Generation**
     - **Validates: Requirements 1.2**
     - Test that valid audio is generated for all text inputs
   
-  - [x] 15.5 Implement language detection with Amazon Comprehend
+  - [x] 15.6 Implement language detection with Amazon Comprehend
     - Use Amazon Comprehend to detect spoken language
     - Support Hindi, English, and major regional languages
     - _Requirements: 1.3_
   
-  - [x] 15.6 Write property test for language detection accuracy
+  - [x] 15.7 Write property test for language detection accuracy
     - **Property 3: Language Detection Accuracy**
     - **Validates: Requirements 1.3**
     - Test language detection with multilingual samples
@@ -401,13 +551,21 @@ The implementation follows an incremental approach: starting with infrastructure
     - Support Hindi, English, and 2-3 regional languages
     - _Requirements: 1.1, 1.2_
   
-  - [x] 16.2 Update API responses to include translations
+  - [x] 16.2 Configure translation API endpoints
+    - Create /translate resource with POST /translate endpoint
+    - Create POST /detect-language endpoint
+    - Create POST /transliterate endpoint for script conversion
+    - Add language parameter to existing endpoints (schemes, health, etc.)
+    - Configure response transformations for multilingual content
+    - _Requirements: 1.1_
+  
+  - [x] 16.3 Update API responses to include translations
     - Modify scheme APIs to return content in requested language
     - Add language parameter to all relevant endpoints
     - Fall back to English if translation unavailable
     - _Requirements: 1.1_
   
-  - [x] 16.3 Test multilingual functionality end-to-end
+  - [x] 16.4 Test multilingual functionality end-to-end
     - Test scheme search and display in multiple languages
     - Test voice interface with Hindi audio
     - Verify translation quality and accuracy
@@ -449,23 +607,32 @@ The implementation follows an incremental approach: starting with infrastructure
     - Maintain conversation context across turns
     - _Requirements: 6.1, 6.2_
   
-  - [x] 18.3 Write property test for conversation context preservation
+  - [x] 18.3 Configure conversational AI API endpoints
+    - Create /ask resource with POST /ask endpoint for natural language queries
+    - Create /session resource with POST /session/create endpoint
+    - Create DELETE /session/{session_id} endpoint to clear sessions
+    - Configure request/response models for conversation context
+    - Set up WebSocket API for real-time streaming responses (optional)
+    - Configure longer timeout for LLM processing (25-29 seconds)
+    - _Requirements: 6.1, 6.2_
+  
+  - [x] 18.4 Write property test for conversation context preservation
     - **Property 15: Conversation Context Preservation**
     - **Validates: Requirements 6.1**
     - Test that follow-up queries maintain context
   
-  - [x] 18.4 Write property test for semantic search relevance
+  - [x] 18.5 Write property test for semantic search relevance
     - **Property 16: Semantic Search Relevance**
     - **Validates: Requirements 6.2**
     - Test that retrieved documents have high similarity scores
   
-  - [x] 18.5 Implement conversational query Lambda function
+  - [x] 18.6 Implement conversational query Lambda function
     - Create Lambda handler for POST /ask
     - Process natural language queries with RAG
     - Return AI-generated responses with source citations
     - _Requirements: 6.1, 6.2, 6.5_
   
-  - [x] 18.6 Write property test for official source prioritization
+  - [x] 18.7 Write property test for official source prioritization
     - **Property 17: Official Source Prioritization**
     - **Validates: Requirements 6.5**
     - Test that government sources rank higher than general sources
