@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - BharatSahayak</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="vibrant-page">
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    
+    <div id="toast-container"></div>
+    
+    <nav class="navbar glass-effect" style="position: sticky; top: 0; z-index: 1000;">
+        <div class="nav-container">
+            <div class="nav-brand gradient-text">
+                <i class="fas fa-hands-helping"></i>
+                <span>BharatSahayak</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link hover-lift">
+                    <i class="fas fa-home text-blue"></i> <span>Dashboard</span>
+                </a>
+                <a href="profile.html" class="nav-link active hover-lift">
+                    <i class="fas fa-user text-purple"></i> <span>Profile</span>
+                </a>
+                <a href="settings.html" class="nav-link hover-lift">
+                    <i class="fas fa-cog text-orange"></i> <span>Settings</span>
+                </a>
+            </div>
+            <div class="nav-actions">
+                <button class="btn-icon hover-lift gradient-hover-primary" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="padding: 2rem 1rem; max-width: 1000px; margin: 0 auto;">
+        <!-- Profile Header -->
+        <div class="glass-effect" style="padding: 3rem 2rem; border-radius: 25px; margin-bottom: 2rem; text-align: center;">
+            <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0 auto 1.5rem; display: flex; align-items: center; justify-content: center; font-size: 4rem; color: white; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
+                <i class="fas fa-user"></i>
+            </div>
+            <h1 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">
+                <span class="text-blue">Ramesh</span> <span class="text-green">Kumar</span>
+            </h1>
+            <p style="opacity: 0.8; margin-bottom: 1rem;">+91 98765 43210</p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <span style="background: rgba(16, 185, 129, 0.1); color: #10B981; padding: 0.5rem 1rem; border-radius: 10px; font-weight: 600;">
+                    <i class="fas fa-check-circle"></i> Verified
+                </span>
+                <span style="background: rgba(59, 130, 246, 0.1); color: #3B82F6; padding: 0.5rem 1rem; border-radius: 10px; font-weight: 600;">
+                    <i class="fas fa-calendar"></i> Member since 2024
+                </span>
+            </div>
+        </div>
+
+        <!-- Profile Stats -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="glass-effect hover-lift" style="padding: 1.5rem; border-radius: 20px; text-align: center; border-left: 4px solid #10B981;">
+                <div style="font-size: 2.5rem; font-weight: 800;" class="text-green">12</div>
+                <div style="opacity: 0.8;">Eligible Schemes</div>
+            </div>
+            <div class="glass-effect hover-lift" style="padding: 1.5rem; border-radius: 20px; text-align: center; border-left: 4px solid #3B82F6;">
+                <div style="font-size: 2.5rem; font-weight: 800;" class="text-blue">5</div>
+                <div style="opacity: 0.8;">Applications</div>
+            </div>
+            <div class="glass-effect hover-lift" style="padding: 1.5rem; border-radius: 20px; text-align: center; border-left: 4px solid #F59E0B;">
+                <div style="font-size: 2.5rem; font-weight: 800;" class="text-orange">8</div>
+                <div style="opacity: 0.8;">Saved Schemes</div>
+            </div>
+        </div>
+
+        <!-- Profile Information -->
+        <div class="glass-effect" style="padding: 2rem; border-radius: 20px; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h3 style="font-size: 1.5rem; font-weight: 700;">
+                    <i class="fas fa-user-circle text-blue"></i> <span class="text-blue">Personal</span> <span class="text-green">Information</span>
+                </h3>
+                <button class="btn btn-primary gradient-primary hover-lift" onclick="editProfile()">
+                    <i class="fas fa-edit"></i> Edit Profile
+                </button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #6B7280;">Age</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">35 years</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #6B7280;">Gender</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">Male</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #6B7280;">Education</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">Secondary (10th)</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #6B7280;">Occupation</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">Farmer</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #6B7280;">Income Bracket</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">₹1-3 Lakhs</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #6B7280;">Social Category</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">OBC</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Information -->
+        <div class="glass-effect" style="padding: 2rem; border-radius: 20px; margin-bottom: 2rem;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">
+                <i class="fas fa-map-marker-alt text-orange"></i> <span class="text-orange">Location</span> <span class="text-purple">Details</span>
+            </h3>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #6B7280;">State</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">Maharashtra</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #6B7280;">District</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">Pune</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #6B7280;">Pincode</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">411001</div>
+                </div>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: #6B7280;">Area Type</div>
+                    <div style="font-size: 1.1rem; font-weight: 600;">Rural</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Language Preferences -->
+        <div class="glass-effect" style="padding: 2rem; border-radius: 20px;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">
+                <i class="fas fa-language text-purple"></i> <span class="text-blue">Language</span> <span class="text-green">Preferences</span>
+            </h3>
+
+            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <span style="background: linear-gradient(135deg, #2563EB, #3B82F6); color: white; padding: 0.75rem 1.5rem; border-radius: 15px; font-weight: 600;">
+                    🇮🇳 Hindi (Primary)
+                </span>
+                <span style="background: rgba(16, 185, 129, 0.1); color: #10B981; padding: 0.75rem 1.5rem; border-radius: 15px; font-weight: 600;">
+                    🇬🇧 English (Secondary)
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+        
+        function editProfile() {
+            window.location.href = 'profile-setup.html';
+        }
+    </script>
+</body>
+</html>

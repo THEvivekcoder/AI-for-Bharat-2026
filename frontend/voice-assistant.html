@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice Assistant - BharatSahayak</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .voice-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .voice-main-button {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+            box-shadow: 0 20px 60px rgba(102, 126, 234, 0.4);
+        }
+        
+        .voice-main-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 30px 80px rgba(102, 126, 234, 0.6);
+        }
+        
+        .voice-main-button.active {
+            animation: pulse-animation 1.5s infinite;
+        }
+        
+        @keyframes pulse-animation {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+        
+        .voice-rings {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .voice-ring {
+            position: absolute;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            animation: ring-pulse 2s infinite;
+        }
+        
+        .voice-ring:nth-child(1) {
+            width: 220px;
+            height: 220px;
+            top: -10px;
+            left: -10px;
+        }
+        
+        .voice-ring:nth-child(2) {
+            width: 260px;
+            height: 260px;
+            top: -30px;
+            left: -30px;
+            animation-delay: 0.3s;
+        }
+        
+        .voice-ring:nth-child(3) {
+            width: 300px;
+            height: 300px;
+            top: -50px;
+            left: -50px;
+            animation-delay: 0.6s;
+        }
+        
+        @keyframes ring-pulse {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.3);
+            }
+        }
+        
+        .voice-transcript-box {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-top: 3rem;
+            min-height: 150px;
+        }
+        
+        .language-selector {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .language-chip {
+            padding: 0.75rem 1.5rem;
+            border-radius: 15px;
+            border: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .language-chip:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .language-chip.active {
+            background: linear-gradient(135deg, #2563EB, #3B82F6);
+            color: white;
+            border-color: #2563EB;
+        }
+        
+        .voice-suggestions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            max-width: 1000px;
+            width: 100%;
+            margin-top: 2rem;
+        }
+        
+        .suggestion-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .suggestion-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="vibrant-page">
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    
+    <div id="toast-container"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar glass-effect" style="position: fixed; top: 0; width: 100%; z-index: 1000;">
+        <div class="nav-container">
+            <div class="nav-brand gradient-text">
+                <i class="fas fa-hands-helping"></i>
+                <span>BharatSahayak</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link hover-lift">
+                    <i class="fas fa-home text-blue"></i> <span>Dashboard</span>
+                </a>
+                <a href="schemes.html" class="nav-link hover-lift">
+                    <i class="fas fa-search text-green"></i> <span>Schemes</span>
+                </a>
+                <a href="voice-assistant.html" class="nav-link active hover-lift">
+                    <i class="fas fa-microphone text-purple"></i> <span>Voice</span>
+                </a>
+            </div>
+            <div class="nav-actions">
+                <button class="btn-icon hover-lift gradient-hover-primary" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="voice-container" style="margin-top: 80px;">
+        <!-- Header -->
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem;">
+                <span class="text-blue">Voice</span> <span class="text-purple">Assistant</span>
+            </h1>
+            <p style="font-size: 1.2rem; opacity: 0.8;">
+                Speak in your language and get instant answers about government schemes
+            </p>
+        </div>
+
+        <!-- Language Selector -->
+        <div class="language-selector">
+            <button class="language-chip active" onclick="selectLanguage('hi')">
+                🇮🇳 हिंदी
+            </button>
+            <button class="language-chip" onclick="selectLanguage('en')">
+                🇬🇧 English
+            </button>
+            <button class="language-chip" onclick="selectLanguage('bn')">
+                🇧🇩 বাংলা
+            </button>
+            <button class="language-chip" onclick="selectLanguage('te')">
+                తెలుగు
+            </button>
+            <button class="language-chip" onclick="selectLanguage('mr')">
+                मराठी
+            </button>
+            <button class="language-chip" onclick="selectLanguage('ta')">
+                தமிழ்
+            </button>
+            <button class="language-chip" onclick="selectLanguage('gu')">
+                ગુજરાતી
+            </button>
+            <button class="language-chip" onclick="selectLanguage('kn')">
+                ಕನ್ನಡ
+            </button>
+        </div>
+
+        <!-- Voice Button -->
+        <div style="position: relative; margin: 3rem 0;">
+            <div class="voice-rings" id="voice-rings" style="display: none;">
+                <div class="voice-ring"></div>
+                <div class="voice-ring"></div>
+                <div class="voice-ring"></div>
+            </div>
+            <button class="voice-main-button" id="voice-button" onclick="toggleVoice()">
+                <i class="fas fa-microphone" id="voice-icon" style="font-size: 4rem; color: white;"></i>
+            </button>
+        </div>
+
+        <!-- Status -->
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <p id="voice-status" style="font-size: 1.3rem; font-weight: 600;" class="text-purple">
+                Tap the microphone to start speaking
+            </p>
+        </div>
+
+        <!-- Transcript Box -->
+        <div class="voice-transcript-box" id="transcript-box" style="display: none;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="width: 50px; height: 50px; border-radius: 15px; background: linear-gradient(135deg, #2563EB, #3B82F6); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-user" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 1.1rem;" class="text-blue">You said:</div>
+                </div>
+            </div>
+            <p id="transcript-text" style="font-size: 1.1rem; line-height: 1.6; opacity: 0.9;">
+                <!-- Transcript will appear here -->
+            </p>
+        </div>
+
+        <!-- Response Box -->
+        <div class="voice-transcript-box" id="response-box" style="display: none; background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <div style="width: 50px; height: 50px; border-radius: 15px; background: linear-gradient(135deg, #10B981, #059669); display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-robot" style="color: white; font-size: 1.5rem;"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 1.1rem;" class="text-green">AI Response:</div>
+                </div>
+            </div>
+            <p id="response-text" style="font-size: 1.1rem; line-height: 1.6; opacity: 0.9;">
+                <!-- Response will appear here -->
+            </p>
+        </div>
+
+        <!-- Suggestions -->
+        <div style="max-width: 1000px; width: 100%;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 1.5rem;">
+                <i class="fas fa-lightbulb text-orange"></i> <span class="text-blue">Try</span> <span class="text-green">Asking:</span>
+            </h3>
+            
+            <div class="voice-suggestions">
+                <div class="suggestion-card" onclick="useSuggestion('Show me agriculture schemes')" style="border-left: 4px solid #2563EB;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌾</div>
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;" class="text-blue">Agriculture Schemes</p>
+                    <p style="font-size: 0.9rem; opacity: 0.7;">"Show me agriculture schemes"</p>
+                </div>
+                
+                <div class="suggestion-card" onclick="useSuggestion('Am I eligible for PM-KISAN?')" style="border-left: 4px solid #10B981;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">✅</div>
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;" class="text-green">Check Eligibility</p>
+                    <p style="font-size: 0.9rem; opacity: 0.7;">"Am I eligible for PM-KISAN?"</p>
+                </div>
+                
+                <div class="suggestion-card" onclick="useSuggestion('Find health schemes in my area')" style="border-left: 4px solid #F97316;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🏥</div>
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;" class="text-orange">Health Schemes</p>
+                    <p style="font-size: 0.9rem; opacity: 0.7;">"Find health schemes in my area"</p>
+                </div>
+                
+                <div class="suggestion-card" onclick="useSuggestion('What are education scholarships?')" style="border-left: 4px solid #8B5CF6;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📚</div>
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;" class="text-purple">Education Schemes</p>
+                    <p style="font-size: 0.9rem; opacity: 0.7;">"What are education scholarships?"</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div style="max-width: 1000px; width: 100%; margin-top: 4rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                <div class="glass-effect" style="padding: 2rem; border-radius: 20px; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎤</div>
+                    <h4 class="text-blue" style="font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 700;">Voice Recognition</h4>
+                    <p style="opacity: 0.8;">Advanced AI understands your voice in multiple languages</p>
+                </div>
+                
+                <div class="glass-effect" style="padding: 2rem; border-radius: 20px; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🌐</div>
+                    <h4 class="text-green" style="font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 700;">10+ Languages</h4>
+                    <p style="opacity: 0.8;">Speak in Hindi, English, Bengali, Telugu, and more</p>
+                </div>
+                
+                <div class="glass-effect" style="padding: 2rem; border-radius: 20px; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">⚡</div>
+                    <h4 class="text-orange" style="font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 700;">Instant Answers</h4>
+                    <p style="opacity: 0.8;">Get immediate responses powered by AWS Bedrock AI</p>
+                </div>
+                
+                <div class="glass-effect" style="padding: 2rem; border-radius: 20px; text-align: center;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+                    <h4 class="text-purple" style="font-size: 1.2rem; margin-bottom: 0.5rem; font-weight: 700;">Smart Context</h4>
+                    <p style="opacity: 0.8;">AI remembers your conversation for better results</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        let isListening = false;
+        let selectedLanguage = 'hi';
+        
+        function toggleVoice() {
+            const button = document.getElementById('voice-button');
+            const icon = document.getElementById('voice-icon');
+            const status = document.getElementById('voice-status');
+            const rings = document.getElementById('voice-rings');
+            
+            isListening = !isListening;
+            
+            if (isListening) {
+                button.classList.add('active');
+                icon.className = 'fas fa-stop';
+                status.textContent = 'Listening... Speak now';
+                status.className = 'text-green';
+                rings.style.display = 'block';
+                
+                // Simulate listening
+                setTimeout(() => {
+                    showTranscript('मुझे कृषि योजनाएं दिखाएं');
+                    setTimeout(() => {
+                        showResponse('मैंने आपके लिए कृषि योजनाएं खोजी हैं। यहां कुछ लोकप्रिय योजनाएं हैं:\n\n1. PM-KISAN - किसानों के लिए आय सहायता\n2. प्रधानमंत्री फसल बीमा योजना - फसल बीमा\n3. किसान क्रेडिट कार्ड - कृषि ऋण\n\nक्या आप किसी विशेष योजना के बारे में अधिक जानना चाहेंगे?');
+                        toggleVoice();
+                    }, 2000);
+                }, 3000);
+            } else {
+                button.classList.remove('active');
+                icon.className = 'fas fa-microphone';
+                status.textContent = 'Tap the microphone to start speaking';
+                status.className = 'text-purple';
+                rings.style.display = 'none';
+            }
+        }
+        
+        function showTranscript(text) {
+            document.getElementById('transcript-box').style.display = 'block';
+            document.getElementById('transcript-text').textContent = text;
+        }
+        
+        function showResponse(text) {
+            document.getElementById('response-box').style.display = 'block';
+            document.getElementById('response-text').textContent = text;
+        }
+        
+        function selectLanguage(lang) {
+            selectedLanguage = lang;
+            document.querySelectorAll('.language-chip').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        function useSuggestion(text) {
+            showTranscript(text);
+            setTimeout(() => {
+                showResponse('Processing your query: "' + text + '"\n\nI found several relevant schemes for you. Let me show you the details...');
+            }, 1500);
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+    </script>
+</body>
+</html>

@@ -677,3 +677,548 @@ function showStatus(elementId, message, type) {
         }, 5000);
     }
 }
+
+
+// ============================================
+// Enhanced UI Functions
+// ============================================
+
+// Theme Toggle
+function toggleTheme() {
+    const html = document.documentElement;
+    const currentTheme = html.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    
+    const icon = document.getElementById('theme-icon');
+    icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    
+    showToast(`Switched to ${newTheme} mode`, 'info');
+}
+
+// Load saved theme on page load
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    const icon = document.getElementById('theme-icon');
+    if (icon) {
+        icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
+}
+
+// Language Toggle (placeholder)
+function toggleLanguage() {
+    showToast('Language switcher coming soon!', 'info');
+}
+
+// Toast Notifications
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <i class="fas fa-${getToastIcon(type)}"></i>
+        <span>${message}</span>
+    `;
+    container.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+function getToastIcon(type) {
+    const icons = {
+        success: 'check-circle',
+        error: 'exclamation-circle',
+        warning: 'exclamation-triangle',
+        info: 'info-circle'
+    };
+    return icons[type] || 'info-circle';
+}
+
+// Section Navigation
+function showSection(sectionName) {
+    // Hide all main sections
+    const sections = ['home', 'schemes', 'profile', 'voice'];
+    sections.forEach(section => {
+        const element = document.getElementById(`${section}-section`);
+        if (element) {
+            element.style.display = 'none';
+        }
+    });
+    
+    // Show selected section
+    const targetSection = document.getElementById(`${sectionName}-section`);
+    if (targetSection) {
+        targetSection.style.display = 'block';
+        targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    
+    // Update active nav link
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('href') === `#${sectionName}`) {
+            link.classList.add('active');
+        }
+    });
+}
+
+// Collapsible Sections
+function toggleCollapse(contentId) {
+    const content = document.getElementById(contentId);
+    const header = event.target.closest('.card-header');
+    const icon = header.querySelector('.collapse-icon');
+    
+    content.classList.toggle('collapsed');
+    
+    if (icon) {
+        icon.style.transform = content.classList.contains('collapsed') 
+            ? 'rotate(0deg)' 
+            : 'rotate(180deg)';
+    }
+}
+
+// Auth Tab Switching
+function switchAuthTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById(`${tab}-tab`).classList.add('active');
+}
+
+// Loading Overlay
+function showLoading() {
+    document.getElementById('loading-overlay').style.display = 'flex';
+}
+
+function hideLoading() {
+    document.getElementById('loading-overlay').style.display = 'none';
+}
+
+// Voice Recording
+let isRecording = false;
+let mediaRecorder = null;
+let audioChunks = [];
+
+async function toggleVoiceRecording() {
+    if (!isRecording) {
+        await startVoiceRecording();
+    } else {
+        stopVoiceRecording();
+    }
+}
+
+async function startVoiceRecording() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        
+        mediaRecorder.ondataavailable = (event) => {
+            audioChunks.push(event.data);
+        };
+        
+        mediaRecorder.onstop = async () => {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+            await processVoiceInput(audioBlob);
+        };
+        
+        mediaRecorder.start();
+        isRecording = true;
+        
+        const button = document.querySelector('.voice-button');
+        const icon = document.getElementById('voice-icon');
+        const status = document.getElementById('voice-status');
+        
+        button.classList.add('recording');
+        icon.className = 'fas fa-stop';
+        status.textContent = '🎤 Listening... Speak now';
+        
+        showToast('Voice recording started', 'info');
+    } catch (error) {
+        showToast('Microphone access denied', 'error');
+        console.error('Error accessing microphone:', error);
+    }
+}
+
+function stopVoiceRecording() {
+    if (mediaRecorder && isRecording) {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        isRecording = false;
+        
+        const button = document.querySelector('.voice-button');
+        const icon = document.getElementById('voice-icon');
+        const status = document.getElementById('voice-status');
+        
+        button.classList.remove('recording');
+        icon.className = 'fas fa-microphone';
+        status.textContent = '⏳ Processing your voice...';
+        
+        showToast('Voice recording stopped', 'success');
+    }
+}
+
+async function processVoiceInput(audioBlob) {
+    const status = document.getElementById('voice-status');
+    const transcript = document.getElementById('voice-transcript');
+    const response = document.getElementById('voice-response');
+    
+    try {
+        showLoading();
+        
+        // Placeholder for actual API call
+        // In production, send audioBlob to /voice/transcribe endpoint
+        
+        // Simulated response
+        setTimeout(() => {
+            hideLoading();
+            status.textContent = '✅ Voice processed successfully';
+            transcript.innerHTML = '<strong>You said:</strong> "Show me agriculture schemes in Maharashtra"';
+            response.innerHTML = '<strong>Response:</strong> I found 15 agriculture schemes available in Maharashtra. Would you like to see them?';
+            showToast('Voice processed successfully', 'success');
+        }, 2000);
+        
+    } catch (error) {
+        hideLoading();
+        status.textContent = '❌ Error processing voice';
+        showToast('Error processing voice input', 'error');
+        console.error('Voice processing error:', error);
+    }
+}
+
+// Enhanced scheme display with better cards
+function displaySchemes(schemes) {
+    const container = document.getElementById('search-results');
+    
+    if (schemes.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 3rem; grid-column: 1/-1;">
+                <i class="fas fa-search" style="font-size: 4rem; color: var(--gray-400); margin-bottom: 1rem;"></i>
+                <p style="color: var(--text-secondary); font-size: 1.125rem;">No schemes found</p>
+                <p style="color: var(--text-tertiary);">Try adjusting your search criteria</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = schemes.map(scheme => `
+        <div class="scheme-card">
+            <h4>${scheme.name}</h4>
+            <p><strong><i class="fas fa-tag"></i> Category:</strong> ${scheme.category}</p>
+            <p><strong><i class="fas fa-building"></i> Department:</strong> ${scheme.department || 'N/A'}</p>
+            ${scheme.state ? `<p><strong><i class="fas fa-map-marker-alt"></i> State:</strong> ${scheme.state}</p>` : ''}
+            <p style="margin-top: 0.75rem;">${scheme.description || 'No description available'}</p>
+            <div style="margin-top: 1rem;">
+                <span class="badge">${scheme.category}</span>
+                ${scheme.state ? `<span class="badge">${scheme.state}</span>` : '<span class="badge">Central</span>'}
+            </div>
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                <button onclick="viewSchemeDetails('${scheme.scheme_id}')" class="btn btn-primary btn-sm">
+                    <i class="fas fa-eye"></i> View Details
+                </button>
+                <button onclick="selectSchemeForEligibility('${scheme.scheme_id}')" class="btn btn-outline btn-sm">
+                    <i class="fas fa-check"></i> Check Eligibility
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Enhanced eligibility result display
+function displayEligibilityResult(result) {
+    const container = document.getElementById('eligibility-results');
+    
+    const eligibleClass = result.is_eligible ? 'eligible' : 'not-eligible';
+    const eligibleIcon = result.is_eligible ? 'check-circle' : 'times-circle';
+    const eligibleText = result.is_eligible ? 'You are ELIGIBLE' : 'You are NOT ELIGIBLE';
+    const eligibleColor = result.is_eligible ? 'var(--success)' : 'var(--danger)';
+    
+    container.innerHTML = `
+        <div style="background: ${result.is_eligible ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; 
+                    border-left: 4px solid ${eligibleColor}; 
+                    padding: 2rem; 
+                    border-radius: var(--radius-lg); 
+                    margin-top: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                <i class="fas fa-${eligibleIcon}" style="font-size: 3rem; color: ${eligibleColor};"></i>
+                <h3 style="margin: 0; color: ${eligibleColor};">${eligibleText}</h3>
+            </div>
+            <p><strong>Scheme:</strong> ${result.scheme_name || 'N/A'}</p>
+            <p><strong>Reasoning:</strong> ${result.reasoning || 'No reasoning provided'}</p>
+            
+            ${result.missing_criteria && result.missing_criteria.length > 0 ? `
+                <div style="margin-top: 1rem;">
+                    <strong style="color: var(--danger);">Missing Criteria:</strong>
+                    <ul style="margin-top: 0.5rem;">
+                        ${result.missing_criteria.map(c => `<li>${c}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+            
+            ${result.matched_criteria && result.matched_criteria.length > 0 ? `
+                <div style="margin-top: 1rem;">
+                    <strong style="color: var(--success);">Matched Criteria:</strong>
+                    <ul style="margin-top: 0.5rem;">
+                        ${result.matched_criteria.map(c => `<li>${c}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+// Update all API calls to use toast notifications
+const originalRegister = register;
+register = async function() {
+    showLoading();
+    try {
+        await originalRegister.call(this);
+    } finally {
+        hideLoading();
+    }
+};
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', () => {
+    loadConfig();
+    loadAuthState();
+    loadTheme();
+    
+    // Show home section by default
+    showSection('home');
+    
+    // Add smooth scroll to all anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = this.getAttribute('href').substring(1);
+            showSection(target);
+        });
+    });
+});
+
+// Update existing showStatus to use toast
+const originalShowStatus = showStatus;
+showStatus = function(elementId, message, type) {
+    showToast(message, type);
+};
+
+
+// ============================================
+// Service Worker Registration (PWA Support)
+// ============================================
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then((registration) => {
+                console.log('Service Worker registered successfully:', registration.scope);
+                
+                // Check for updates
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    console.log('Service Worker update found');
+                    
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New service worker available
+                            showUpdateNotification();
+                        }
+                    });
+                });
+            })
+            .catch((error) => {
+                console.error('Service Worker registration failed:', error);
+            });
+    });
+    
+    // Handle service worker updates
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+        }
+    });
+}
+
+// Show update notification
+function showUpdateNotification() {
+    const updateBanner = document.createElement('div');
+    updateBanner.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--primary);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        animation: slideUp 0.3s ease-out;
+    `;
+    
+    updateBanner.innerHTML = `
+        <span>New version available!</span>
+        <button onclick="updateServiceWorker()" style="
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+        ">Update Now</button>
+        <button onclick="this.parentElement.remove()" style="
+            background: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+        ">Later</button>
+    `;
+    
+    document.body.appendChild(updateBanner);
+}
+
+// Update service worker
+function updateServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistration().then((registration) => {
+            if (registration && registration.waiting) {
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            }
+        });
+    }
+}
+
+// Install prompt for PWA
+let deferredPrompt;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent the mini-infobar from appearing
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Show install button
+    showInstallPrompt();
+});
+
+function showInstallPrompt() {
+    const installBanner = document.createElement('div');
+    installBanner.id = 'install-banner';
+    installBanner.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-xl);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        animation: slideUp 0.3s ease-out;
+        max-width: 90%;
+    `;
+    
+    installBanner.innerHTML = `
+        <i class="fas fa-download"></i>
+        <span>Install BharatSahayak app for offline access</span>
+        <button onclick="installPWA()" style="
+            background: white;
+            color: var(--primary);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+        ">Install</button>
+        <button onclick="document.getElementById('install-banner').remove()" style="
+            background: transparent;
+            color: white;
+            border: 1px solid white;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            cursor: pointer;
+        ">Not Now</button>
+    `;
+    
+    document.body.appendChild(installBanner);
+}
+
+async function installPWA() {
+    if (!deferredPrompt) {
+        return;
+    }
+    
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for the user's response
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log(`User response to install prompt: ${outcome}`);
+    
+    if (outcome === 'accepted') {
+        showToast('App installed successfully!', 'success');
+    }
+    
+    // Clear the deferred prompt
+    deferredPrompt = null;
+    
+    // Remove install banner
+    const banner = document.getElementById('install-banner');
+    if (banner) {
+        banner.remove();
+    }
+}
+
+// Detect if app is running as PWA
+function isPWA() {
+    return window.matchMedia('(display-mode: standalone)').matches ||
+           window.navigator.standalone === true;
+}
+
+// Show PWA status
+if (isPWA()) {
+    console.log('Running as PWA');
+    // Hide install prompt if already installed
+    const installBanner = document.getElementById('install-banner');
+    if (installBanner) {
+        installBanner.remove();
+    }
+}
+
+// Online/Offline detection
+window.addEventListener('online', () => {
+    showToast('You are back online!', 'success');
+    console.log('Network: Online');
+});
+
+window.addEventListener('offline', () => {
+    showToast('You are offline. Some features may be limited.', 'warning');
+    console.log('Network: Offline');
+});
+
+// Check initial network status
+if (!navigator.onLine) {
+    showToast('You are currently offline', 'warning');
+}
+
+console.log('BharatSahayak PWA initialized successfully');

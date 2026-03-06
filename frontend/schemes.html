@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Schemes - BharatSahayak</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .schemes-hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 4rem 2rem;
+            border-radius: 30px;
+            margin-bottom: 2rem;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .schemes-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+        
+        .search-container-modern {
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .search-bar-modern {
+            display: flex;
+            gap: 1rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .search-bar-modern input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 1.1rem;
+            padding: 0.5rem 1rem;
+            color: #1f2937;
+        }
+        
+        .filter-chips {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .chip-filter {
+            padding: 0.75rem 1.5rem;
+            border-radius: 15px;
+            border: 2px solid transparent;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .chip-filter:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chip-filter.active {
+            border-color: #2563EB;
+            background: linear-gradient(135deg, #2563EB, #3B82F6);
+            color: white;
+        }
+        
+        .scheme-card-modern {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 2rem;
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .scheme-card-modern:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .schemes-grid-modern {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+        
+        @media (max-width: 768px) {
+            .schemes-grid-modern {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body class="vibrant-page">
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    
+    <div id="toast-container"></div>
+    
+    <!-- Navigation -->
+    <nav class="navbar glass-effect" style="position: sticky; top: 0; z-index: 1000;">
+        <div class="nav-container">
+            <div class="nav-brand gradient-text">
+                <i class="fas fa-hands-helping"></i>
+                <span>BharatSahayak</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link hover-lift">
+                    <i class="fas fa-home text-blue"></i> <span>Dashboard</span>
+                </a>
+                <a href="schemes.html" class="nav-link active hover-lift">
+                    <i class="fas fa-search text-green"></i> <span>Schemes</span>
+                </a>
+                <a href="voice-assistant.html" class="nav-link hover-lift">
+                    <i class="fas fa-microphone text-purple"></i> <span>Voice</span>
+                </a>
+            </div>
+            <div class="nav-actions">
+                <button class="btn-icon hover-lift gradient-hover-primary" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="padding: 2rem 1rem;">
+        <!-- Hero Section -->
+        <div class="schemes-hero">
+            <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem; position: relative; z-index: 1;">
+                Discover <span style="color: #FCD34D;">400+</span> Government Schemes
+            </h1>
+            <p style="font-size: 1.2rem; opacity: 0.95; position: relative; z-index: 1;">
+                Find schemes tailored to your needs across agriculture, health, education, and more
+            </p>
+            
+            <!-- Search Bar -->
+            <div class="search-container-modern">
+                <div class="search-bar-modern">
+                    <i class="fas fa-search" style="font-size: 1.5rem; color: #2563EB; align-self: center;"></i>
+                    <input type="text" id="search-query" placeholder="Search for schemes... (e.g., agriculture, education, health)">
+                    <button class="btn btn-primary gradient-primary hover-lift" onclick="searchSchemes()">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Chips -->
+        <div class="filter-chips">
+            <button class="chip-filter active" onclick="filterCategory('all')">
+                <i class="fas fa-th"></i> All Schemes
+            </button>
+            <button class="chip-filter" onclick="filterCategory('agriculture')" style="border-color: #10B981;">
+                🌾 Agriculture
+            </button>
+            <button class="chip-filter" onclick="filterCategory('health')" style="border-color: #EF4444;">
+                🏥 Health
+            </button>
+            <button class="chip-filter" onclick="filterCategory('education')" style="border-color: #F59E0B;">
+                📚 Education
+            </button>
+            <button class="chip-filter" onclick="filterCategory('employment')" style="border-color: #8B5CF6;">
+                💼 Employment
+            </button>
+            <button class="chip-filter" onclick="filterCategory('social_welfare')" style="border-color: #EC4899;">
+                🤝 Social Welfare
+            </button>
+        </div>
+
+        <!-- Advanced Filters -->
+        <div class="glass-effect" style="padding: 2rem; border-radius: 20px; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.3rem; font-weight: 700;">
+                    <i class="fas fa-sliders-h text-blue"></i> <span class="text-blue">Advanced</span> <span class="text-green">Filters</span>
+                </h3>
+                <button class="btn btn-sm btn-outline hover-lift" onclick="clearFilters()">
+                    <i class="fas fa-times"></i> Clear All
+                </button>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;" class="text-blue">
+                        <i class="fas fa-map-marker-alt"></i> State
+                    </label>
+                    <select id="filter-state" class="form-control" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid rgba(37, 99, 235, 0.2);">
+                        <option value="">All States</option>
+                        <option value="central">Central (All India)</option>
+                        <option value="Maharashtra">Maharashtra</option>
+                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                        <option value="Bihar">Bihar</option>
+                        <option value="Karnataka">Karnataka</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;" class="text-green">
+                        <i class="fas fa-sort"></i> Sort By
+                    </label>
+                    <select id="filter-sort" class="form-control" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid rgba(16, 185, 129, 0.2);">
+                        <option value="relevance">Relevance</option>
+                        <option value="name">Name (A-Z)</option>
+                        <option value="recent">Recently Added</option>
+                        <option value="popular">Most Popular</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;" class="text-orange">
+                        <i class="fas fa-filter"></i> Eligibility
+                    </label>
+                    <select id="filter-eligibility" class="form-control" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid rgba(249, 115, 22, 0.2);">
+                        <option value="">All Schemes</option>
+                        <option value="eligible">Only Eligible</option>
+                        <option value="not-eligible">Not Eligible</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Header -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h3 style="font-size: 1.5rem; font-weight: 700;">
+                    <span class="text-green" id="results-count">400</span> <span class="text-blue">schemes found</span>
+                </h3>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn-icon hover-lift active" onclick="setView('grid')">
+                    <i class="fas fa-th"></i>
+                </button>
+                <button class="btn-icon hover-lift" onclick="setView('list')">
+                    <i class="fas fa-list"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Schemes Grid -->
+        <div class="schemes-grid-modern" id="schemes-container">
+            <!-- Scheme Card 1 -->
+            <div class="scheme-card-modern" style="border-left: 5px solid #2563EB;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <span style="background: linear-gradient(135deg, #2563EB, #3B82F6); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
+                        🌾 Agriculture
+                    </span>
+                    <button class="btn-icon hover-lift">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                </div>
+                <h4 class="text-blue" style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700;">PM-KISAN</h4>
+                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
+                    Pradhan Mantri Kisan Samman Nidhi - Income support for farmers providing ₹6,000 per year in three equal installments
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-building text-green"></i> Agriculture Ministry
+                    </span>
+                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-map-marker-alt text-orange"></i> Central
+                    </span>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn btn-primary btn-sm gradient-primary hover-lift" style="flex: 1;">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
+                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
+                        <i class="fas fa-check-circle"></i> Check Eligibility
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scheme Card 2 -->
+            <div class="scheme-card-modern" style="border-left: 5px solid #10B981;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <span style="background: linear-gradient(135deg, #10B981, #059669); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
+                        🏥 Health
+                    </span>
+                    <button class="btn-icon hover-lift">
+                        <i class="fas fa-bookmark" style="color: #F59E0B;"></i>
+                    </button>
+                </div>
+                <h4 class="text-green" style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700;">Ayushman Bharat</h4>
+                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
+                    Pradhan Mantri Jan Arogya Yojana - Health insurance coverage up to ₹5 lakhs per family per year for secondary and tertiary care
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-building text-green"></i> Health Ministry
+                    </span>
+                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-map-marker-alt text-orange"></i> Central
+                    </span>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn btn-primary btn-sm gradient-secondary hover-lift" style="flex: 1;">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
+                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
+                        <i class="fas fa-check-circle"></i> Check Eligibility
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scheme Card 3 -->
+            <div class="scheme-card-modern" style="border-left: 5px solid #F59E0B;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <span style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
+                        📚 Education
+                    </span>
+                    <button class="btn-icon hover-lift">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                </div>
+                <h4 class="text-orange" style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700;">National Scholarship Portal</h4>
+                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
+                    Centralized platform for various scholarship schemes for students from pre-matric to post-graduation levels
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-building text-green"></i> Education Ministry
+                    </span>
+                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-map-marker-alt text-orange"></i> Central
+                    </span>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn btn-primary btn-sm gradient-accent hover-lift" style="flex: 1;">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
+                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
+                        <i class="fas fa-check-circle"></i> Check Eligibility
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scheme Card 4 -->
+            <div class="scheme-card-modern" style="border-left: 5px solid #8B5CF6;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <span style="background: linear-gradient(135deg, #8B5CF6, #7C3AED); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
+                        💼 Employment
+                    </span>
+                    <button class="btn-icon hover-lift">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                </div>
+                <h4 class="text-purple" style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700;">MGNREGA</h4>
+                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
+                    Mahatma Gandhi National Rural Employment Guarantee Act - 100 days guaranteed employment in rural areas with fair wages
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-building text-green"></i> Rural Development
+                    </span>
+                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-map-marker-alt text-orange"></i> Central
+                    </span>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn btn-primary btn-sm gradient-vibrant hover-lift" style="flex: 1;">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
+                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
+                        <i class="fas fa-check-circle"></i> Check Eligibility
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scheme Card 5 -->
+            <div class="scheme-card-modern" style="border-left: 5px solid #EC4899;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <span style="background: linear-gradient(135deg, #EC4899, #DB2777); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
+                        🤝 Social Welfare
+                    </span>
+                    <button class="btn-icon hover-lift">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                </div>
+                <h4 style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700; color: #EC4899;">Pradhan Mantri Awas Yojana</h4>
+                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
+                    Housing for All - Financial assistance for construction of pucca houses with basic amenities for economically weaker sections
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-building text-green"></i> Housing Ministry
+                    </span>
+                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-map-marker-alt text-orange"></i> Central
+                    </span>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn btn-primary btn-sm hover-lift" style="flex: 1; background: linear-gradient(135deg, #EC4899, #DB2777);">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
+                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
+                        <i class="fas fa-check-circle"></i> Check Eligibility
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scheme Card 6 -->
+            <div class="scheme-card-modern" style="border-left: 5px solid #06B6D4;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <span style="background: linear-gradient(135deg, #06B6D4, #0891B2); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
+                        🌾 Agriculture
+                    </span>
+                    <button class="btn-icon hover-lift">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                </div>
+                <h4 style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700; color: #06B6D4;">Pradhan Mantri Fasal Bima Yojana</h4>
+                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
+                    Crop Insurance Scheme - Provides insurance coverage and financial support to farmers in case of crop failure due to natural calamities
+                </p>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-building text-green"></i> Agriculture Ministry
+                    </span>
+                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                        <i class="fas fa-map-marker-alt text-orange"></i> Central
+                    </span>
+                </div>
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn btn-primary btn-sm hover-lift" style="flex: 1; background: linear-gradient(135deg, #06B6D4, #0891B2);">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
+                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
+                        <i class="fas fa-check-circle"></i> Check Eligibility
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 3rem;">
+            <button class="btn btn-outline hover-lift">
+                <i class="fas fa-chevron-left"></i> Previous
+            </button>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-primary gradient-primary" style="width: 40px; height: 40px; border-radius: 10px;">1</button>
+                <button class="btn btn-outline hover-lift" style="width: 40px; height: 40px; border-radius: 10px;">2</button>
+                <button class="btn btn-outline hover-lift" style="width: 40px; height: 40px; border-radius: 10px;">3</button>
+                <span style="align-self: center;">...</span>
+                <button class="btn btn-outline hover-lift" style="width: 40px; height: 40px; border-radius: 10px;">10</button>
+            </div>
+            <button class="btn btn-outline hover-lift">
+                Next <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        function searchSchemes() {
+            const query = document.getElementById('search-query').value;
+            alert('Searching for: ' + query);
+        }
+        
+        function filterCategory(category) {
+            document.querySelectorAll('.chip-filter').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            alert('Filtering by: ' + category);
+        }
+        
+        function clearFilters() {
+            document.getElementById('filter-state').value = '';
+            document.getElementById('filter-sort').value = 'relevance';
+            document.getElementById('filter-eligibility').value = '';
+        }
+        
+        function setView(view) {
+            alert('View changed to: ' + view);
+        }
+        
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agriculture Advisory - BharatSahayak</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .agri-hero {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            padding: 3rem 2rem;
+            border-radius: 25px;
+            color: white;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .agri-hero::before {
+            content: '🌾';
+            position: absolute;
+            font-size: 15rem;
+            opacity: 0.1;
+            right: -50px;
+            top: -50px;
+        }
+        
+        .weather-card {
+            background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+        }
+        
+        .price-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .price-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="vibrant-page">
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    
+    <div id="toast-container"></div>
+    
+    <!-- Navigation -->
+    <nav class="navbar glass-effect" style="position: sticky; top: 0; z-index: 1000;">
+        <div class="nav-container">
+            <div class="nav-brand gradient-text">
+                <i class="fas fa-hands-helping"></i>
+                <span>BharatSahayak</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link hover-lift">
+                    <i class="fas fa-home text-blue"></i> <span>Dashboard</span>
+                </a>
+                <a href="schemes.html" class="nav-link hover-lift">
+                    <i class="fas fa-search text-green"></i> <span>Schemes</span>
+                </a>
+                <a href="agriculture.html" class="nav-link active hover-lift">
+                    <i class="fas fa-tractor text-orange"></i> <span>Agriculture</span>
+                </a>
+            </div>
+            <div class="nav-actions">
+                <button class="btn-icon hover-lift gradient-hover-primary" onclick="toggleTheme()">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="padding: 2rem 1rem;">
+        <!-- Hero Section -->
+        <div class="agri-hero">
+            <div style="position: relative; z-index: 1;">
+                <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem;">
+                    🌾 Agriculture Advisory
+                </h1>
+                <p style="font-size: 1.2rem; opacity: 0.95;">
+                    Get real-time farming guidance, weather updates, and market prices
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div class="glass-effect hover-lift" style="padding: 1.5rem; border-radius: 20px; text-align: center; border-left: 4px solid #10B981;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🌡️</div>
+                <div style="font-size: 2rem; font-weight: 800;" class="text-green">28°C</div>
+                <div style="opacity: 0.8;">Temperature</div>
+            </div>
+            
+            <div class="glass-effect hover-lift" style="padding: 1.5rem; border-radius: 20px; text-align: center; border-left: 4px solid #3B82F6;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💧</div>
+                <div style="font-size: 2rem; font-weight: 800;" class="text-blue">65%</div>
+                <div style="opacity: 0.8;">Humidity</div>
+            </div>
+            
+            <div class="glass-effect hover-lift" style="padding: 1.5rem; border-radius: 20px; text-align: center; border-left: 4px solid #F59E0B;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🌧️</div>
+                <div style="font-size: 2rem; font-weight: 800;" class="text-orange">40%</div>
+                <div style="opacity: 0.8;">Rain Chance</div>
+            </div>
+            
+            <div class="glass-effect hover-lift" style="padding: 1.5rem; border-radius: 20px; text-align: center; border-left: 4px solid #8B5CF6;">
+                <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💨</div>
+                <div style="font-size: 2rem; font-weight: 800;" class="text-purple">12 km/h</div>
+                <div style="opacity: 0.8;">Wind Speed</div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+            <!-- Crop Recommendations -->
+            <div class="glass-effect" style="padding: 2rem; border-radius: 20px;">
+                <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">
+                    <i class="fas fa-seedling text-green"></i> <span class="text-blue">Crop</span> <span class="text-green">Recommendations</span>
+                </h3>
+                
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); padding: 1.5rem; border-radius: 15px; border-left: 4px solid #10B981;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <h4 class="text-green" style="font-size: 1.2rem; font-weight: 700;">🌾 Wheat</h4>
+                            <span style="background: #10B981; color: white; padding: 0.25rem 0.75rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">Recommended</span>
+                        </div>
+                        <p style="opacity: 0.9; margin-bottom: 0.75rem;">Best season for wheat cultivation. Expected yield: 40-45 quintals/hectare</p>
+                        <div style="display: flex; gap: 1rem; font-size: 0.9rem;">
+                            <span><i class="fas fa-calendar text-blue"></i> Sowing: Nov-Dec</span>
+                            <span><i class="fas fa-clock text-orange"></i> Duration: 120-150 days</span>
+                        </div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(234, 88, 12, 0.1)); padding: 1.5rem; border-radius: 15px; border-left: 4px solid #F97316;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <h4 class="text-orange" style="font-size: 1.2rem; font-weight: 700;">🌽 Maize</h4>
+                            <span style="background: #F97316; color: white; padding: 0.25rem 0.75rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">Good</span>
+                        </div>
+                        <p style="opacity: 0.9; margin-bottom: 0.75rem;">Suitable conditions for maize. Expected yield: 50-60 quintals/hectare</p>
+                        <div style="display: flex; gap: 1rem; font-size: 0.9rem;">
+                            <span><i class="fas fa-calendar text-blue"></i> Sowing: Jun-Jul</span>
+                            <span><i class="fas fa-clock text-orange"></i> Duration: 90-110 days</span>
+                        </div>
+                    </div>
+                    
+                    <div style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(124, 58, 237, 0.1)); padding: 1.5rem; border-radius: 15px; border-left: 4px solid #8B5CF6;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                            <h4 class="text-purple" style="font-size: 1.2rem; font-weight: 700;">🥔 Potato</h4>
+                            <span style="background: #8B5CF6; color: white; padding: 0.25rem 0.75rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">Moderate</span>
+                        </div>
+                        <p style="opacity: 0.9; margin-bottom: 0.75rem;">Moderate conditions. Expected yield: 200-250 quintals/hectare</p>
+                        <div style="display: flex; gap: 1rem; font-size: 0.9rem;">
+                            <span><i class="fas fa-calendar text-blue"></i> Sowing: Oct-Nov</span>
+                            <span><i class="fas fa-clock text-orange"></i> Duration: 90-120 days</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weather Forecast -->
+            <div>
+                <div class="weather-card" style="margin-bottom: 1.5rem;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">☀️</div>
+                    <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">Sunny</h3>
+                    <p style="font-size: 3rem; font-weight: 800; margin-bottom: 0.5rem;">28°C</p>
+                    <p style="opacity: 0.9;">Feels like 30°C</p>
+                </div>
+                
+                <div class="glass-effect" style="padding: 1.5rem; border-radius: 20px;">
+                    <h4 style="font-weight: 700; margin-bottom: 1rem;">7-Day Forecast</h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(59, 130, 246, 0.1); border-radius: 10px;">
+                            <span>Mon</span>
+                            <span style="font-size: 1.5rem;">☀️</span>
+                            <span class="text-blue" style="font-weight: 600;">29°C</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(16, 185, 129, 0.1); border-radius: 10px;">
+                            <span>Tue</span>
+                            <span style="font-size: 1.5rem;">⛅</span>
+                            <span class="text-green" style="font-weight: 600;">27°C</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(249, 115, 22, 0.1); border-radius: 10px;">
+                            <span>Wed</span>
+                            <span style="font-size: 1.5rem;">🌧️</span>
+                            <span class="text-orange" style="font-weight: 600;">25°C</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(139, 92, 246, 0.1); border-radius: 10px;">
+                            <span>Thu</span>
+                            <span style="font-size: 1.5rem;">🌤️</span>
+                            <span class="text-purple" style="font-weight: 600;">26°C</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Prices -->
+        <div class="glass-effect" style="padding: 2rem; border-radius: 20px; margin-bottom: 2rem;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">
+                <i class="fas fa-chart-line text-orange"></i> <span class="text-blue">Market</span> <span class="text-green">Prices</span>
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                <div class="price-card" style="border-left: 4px solid #10B981;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                        <div>
+                            <h4 class="text-green" style="font-weight: 700;">Wheat</h4>
+                            <p style="font-size: 0.9rem; opacity: 0.7;">Per Quintal</p>
+                        </div>
+                        <span style="font-size: 0.85rem; color: #10B981; font-weight: 600;">
+                            <i class="fas fa-arrow-up"></i> 2.5%
+                        </span>
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 800;" class="text-green">₹2,150</div>
+                    <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem;">Last updated: 2 hours ago</p>
+                </div>
+                
+                <div class="price-card" style="border-left: 4px solid #F59E0B;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                        <div>
+                            <h4 class="text-orange" style="font-weight: 700;">Rice</h4>
+                            <p style="font-size: 0.9rem; opacity: 0.7;">Per Quintal</p>
+                        </div>
+                        <span style="font-size: 0.85rem; color: #EF4444; font-weight: 600;">
+                            <i class="fas fa-arrow-down"></i> 1.2%
+                        </span>
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 800;" class="text-orange">₹3,200</div>
+                    <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem;">Last updated: 1 hour ago</p>
+                </div>
+                
+                <div class="price-card" style="border-left: 4px solid #3B82F6;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                        <div>
+                            <h4 class="text-blue" style="font-weight: 700;">Maize</h4>
+                            <p style="font-size: 0.9rem; opacity: 0.7;">Per Quintal</p>
+                        </div>
+                        <span style="font-size: 0.85rem; color: #10B981; font-weight: 600;">
+                            <i class="fas fa-arrow-up"></i> 3.1%
+                        </span>
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 800;" class="text-blue">₹1,850</div>
+                    <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem;">Last updated: 3 hours ago</p>
+                </div>
+                
+                <div class="price-card" style="border-left: 4px solid #8B5CF6;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                        <div>
+                            <h4 class="text-purple" style="font-weight: 700;">Cotton</h4>
+                            <p style="font-size: 0.9rem; opacity: 0.7;">Per Quintal</p>
+                        </div>
+                        <span style="font-size: 0.85rem; color: #10B981; font-weight: 600;">
+                            <i class="fas fa-arrow-up"></i> 1.8%
+                        </span>
+                    </div>
+                    <div style="font-size: 2rem; font-weight: 800;" class="text-purple">₹6,500</div>
+                    <p style="font-size: 0.85rem; opacity: 0.7; margin-top: 0.5rem;">Last updated: 4 hours ago</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Farming Tips -->
+        <div class="glass-effect" style="padding: 2rem; border-radius: 20px;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">
+                <i class="fas fa-lightbulb text-orange"></i> <span class="text-blue">Farming</span> <span class="text-green">Tips</span>
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); padding: 1.5rem; border-radius: 15px;">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">💧</div>
+                    <h4 class="text-green" style="font-weight: 700; margin-bottom: 0.5rem;">Water Management</h4>
+                    <p style="opacity: 0.9;">Use drip irrigation to save water and increase crop yield by 30-40%</p>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(37, 99, 235, 0.1)); padding: 1.5rem; border-radius: 15px;">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🌱</div>
+                    <h4 class="text-blue" style="font-weight: 700; margin-bottom: 0.5rem;">Soil Health</h4>
+                    <p style="opacity: 0.9;">Test soil pH regularly and add organic matter to improve fertility</p>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(234, 88, 12, 0.1)); padding: 1.5rem; border-radius: 15px;">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🐛</div>
+                    <h4 class="text-orange" style="font-weight: 700; margin-bottom: 0.5rem;">Pest Control</h4>
+                    <p style="opacity: 0.9;">Use integrated pest management to reduce chemical pesticide usage</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+        }
+    </script>
+</body>
+</html>

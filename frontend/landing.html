@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="BharatSahayak - Official Government Portal for Scheme Discovery">
+    <meta name="theme-color" content="#06038D">
+    <title>BharatSahayak | Government of India | Digital Services Portal</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Government Header -->
+    <div class="gov-header">
+        <div class="gov-header-content">
+            <div class="gov-logo">
+                <div class="emblem">
+                    <i class="fas fa-landmark"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 700; font-size: 1.125rem;">Government of India</div>
+                    <div style="font-size: 0.875rem; opacity: 0.9;">भारत सरकार</div>
+                </div>
+            </div>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle Dark Mode">
+                    <i class="fas fa-moon" id="theme-icon"></i>
+                </button>
+                <select style="padding: 0.5rem 1rem; border-radius: 8px; border: none; background: rgba(255,255,255,0.2); color: white; font-weight: 600;">
+                    <option>English</option>
+                    <option>हिंदी</option>
+                    <option>বাংলা</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <div class="nav-brand-icon">
+                    <i class="fas fa-hands-helping"></i>
+                </div>
+                <div class="nav-brand-text">
+                    <div class="nav-brand-title">BharatSahayak</div>
+                    <div class="nav-brand-subtitle">Digital Services Portal</div>
+                </div>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link active"><i class="fas fa-home"></i> Home</a></li>
+                <li><a href="#features" class="nav-link"><i class="fas fa-star"></i> Services</a></li>
+                <li><a href="#schemes" class="nav-link"><i class="fas fa-file-alt"></i> Schemes</a></li>
+                <li><a href="#about" class="nav-link"><i class="fas fa-info-circle"></i> About</a></li>
+            </ul>
+            <div class="nav-actions">
+                <a href="login.html" class="btn btn-outline">Login</a>
+                <a href="login.html?mode=register" class="btn btn-primary">Register Now</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Illustration -->
+    <section class="hero-section" id="home">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge">
+                    <i class="fas fa-certificate"></i>
+                    <span>Official Government Portal</span>
+                </div>
+                <h1 class="hero-title">
+                    Empowering <span style="color: var(--text-orange);"></span>Rural India</span> with
+                    <span class="hero-title-highlight">Digital Services</span>
+                </h1>
+                <p class="hero-description">
+                    BharatSahayak is an official Government of India initiative designed to bridge the digital divide 
+                    and provide seamless access to 400+ government schemes, agricultural advisory services, and rural 
+                    development programs. Our voice-first platform ensures that language and literacy are no longer 
+                    barriers to accessing essential government services.
+                </p>
+                <div class="hero-actions">
+                    <a href="login.html?mode=register" class="btn btn-primary btn-large">
+                        <i class="fas fa-user-plus"></i> Register Now
+                    </a>
+                    <a href="login.html?guest=true" class="btn btn-secondary btn-large">
+                        <i class="fas fa-search"></i> Explore Services
+                    </a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <!-- Vibrant Illustration -->
+                <svg viewBox="0 0 600 600" style="width: 100%; max-width: 550px; height: auto;">
+                    <!-- Background Circles -->
+                    <circle cx="300" cy="300" r="250" fill="url(#grad1)" opacity="0.1"/>
+                    <circle cx="300" cy="300" r="200" fill="url(#grad2)" opacity="0.1"/>
+                    <circle cx="300" cy="300" r="150" fill="url(#grad3)" opacity="0.1"/>
+                    
+                    <!-- Central India Map Shape -->
+                    <circle cx="300" cy="300" r="120" fill="url(#gradPrimary)" opacity="0.9"/>
+                    
+                    <!-- Tricolor Ring -->
+                    <circle cx="300" cy="300" r="130" fill="none" stroke="url(#gradTricolor)" stroke-width="8"/>
+                    
+                    <!-- Central Icon -->
+                    <text x="300" y="330" text-anchor="middle" fill="white" font-size="80" font-family="Arial">
+                        🇮🇳
+                    </text>
+                    
+                    <!-- Floating Service Icons -->
+                    <g class="float-icon" style="animation: float 3s ease-in-out infinite;">
+                        <circle cx="150" cy="150" r="40" fill="url(#gradAccent)"/>
+                        <text x="150" y="165" text-anchor="middle" font-size="32">📱</text>
+                    </g>
+                    
+                    <g class="float-icon" style="animation: float 3s ease-in-out infinite; animation-delay: 0.5s;">
+                        <circle cx="450" cy="150" r="40" fill="url(#gradSecondary)"/>
+                        <text x="450" y="165" text-anchor="middle" font-size="32">🌾</text>
+                    </g>
+                    
+                    <g class="float-icon" style="animation: float 3s ease-in-out infinite; animation-delay: 1s;">
+                        <circle cx="150" cy="450" r="40" fill="url(#gradVibrant)"/>
+                        <text x="150" y="465" text-anchor="middle" font-size="32">🎤</text>
+                    </g>
+                    
+                    <g class="float-icon" style="animation: float 3s ease-in-out infinite; animation-delay: 1.5s;">
+                        <circle cx="450" cy="450" r="40" fill="url(#gradSunset)"/>
+                        <text x="450" y="465" text-anchor="middle" font-size="32">✅</text>
+                    </g>
+                    
+                    <!-- Connecting Lines -->
+                    <line x1="190" y1="150" x2="260" y2="260" stroke="url(#gradPrimary)" stroke-width="2" opacity="0.3" stroke-dasharray="5,5"/>
+                    <line x1="410" y1="150" x2="340" y2="260" stroke="url(#gradSecondary)" stroke-width="2" opacity="0.3" stroke-dasharray="5,5"/>
+                    <line x1="190" y1="450" x2="260" y2="340" stroke="url(#gradVibrant)" stroke-width="2" opacity="0.3" stroke-dasharray="5,5"/>
+                    <line x1="410" y1="450" x2="340" y2="340" stroke="url(#gradSunset)" stroke-width="2" opacity="0.3" stroke-dasharray="5,5"/>
+                    
+                    <!-- Gradients -->
+                    <defs>
+                        <radialGradient id="grad1">
+                            <stop offset="0%" style="stop-color:#06038D;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#06038D;stop-opacity:0" />
+                        </radialGradient>
+                        <radialGradient id="grad2">
+                            <stop offset="0%" style="stop-color:#138808;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#138808;stop-opacity:0" />
+                        </radialGradient>
+                        <radialGradient id="grad3">
+                            <stop offset="0%" style="stop-color:#FF9933;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FF9933;stop-opacity:0" />
+                        </radialGradient>
+                        <linearGradient id="gradPrimary" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#06038D" />
+                            <stop offset="100%" style="stop-color:#1a17b8" />
+                        </linearGradient>
+                        <linearGradient id="gradSecondary" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#138808" />
+                            <stop offset="100%" style="stop-color:#1ba60f" />
+                        </linearGradient>
+                        <linearGradient id="gradAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FF9933" />
+                            <stop offset="100%" style="stop-color:#ffb366" />
+                        </linearGradient>
+                        <linearGradient id="gradVibrant" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#667eea" />
+                            <stop offset="100%" style="stop-color:#764ba2" />
+                        </linearGradient>
+                        <linearGradient id="gradSunset" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FF9933" />
+                            <stop offset="100%" style="stop-color:#EC4899" />
+                        </linearGradient>
+                        <linearGradient id="gradTricolor" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FF9933" />
+                            <stop offset="50%" style="stop-color:#FFFFFF" />
+                            <stop offset="100%" style="stop-color:#138808" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section - Vibrant -->
+    <section class="stats-section">
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="stat-number">400+</div>
+                <div class="stat-label">Government Schemes</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-language"></i></div>
+                <div class="stat-number">10+</div>
+                <div class="stat-label">Indian Languages</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-number">50,000+</div>
+                <div class="stat-label">Registered Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-number">95%</div>
+                <div class="stat-label">Success Rate</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section - Colorful Cards -->
+    <section class="features-section" id="features">
+        <div class="section-header">
+            <h2 class="section-title">Our <span style="color: var(--text-orange);">Services</span></h2>
+            <p class="section-subtitle">
+                BharatSahayak provides <span style="color: var(--text-blue); font-weight: 600;">comprehensive digital services</span> designed to empower rural citizens 
+                with easy access to <span style="color: var(--text-green); font-weight: 600;">government schemes</span>, agricultural guidance, and essential information 
+                in their preferred language.
+            </p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-microphone"></i>
+                </div>
+                <h3 class="feature-title">Voice Assistant</h3>
+                <p class="feature-description">
+                    Interact with our AI-powered voice assistant in your native language. Simply speak your 
+                    query and receive instant responses. No typing required, making it accessible for users 
+                    with limited literacy or those who prefer voice interaction.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <h3 class="feature-title">Scheme Discovery</h3>
+                <p class="feature-description">
+                    Search and discover from 400+ central and state government schemes. Our intelligent 
+                    search system helps you find relevant schemes based on your profile, location, and 
+                    specific needs, ensuring you never miss out on benefits you're entitled to.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-check-double"></i>
+                </div>
+                <h3 class="feature-title">Eligibility Checker</h3>
+                <p class="feature-description">
+                    Instantly verify your eligibility for various government schemes. Our AI-powered system 
+                    analyzes your profile against scheme criteria and provides detailed eligibility reports, 
+                    saving you time and helping you apply with confidence.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-seedling"></i>
+                </div>
+                <h3 class="feature-title">Agriculture Advisory</h3>
+                <p class="feature-description">
+                    Access real-time agricultural guidance including crop recommendations, market prices from 
+                    nearby mandis, weather forecasts, and farming best practices. Empowering farmers with 
+                    data-driven insights for better decision-making.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-language"></i>
+                </div>
+                <h3 class="feature-title">Multilingual Support</h3>
+                <p class="feature-description">
+                    Available in 10+ Indian languages including Hindi, English, Tamil, Telugu, Bengali, 
+                    Marathi, Gujarati, Kannada, Malayalam, and Punjabi. Breaking language barriers to ensure 
+                    every citizen can access government services comfortably.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3 class="feature-title">Offline Access</h3>
+                <p class="feature-description">
+                    Access cached information even without internet connectivity. Our progressive web app 
+                    technology ensures that essential information remains available in areas with poor or 
+                    intermittent network coverage.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works - Visual Steps -->
+    <section class="features-section" style="background: var(--bg-secondary);" id="schemes">
+        <div class="section-header">
+            <h2 class="section-title">How It <span style="color: var(--text-green);"></span>Works</span></h2>
+            <p class="section-subtitle">
+                Getting started with BharatSahayak is <span style="color: var(--text-blue); font-weight: 600;">simple and straightforward</span>. Follow these three easy 
+                steps to begin accessing <span style="color: var(--text-orange); font-weight: 600;">government services and schemes</span>.
+            </p>
+        </div>
+        <div class="features-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+            <div class="feature-card">
+                <div class="feature-icon" style="background: linear-gradient(135deg, #FF9933 0%, #ffb366 100%);">
+                    <span style="font-size: 2.5rem; font-weight: 700;">1</span>
+                </div>
+                <h3 class="feature-title">Register Your Account</h3>
+                <p class="feature-description">
+                    Create your account using your mobile number. Verify through OTP for secure access. 
+                    The registration process is quick, taking less than 2 minutes to complete.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: linear-gradient(135deg, #06038D 0%, #1a17b8 100%);">
+                    <span style="font-size: 2.5rem; font-weight: 700;">2</span>
+                </div>
+                <h3 class="feature-title">Complete Your Profile</h3>
+                <p class="feature-description">
+                    Provide basic information about yourself through our simple 4-step wizard. This helps 
+                    us personalize scheme recommendations and ensure you receive relevant information.
+                </p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: linear-gradient(135deg, #138808 0%, #1ba60f 100%);">
+                    <span style="font-size: 2.5rem; font-weight: 700;">3</span>
+                </div>
+                <h3 class="feature-title">Access Services</h3>
+                <p class="feature-description">
+                    Start exploring schemes, checking eligibility, getting agricultural advice, and accessing 
+                    all services in your preferred language through voice or text interface.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="hero-section" style="min-height: 60vh;" id="about">
+        <div class="hero-container" style="grid-template-columns: 1fr;">
+            <div class="hero-content" style="text-align: center; max-width: 800px; margin: 0 auto;">
+                <h2 class="hero-title" style="font-size: 2.5rem;">
+                    Join the <span class="hero-title-highlight">Digital India</span> Movement
+                </h2>
+                <p class="hero-description" style="text-align: center;">
+                    Be part of India's digital transformation. Register today and unlock access to hundreds 
+                    of government schemes, agricultural services, and rural development programs designed to 
+                    improve your livelihood and well-being.
+                </p>
+                <div class="hero-actions" style="justify-content: center;">
+                    <a href="login.html?mode=register" class="btn btn-primary btn-large">
+                        <i class="fas fa-user-plus"></i> Create Free Account
+                    </a>
+                    <a href="login.html?guest=true" class="btn btn-accent btn-large">
+                        <i class="fas fa-eye"></i> Browse as Guest
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer style="background: linear-gradient(135deg, #06038D 0%, #040266 100%); color: var(--white); padding: 3rem 2rem 1rem;">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; margin-bottom: 2rem;">
+                <div>
+                    <h3 style="margin-bottom: 1rem;">BharatSahayak</h3>
+                    <p style="opacity: 0.9; text-align: justify;">
+                        An official Government of India initiative under Digital India program, dedicated to 
+                        empowering rural citizens with seamless access to government services and schemes.
+                    </p>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1rem;">Quick Links</h4>
+                    <ul style="list-style: none;">
+                        <li style="margin-bottom: 0.5rem;"><a href="#features" style="color: rgba(255,255,255,0.9); text-decoration: none;">Services</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#schemes" style="color: rgba(255,255,255,0.9); text-decoration: none;">Schemes</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="login.html" style="color: rgba(255,255,255,0.9); text-decoration: none;">Login</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="login.html?mode=register" style="color: rgba(255,255,255,0.9); text-decoration: none;">Register</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1rem;">Support</h4>
+                    <ul style="list-style: none;">
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: rgba(255,255,255,0.9); text-decoration: none;">Help Center</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: rgba(255,255,255,0.9); text-decoration: none;">Contact Us</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: rgba(255,255,255,0.9); text-decoration: none;">Privacy Policy</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: rgba(255,255,255,0.9); text-decoration: none;">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 style="margin-bottom: 1rem;">Connect With Us</h4>
+                    <div style="display: flex; gap: 1rem; font-size: 1.5rem;">
+                        <a href="#" style="color: rgba(255,255,255,0.9); transition: all 0.3s;"><i class="fab fa-facebook"></i></a>
+                        <a href="#" style="color: rgba(255,255,255,0.9); transition: all 0.3s;"><i class="fab fa-twitter"></i></a>
+                        <a href="#" style="color: rgba(255,255,255,0.9); transition: all 0.3s;"><i class="fab fa-youtube"></i></a>
+                        <a href="#" style="color: rgba(255,255,255,0.9); transition: all 0.3s;"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div style="text-align: center; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.2);">
+                <p style="opacity: 0.9;">&copy; 2024 BharatSahayak | Government of India | All Rights Reserved</p>
+                <p style="font-size: 0.875rem; opacity: 0.8; margin-top: 0.5rem;">
+                    Content owned, updated and maintained by Ministry of Rural Development
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <script src="app.js"></script>
+    <script>
+        // Theme Toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            const icon = document.getElementById('theme-icon');
+            icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        const icon = document.getElementById('theme-icon');
+        if (icon) {
+            icon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // Animate on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeIn 0.6s ease-out forwards';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.feature-card, .stat-card').forEach(el => {
+            observer.observe(el);
+        });
+
+        // Active nav link on scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section[id]');
+            const scrollY = window.pageYOffset;
+
+            sections.forEach(section => {
+                const sectionHeight = section.offsetHeight;
+                const sectionTop = section.offsetTop - 100;
+                const sectionId = section.getAttribute('id');
+                const navLink = document.querySelector(`.nav-link[href="#${sectionId}"]`);
+
+                if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+                    document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+                    if (navLink) navLink.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

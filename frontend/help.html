@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help & Support - BharatSahayak</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="vibrant-page">
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+    </div>
+    
+    <div id="toast-container"></div>
+    
+    <nav class="navbar glass-effect" style="position: sticky; top: 0; z-index: 1000;">
+        <div class="nav-container">
+            <div class="nav-brand gradient-text">
+                <i class="fas fa-hands-helping"></i>
+                <span>BharatSahayak</span>
+            </div>
+            <div class="nav-menu">
+                <a href="dashboard.html" class="nav-link hover-lift">
+                    <i class="fas fa-home text-blue"></i> <span>Dashboard</span>
+                </a>
+                <a href="help.html" class="nav-link active hover-lift">
+                    <i class="fas fa-question-circle text-orange"></i> <span>Help</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container" style="padding: 2rem 1rem; max-width: 1200px; margin: 0 auto;">
+        <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 2rem; text-align: center;">
+            <i class="fas fa-question-circle text-orange"></i> <span class="text-blue">Help</span> <span class="text-green">&</span> <span class="text-orange">Support</span>
+        </h1>
+
+        <!-- Quick Actions -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+            <a href="contact.html" class="glass-effect hover-lift" style="padding: 2rem; border-radius: 20px; text-decoration: none; text-align: center; border-left: 4px solid #2563EB;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📞</div>
+                <h3 class="text-blue" style="font-weight: 700; margin-bottom: 0.5rem;">Call Support</h3>
+                <p style="opacity: 0.8;">1800-XXX-XXXX (Toll Free)</p>
+            </a>
+            
+            <a href="contact.html" class="glass-effect hover-lift" style="padding: 2rem; border-radius: 20px; text-decoration: none; text-align: center; border-left: 4px solid #10B981;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">💬</div>
+                <h3 class="text-green" style="font-weight: 700; margin-bottom: 0.5rem;">Live Chat</h3>
+                <p style="opacity: 0.8;">Chat with our support team</p>
+            </a>
+            
+            <a href="faq.html" class="glass-effect hover-lift" style="padding: 2rem; border-radius: 20px; text-decoration: none; text-align: center; border-left: 4px solid #F97316;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">❓</div>
+                <h3 class="text-orange" style="font-weight: 700; margin-bottom: 0.5rem;">FAQs</h3>
+                <p style="opacity: 0.8;">Find quick answers</p>
+            </a>
+            
+            <a href="contact.html" class="glass-effect hover-lift" style="padding: 2rem; border-radius: 20px; text-decoration: none; text-align: center; border-left: 4px solid #8B5CF6;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">✉️</div>
+                <h3 class="text-purple" style="font-weight: 700; margin-bottom: 0.5rem;">Email Us</h3>
+                <p style="opacity: 0.8;">support@bharatsahayak.gov.in</p>
+            </a>
+        </div>
+
+        <!-- Popular Topics -->
+        <div class="glass-effect" style="padding: 2rem; border-radius: 20px; margin-bottom: 2rem;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">
+                <i class="fas fa-fire text-orange"></i> <span class="text-blue">Popular</span> <span class="text-green">Topics</span>
+            </h3>
+            
+            <div style="display: grid; gap: 1rem;">
+                <a href="faq.html#registration" style="padding: 1.5rem; background: rgba(37, 99, 235, 0.1); border-radius: 15px; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 class="text-blue" style="font-weight: 600; margin-bottom: 0.5rem;">How to register?</h4>
+                        <p style="opacity: 0.8; font-size: 0.9rem;">Step-by-step registration guide</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-blue"></i>
+                </a>
+                
+                <a href="faq.html#eligibility" style="padding: 1.5rem; background: rgba(16, 185, 129, 0.1); border-radius: 15px; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 class="text-green" style="font-weight: 600; margin-bottom: 0.5rem;">How to check eligibility?</h4>
+                        <p style="opacity: 0.8; font-size: 0.9rem;">Learn about eligibility checking</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-green"></i>
+                </a>
+                
+                <a href="faq.html#application" style="padding: 1.5rem; background: rgba(249, 115, 22, 0.1); border-radius: 15px; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 class="text-orange" style="font-weight: 600; margin-bottom: 0.5rem;">How to apply for schemes?</h4>
+                        <p style="opacity: 0.8; font-size: 0.9rem;">Application process explained</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-orange"></i>
+                </a>
+                
+                <a href="faq.html#voice" style="padding: 1.5rem; background: rgba(139, 92, 246, 0.1); border-radius: 15px; text-decoration: none; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h4 class="text-purple" style="font-weight: 600; margin-bottom: 0.5rem;">How to use voice assistant?</h4>
+                        <p style="opacity: 0.8; font-size: 0.9rem;">Voice assistant guide</p>
+                    </div>
+                    <i class="fas fa-chevron-right text-purple"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Video Tutorials -->
+        <div class="glass-effect" style="padding: 2rem; border-radius: 20px;">
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">
+                <i class="fas fa-video text-purple"></i> <span class="text-purple">Video</span> <span class="text-blue">Tutorials</span>
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                <div style="background: rgba(37, 99, 235, 0.1); padding: 1.5rem; border-radius: 15px;">
+                    <div style="background: #2563EB; height: 150px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                        <i class="fas fa-play" style="font-size: 3rem; color: white;"></i>
+                    </div>
+                    <h4 class="text-blue" style="font-weight: 600; margin-bottom: 0.5rem;">Getting Started</h4>
+                    <p style="opacity: 0.8; font-size: 0.9rem;">5 min tutorial</p>
+                </div>
+                
+                <div style="background: rgba(16, 185, 129, 0.1); padding: 1.5rem; border-radius: 15px;">
+                    <div style="background: #10B981; height: 150px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                        <i class="fas fa-play" style="font-size: 3rem; color: white;"></i>
+                    </div>
+                    <h4 class="text-green" style="font-weight: 600; margin-bottom: 0.5rem;">Finding Schemes</h4>
+                    <p style="opacity: 0.8; font-size: 0.9rem;">3 min tutorial</p>
+                </div>
+                
+                <div style="background: rgba(249, 115, 22, 0.1); padding: 1.5rem; border-radius: 15px;">
+                    <div style="background: #F97316; height: 150px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-bottom: 1rem;">
+                        <i class="fas fa-play" style="font-size: 3rem; color: white;"></i>
+                    </div>
+                    <h4 class="text-orange" style="font-weight: 600; margin-bottom: 0.5rem;">Applying for Benefits</h4>
+                    <p style="opacity: 0.8; font-size: 0.9rem;">7 min tutorial</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
