@@ -11,7 +11,7 @@ Write-Host "Checking prerequisites..." -ForegroundColor Yellow
 $samInstalled = Get-Command sam -ErrorAction SilentlyContinue
 
 if (-not $samInstalled) {
-    Write-Host "❌ AWS SAM CLI is not installed" -ForegroundColor Red
+    Write-Host "ERROR: AWS SAM CLI is not installed" -ForegroundColor Red
     Write-Host ""
     Write-Host "Please install AWS SAM CLI:" -ForegroundColor Yellow
     Write-Host "  Option 1: Download from https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html" -ForegroundColor White
@@ -20,12 +20,12 @@ if (-not $samInstalled) {
     exit 1
 }
 
-Write-Host "✅ AWS SAM CLI is installed" -ForegroundColor Green
+Write-Host "OK: AWS SAM CLI is installed" -ForegroundColor Green
 
 # Check if AWS CLI is configured
 $awsConfigured = Test-Path "$env:USERPROFILE\.aws\credentials"
 if (-not $awsConfigured) {
-    Write-Host "⚠️  AWS credentials not found" -ForegroundColor Yellow
+    Write-Host "WARNING: AWS credentials not found" -ForegroundColor Yellow
     Write-Host "Please run: aws configure" -ForegroundColor White
     Write-Host ""
     $continue = Read-Host "Continue anyway? (y/n)"
@@ -46,13 +46,13 @@ sam build
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
-    Write-Host "❌ Build failed!" -ForegroundColor Red
+    Write-Host "ERROR: Build failed!" -ForegroundColor Red
     Write-Host "Please check the error messages above" -ForegroundColor Yellow
     exit 1
 }
 
 Write-Host ""
-Write-Host "✅ Build completed successfully" -ForegroundColor Green
+Write-Host "OK: Build completed successfully" -ForegroundColor Green
 Write-Host ""
 
 Write-Host "========================================" -ForegroundColor Cyan
@@ -92,7 +92,7 @@ if ($configExists) {
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
-    Write-Host "❌ Deployment failed!" -ForegroundColor Red
+    Write-Host "ERROR: Deployment failed!" -ForegroundColor Red
     Write-Host "Please check the error messages above" -ForegroundColor Yellow
     exit 1
 }
@@ -109,17 +109,17 @@ $apiEndpoint = sam list endpoints --stack-name bharatsahayak-dev 2>&1 | Select-S
 
 if ($apiEndpoint) {
     Write-Host ""
-    Write-Host "✅ API Endpoint:" -ForegroundColor Green
+    Write-Host "OK: API Endpoint:" -ForegroundColor Green
     Write-Host "  $apiEndpoint" -ForegroundColor Cyan
     Write-Host ""
-    Write-Host "📝 Next steps:" -ForegroundColor Yellow
+    Write-Host "Next steps:" -ForegroundColor Yellow
     Write-Host "  1. Update frontend/config.json with the API endpoint above" -ForegroundColor White
     Write-Host "  2. Run: python test_backend_endpoints.py" -ForegroundColor White
     Write-Host "  3. Open: frontend/test-quick.html in browser" -ForegroundColor White
     Write-Host ""
 } else {
     Write-Host ""
-    Write-Host "⚠️  Could not retrieve API endpoint automatically" -ForegroundColor Yellow
+    Write-Host "WARNING: Could not retrieve API endpoint automatically" -ForegroundColor Yellow
     Write-Host "Run this command to get it:" -ForegroundColor White
     Write-Host "  sam list endpoints --stack-name bharatsahayak-dev" -ForegroundColor Cyan
     Write-Host ""
@@ -129,14 +129,14 @@ Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  Deployment Summary" -ForegroundColor Cyan
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "✅ Backend deployed successfully" -ForegroundColor Green
-Write-Host "✅ All 14 endpoints configured" -ForegroundColor Green
-Write-Host "✅ Ready for testing" -ForegroundColor Green
+Write-Host "OK: Backend deployed successfully" -ForegroundColor Green
+Write-Host "OK: All 14 endpoints configured" -ForegroundColor Green
+Write-Host "OK: Ready for testing" -ForegroundColor Green
 Write-Host ""
-Write-Host "📚 Documentation:" -ForegroundColor Cyan
+Write-Host "Documentation:" -ForegroundColor Cyan
 Write-Host "  - VALIDATION_COMPLETE.md - Validation results" -ForegroundColor White
 Write-Host "  - TESTING_GUIDE.md - Testing instructions" -ForegroundColor White
 Write-Host "  - FIXES_APPLIED.md - List of fixes" -ForegroundColor White
 Write-Host ""
-Write-Host "🎉 Deployment complete!" -ForegroundColor Green
+Write-Host "Deployment complete!" -ForegroundColor Green
 Write-Host ""
