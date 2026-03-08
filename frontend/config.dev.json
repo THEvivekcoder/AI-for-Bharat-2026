@@ -1,0 +1,25 @@
+{
+  "apiEndpoint": "https://dvt82zj0c4.execute-api.ap-south-1.amazonaws.com/dev",
+  "userPoolId": "ap-south-1_KSJ0FKz20",
+  "clientId": "10emq71eioca5qkns6on0l22om",
+  "environment": "development",
+  "version": "1.0.0",
+  "debug": true,
+  "features": {
+    "voiceAssistant": true,
+    "offlineMode": true,
+    "guestAccess": true,
+    "analytics": true,
+    "configUI": true
+  },
+  "api": {
+    "timeout": 30000,
+    "retryAttempts": 3,
+    "retryDelay": 1000
+  },
+  "ui": {
+    "theme": "light",
+    "language": "en",
+    "animations": true
+  }
+}

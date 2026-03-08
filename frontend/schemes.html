@@ -112,6 +112,32 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body class="vibrant-page">
@@ -122,6 +148,9 @@
     </div>
     
     <div id="toast-container"></div>
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+    </div>
     
     <!-- Navigation -->
     <nav class="navbar glass-effect" style="position: sticky; top: 0; z-index: 1000;">
@@ -153,7 +182,7 @@
         <!-- Hero Section -->
         <div class="schemes-hero">
             <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 1rem; position: relative; z-index: 1;">
-                Discover <span style="color: #FCD34D;">400+</span> Government Schemes
+                Discover <span style="color: #FCD34D;" id="total-schemes-count">400+</span> Government Schemes
             </h1>
             <p style="font-size: 1.2rem; opacity: 0.95; position: relative; z-index: 1;">
                 Find schemes tailored to your needs across agriculture, health, education, and more
@@ -208,34 +237,29 @@
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;" class="text-blue">
                         <i class="fas fa-map-marker-alt"></i> State
                     </label>
-                    <select id="filter-state" class="form-control" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid rgba(37, 99, 235, 0.2);">
+                    <select id="filter-state" class="form-control" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid rgba(37, 99, 235, 0.2);" onchange="applyFilters()">
                         <option value="">All States</option>
-                        <option value="central">Central (All India)</option>
+                        <option value="">Central (All India)</option>
                         <option value="Maharashtra">Maharashtra</option>
                         <option value="Uttar Pradesh">Uttar Pradesh</option>
                         <option value="Bihar">Bihar</option>
                         <option value="Karnataka">Karnataka</option>
+                        <option value="Gujarat">Gujarat</option>
+                        <option value="Tamil Nadu">Tamil Nadu</option>
+                        <option value="West Bengal">West Bengal</option>
                     </select>
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;" class="text-green">
-                        <i class="fas fa-sort"></i> Sort By
+                        <i class="fas fa-building"></i> Department
                     </label>
-                    <select id="filter-sort" class="form-control" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid rgba(16, 185, 129, 0.2);">
-                        <option value="relevance">Relevance</option>
-                        <option value="name">Name (A-Z)</option>
-                        <option value="recent">Recently Added</option>
-                        <option value="popular">Most Popular</option>
-                    </select>
-                </div>
-                <div>
-                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;" class="text-orange">
-                        <i class="fas fa-filter"></i> Eligibility
-                    </label>
-                    <select id="filter-eligibility" class="form-control" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid rgba(249, 115, 22, 0.2);">
-                        <option value="">All Schemes</option>
-                        <option value="eligible">Only Eligible</option>
-                        <option value="not-eligible">Not Eligible</option>
+                    <select id="filter-department" class="form-control" style="width: 100%; padding: 0.75rem; border-radius: 10px; border: 2px solid rgba(16, 185, 129, 0.2);" onchange="applyFilters()">
+                        <option value="">All Departments</option>
+                        <option value="Agriculture">Agriculture</option>
+                        <option value="Health">Health</option>
+                        <option value="Education">Education</option>
+                        <option value="Rural Development">Rural Development</option>
+                        <option value="Social Welfare">Social Welfare</option>
                     </select>
                 </div>
             </div>
@@ -245,259 +269,470 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
             <div>
                 <h3 style="font-size: 1.5rem; font-weight: 700;">
-                    <span class="text-green" id="results-count">400</span> <span class="text-blue">schemes found</span>
+                    <span class="text-green" id="results-count">0</span> <span class="text-blue">schemes found</span>
                 </h3>
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button class="btn-icon hover-lift active" onclick="setView('grid')">
-                    <i class="fas fa-th"></i>
-                </button>
-                <button class="btn-icon hover-lift" onclick="setView('list')">
-                    <i class="fas fa-list"></i>
-                </button>
             </div>
         </div>
 
         <!-- Schemes Grid -->
         <div class="schemes-grid-modern" id="schemes-container">
-            <!-- Scheme Card 1 -->
-            <div class="scheme-card-modern" style="border-left: 5px solid #2563EB;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                    <span style="background: linear-gradient(135deg, #2563EB, #3B82F6); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
-                        🌾 Agriculture
-                    </span>
-                    <button class="btn-icon hover-lift">
-                        <i class="far fa-bookmark"></i>
-                    </button>
-                </div>
-                <h4 class="text-blue" style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700;">PM-KISAN</h4>
-                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
-                    Pradhan Mantri Kisan Samman Nidhi - Income support for farmers providing ₹6,000 per year in three equal installments
-                </p>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-building text-green"></i> Agriculture Ministry
-                    </span>
-                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-map-marker-alt text-orange"></i> Central
-                    </span>
-                </div>
-                <div style="display: flex; gap: 0.75rem;">
-                    <button class="btn btn-primary btn-sm gradient-primary hover-lift" style="flex: 1;">
-                        <i class="fas fa-eye"></i> View Details
-                    </button>
-                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
-                        <i class="fas fa-check-circle"></i> Check Eligibility
-                    </button>
-                </div>
-            </div>
-
-            <!-- Scheme Card 2 -->
-            <div class="scheme-card-modern" style="border-left: 5px solid #10B981;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                    <span style="background: linear-gradient(135deg, #10B981, #059669); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
-                        🏥 Health
-                    </span>
-                    <button class="btn-icon hover-lift">
-                        <i class="fas fa-bookmark" style="color: #F59E0B;"></i>
-                    </button>
-                </div>
-                <h4 class="text-green" style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700;">Ayushman Bharat</h4>
-                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
-                    Pradhan Mantri Jan Arogya Yojana - Health insurance coverage up to ₹5 lakhs per family per year for secondary and tertiary care
-                </p>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-building text-green"></i> Health Ministry
-                    </span>
-                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-map-marker-alt text-orange"></i> Central
-                    </span>
-                </div>
-                <div style="display: flex; gap: 0.75rem;">
-                    <button class="btn btn-primary btn-sm gradient-secondary hover-lift" style="flex: 1;">
-                        <i class="fas fa-eye"></i> View Details
-                    </button>
-                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
-                        <i class="fas fa-check-circle"></i> Check Eligibility
-                    </button>
-                </div>
-            </div>
-
-            <!-- Scheme Card 3 -->
-            <div class="scheme-card-modern" style="border-left: 5px solid #F59E0B;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                    <span style="background: linear-gradient(135deg, #F59E0B, #D97706); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
-                        📚 Education
-                    </span>
-                    <button class="btn-icon hover-lift">
-                        <i class="far fa-bookmark"></i>
-                    </button>
-                </div>
-                <h4 class="text-orange" style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700;">National Scholarship Portal</h4>
-                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
-                    Centralized platform for various scholarship schemes for students from pre-matric to post-graduation levels
-                </p>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-building text-green"></i> Education Ministry
-                    </span>
-                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-map-marker-alt text-orange"></i> Central
-                    </span>
-                </div>
-                <div style="display: flex; gap: 0.75rem;">
-                    <button class="btn btn-primary btn-sm gradient-accent hover-lift" style="flex: 1;">
-                        <i class="fas fa-eye"></i> View Details
-                    </button>
-                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
-                        <i class="fas fa-check-circle"></i> Check Eligibility
-                    </button>
-                </div>
-            </div>
-
-            <!-- Scheme Card 4 -->
-            <div class="scheme-card-modern" style="border-left: 5px solid #8B5CF6;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                    <span style="background: linear-gradient(135deg, #8B5CF6, #7C3AED); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
-                        💼 Employment
-                    </span>
-                    <button class="btn-icon hover-lift">
-                        <i class="far fa-bookmark"></i>
-                    </button>
-                </div>
-                <h4 class="text-purple" style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700;">MGNREGA</h4>
-                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
-                    Mahatma Gandhi National Rural Employment Guarantee Act - 100 days guaranteed employment in rural areas with fair wages
-                </p>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-building text-green"></i> Rural Development
-                    </span>
-                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-map-marker-alt text-orange"></i> Central
-                    </span>
-                </div>
-                <div style="display: flex; gap: 0.75rem;">
-                    <button class="btn btn-primary btn-sm gradient-vibrant hover-lift" style="flex: 1;">
-                        <i class="fas fa-eye"></i> View Details
-                    </button>
-                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
-                        <i class="fas fa-check-circle"></i> Check Eligibility
-                    </button>
-                </div>
-            </div>
-
-            <!-- Scheme Card 5 -->
-            <div class="scheme-card-modern" style="border-left: 5px solid #EC4899;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                    <span style="background: linear-gradient(135deg, #EC4899, #DB2777); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
-                        🤝 Social Welfare
-                    </span>
-                    <button class="btn-icon hover-lift">
-                        <i class="far fa-bookmark"></i>
-                    </button>
-                </div>
-                <h4 style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700; color: #EC4899;">Pradhan Mantri Awas Yojana</h4>
-                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
-                    Housing for All - Financial assistance for construction of pucca houses with basic amenities for economically weaker sections
-                </p>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-building text-green"></i> Housing Ministry
-                    </span>
-                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-map-marker-alt text-orange"></i> Central
-                    </span>
-                </div>
-                <div style="display: flex; gap: 0.75rem;">
-                    <button class="btn btn-primary btn-sm hover-lift" style="flex: 1; background: linear-gradient(135deg, #EC4899, #DB2777);">
-                        <i class="fas fa-eye"></i> View Details
-                    </button>
-                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
-                        <i class="fas fa-check-circle"></i> Check Eligibility
-                    </button>
-                </div>
-            </div>
-
-            <!-- Scheme Card 6 -->
-            <div class="scheme-card-modern" style="border-left: 5px solid #06B6D4;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
-                    <span style="background: linear-gradient(135deg, #06B6D4, #0891B2); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
-                        🌾 Agriculture
-                    </span>
-                    <button class="btn-icon hover-lift">
-                        <i class="far fa-bookmark"></i>
-                    </button>
-                </div>
-                <h4 style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700; color: #06B6D4;">Pradhan Mantri Fasal Bima Yojana</h4>
-                <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
-                    Crop Insurance Scheme - Provides insurance coverage and financial support to farmers in case of crop failure due to natural calamities
-                </p>
-                <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-building text-green"></i> Agriculture Ministry
-                    </span>
-                    <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
-                        <i class="fas fa-map-marker-alt text-orange"></i> Central
-                    </span>
-                </div>
-                <div style="display: flex; gap: 0.75rem;">
-                    <button class="btn btn-primary btn-sm hover-lift" style="flex: 1; background: linear-gradient(135deg, #06B6D4, #0891B2);">
-                        <i class="fas fa-eye"></i> View Details
-                    </button>
-                    <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;">
-                        <i class="fas fa-check-circle"></i> Check Eligibility
-                    </button>
-                </div>
-            </div>
+            <!-- Schemes will be loaded here -->
         </div>
 
         <!-- Pagination -->
-        <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 3rem;">
-            <button class="btn btn-outline hover-lift">
+        <div id="pagination-container" style="display: none; justify-content: center; align-items: center; gap: 1rem; margin-top: 3rem;">
+            <button class="btn btn-outline hover-lift" onclick="previousPage()">
                 <i class="fas fa-chevron-left"></i> Previous
             </button>
-            <div style="display: flex; gap: 0.5rem;">
-                <button class="btn btn-primary gradient-primary" style="width: 40px; height: 40px; border-radius: 10px;">1</button>
-                <button class="btn btn-outline hover-lift" style="width: 40px; height: 40px; border-radius: 10px;">2</button>
-                <button class="btn btn-outline hover-lift" style="width: 40px; height: 40px; border-radius: 10px;">3</button>
-                <span style="align-self: center;">...</span>
-                <button class="btn btn-outline hover-lift" style="width: 40px; height: 40px; border-radius: 10px;">10</button>
+            <div id="page-numbers" style="display: flex; gap: 0.5rem;">
+                <!-- Page numbers will be inserted here -->
             </div>
-            <button class="btn btn-outline hover-lift">
+            <button class="btn btn-outline hover-lift" onclick="nextPage()">
                 Next <i class="fas fa-chevron-right"></i>
             </button>
         </div>
     </div>
 
+    <script src="api-client.js"></script>
     <script src="app.js"></script>
     <script>
-        function searchSchemes() {
-            const query = document.getElementById('search-query').value;
-            alert('Searching for: ' + query);
+        let currentSchemes = [];
+        let currentFilters = {
+            query: '',
+            category: '',
+            state: '',
+            department: '',
+            page: 1,
+            limit: 20
+        };
+        let totalSchemes = 0;
+        let hasMore = false;
+        
+        // Initialize page
+        window.addEventListener('api-ready', async function() {
+            await loadSchemes();
+            
+            // Add debounced search
+            const searchInput = document.getElementById('search-query');
+            if (searchInput) {
+                let searchTimeout;
+                searchInput.addEventListener('input', function() {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentFilters.page = 1;
+                        searchSchemes();
+                    }, 500);
+                });
+                
+                // Allow Enter key to search
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        currentFilters.page = 1;
+                        searchSchemes();
+                    }
+                });
+            }
+        });
+        
+        async function loadSchemes() {
+            try {
+                showLoading();
+                
+                // Build query parameters
+                const params = {};
+                if (currentFilters.category && currentFilters.category !== 'all') {
+                    params.category = currentFilters.category;
+                }
+                if (currentFilters.state) {
+                    params.state = currentFilters.state;
+                }
+                if (currentFilters.department) {
+                    params.department = currentFilters.department;
+                }
+                params.page = currentFilters.page;
+                params.limit = currentFilters.limit;
+                
+                const result = await api.getAllSchemes(params);
+                
+                if (result.success) {
+                    currentSchemes = result.data.schemes || [];
+                    totalSchemes = result.data.pagination?.total || currentSchemes.length;
+                    hasMore = result.data.pagination?.has_more || false;
+                    
+                    displaySchemes(currentSchemes);
+                    updateResultsCount(totalSchemes);
+                    updatePagination();
+                    
+                    // Update total count in hero
+                    document.getElementById('total-schemes-count').textContent = totalSchemes + '+';
+                } else {
+                    showToast(result.error || 'Failed to load schemes', 'error');
+                    displayEmptyState('Failed to load schemes. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error loading schemes:', error);
+                showToast('Network error. Please check your connection.', 'error');
+                displayEmptyState('Network error. Please check your connection and try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        async function searchSchemes() {
+            const query = document.getElementById('search-query').value.trim();
+            currentFilters.query = query;
+            
+            try {
+                showLoading();
+                
+                // Build filters object
+                const filters = {};
+                if (currentFilters.category && currentFilters.category !== 'all') {
+                    filters.category = currentFilters.category;
+                }
+                if (currentFilters.state) {
+                    filters.state = currentFilters.state;
+                }
+                if (currentFilters.department) {
+                    filters.department = currentFilters.department;
+                }
+                filters.page = currentFilters.page;
+                filters.limit = currentFilters.limit;
+                
+                const result = await api.searchSchemes(query, filters);
+                
+                if (result.success) {
+                    currentSchemes = result.data.schemes || [];
+                    totalSchemes = result.data.pagination?.total || currentSchemes.length;
+                    hasMore = result.data.pagination?.has_more || false;
+                    
+                    displaySchemes(currentSchemes);
+                    updateResultsCount(totalSchemes);
+                    updatePagination();
+                } else {
+                    showToast(result.error || 'Search failed', 'error');
+                    displayEmptyState('Search failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error searching schemes:', error);
+                showToast('Search failed. Please try again.', 'error');
+                displayEmptyState('Search failed. Please check your connection and try again.');
+            } finally {
+                hideLoading();
+            }
         }
         
         function filterCategory(category) {
+            // Update UI
             document.querySelectorAll('.chip-filter').forEach(chip => {
                 chip.classList.remove('active');
             });
             event.target.classList.add('active');
-            alert('Filtering by: ' + category);
+            
+            // Update filter and search
+            currentFilters.category = category;
+            currentFilters.page = 1;
+            
+            if (currentFilters.query) {
+                searchSchemes();
+            } else {
+                loadSchemes();
+            }
+        }
+        
+        function applyFilters() {
+            const state = document.getElementById('filter-state').value;
+            const department = document.getElementById('filter-department').value;
+            
+            currentFilters.state = state;
+            currentFilters.department = department;
+            currentFilters.page = 1;
+            
+            if (currentFilters.query) {
+                searchSchemes();
+            } else {
+                loadSchemes();
+            }
         }
         
         function clearFilters() {
             document.getElementById('filter-state').value = '';
-            document.getElementById('filter-sort').value = 'relevance';
-            document.getElementById('filter-eligibility').value = '';
+            document.getElementById('filter-department').value = '';
+            document.getElementById('search-query').value = '';
+            
+            // Clear category filter
+            document.querySelectorAll('.chip-filter').forEach(chip => {
+                chip.classList.remove('active');
+            });
+            document.querySelector('.chip-filter').classList.add('active');
+            
+            currentFilters = {
+                query: '',
+                category: '',
+                state: '',
+                department: '',
+                page: 1,
+                limit: 20
+            };
+            
+            loadSchemes();
         }
         
-        function setView(view) {
-            alert('View changed to: ' + view);
+        function displaySchemes(schemes) {
+            const container = document.getElementById('schemes-container');
+            if (!container) return;
+            
+            if (schemes.length === 0) {
+                displayEmptyState('No schemes found matching your criteria.');
+                return;
+            }
+            
+            container.innerHTML = schemes.map(scheme => {
+                const categoryColors = {
+                    'agriculture': '#10B981',
+                    'health': '#EF4444',
+                    'education': '#F59E0B',
+                    'employment': '#8B5CF6',
+                    'social_welfare': '#EC4899',
+                    'housing': '#06B6D4'
+                };
+                
+                const categoryIcons = {
+                    'agriculture': '🌾',
+                    'health': '🏥',
+                    'education': '📚',
+                    'employment': '💼',
+                    'social_welfare': '🤝',
+                    'housing': '🏠'
+                };
+                
+                const color = categoryColors[scheme.category] || '#3B82F6';
+                const icon = categoryIcons[scheme.category] || '📋';
+                
+                return `
+                    <div class="scheme-card-modern" style="border-left: 5px solid ${color};">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <span style="background: linear-gradient(135deg, ${color}, ${color}dd); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
+                                ${icon} ${escapeHtml(scheme.category || 'General')}
+                            </span>
+                        </div>
+                        <h4 style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700; color: ${color};">
+                            ${escapeHtml(scheme.name || 'Untitled Scheme')}
+                        </h4>
+                        <p style="opacity: 0.8; margin-bottom: 1.5rem; flex: 1;">
+                            ${escapeHtml(scheme.description || 'No description available')}
+                        </p>
+                        ${scheme.benefits && scheme.benefits.length > 0 ? `
+                            <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                                <div style="font-weight: 600; margin-bottom: 0.5rem; color: #10B981;">
+                                    <i class="fas fa-gift"></i> Key Benefits:
+                                </div>
+                                <ul style="margin: 0; padding-left: 1.5rem; opacity: 0.9;">
+                                    ${scheme.benefits.slice(0, 2).map(benefit => 
+                                        `<li>${escapeHtml(benefit)}</li>`
+                                    ).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.5rem; font-size: 0.9rem;">
+                            <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                                <i class="fas fa-building text-green"></i> ${escapeHtml(scheme.department || 'Government')}
+                            </span>
+                            <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                                <i class="fas fa-map-marker-alt text-orange"></i> ${escapeHtml(scheme.state || 'Central')}
+                            </span>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button class="btn btn-primary btn-sm hover-lift" style="flex: 1; background: linear-gradient(135deg, ${color}, ${color}dd);" onclick="viewDetails('${scheme.scheme_id}')">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                            ${api.isAuthenticated() ? `
+                                <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;" onclick="checkEligibility('${scheme.scheme_id}')">
+                                    <i class="fas fa-check-circle"></i> Check Eligibility
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function displayEmptyState(message) {
+            const container = document.getElementById('schemes-container');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="empty-state" style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem;">
+                    <i class="fas fa-search" style="font-size: 4rem; color: #9CA3AF; margin-bottom: 1rem;"></i>
+                    <h3 style="color: #6B7280; margin-bottom: 0.5rem;">No Results Found</h3>
+                    <p style="color: #9CA3AF;">${escapeHtml(message)}</p>
+                    <button onclick="clearFilters()" class="btn btn-primary" style="margin-top: 1rem;">
+                        <i class="fas fa-refresh"></i> Clear Filters
+                    </button>
+                </div>
+            `;
+        }
+        
+        function updateResultsCount(count) {
+            const countElement = document.getElementById('results-count');
+            if (countElement) {
+                countElement.textContent = count;
+            }
+        }
+        
+        function updatePagination() {
+            const container = document.getElementById('pagination-container');
+            if (!container) return;
+            
+            const totalPages = Math.ceil(totalSchemes / currentFilters.limit);
+            
+            if (totalPages <= 1) {
+                container.style.display = 'none';
+                return;
+            }
+            
+            container.style.display = 'flex';
+            
+            const pageNumbers = document.getElementById('page-numbers');
+            if (!pageNumbers) return;
+            
+            let html = '';
+            for (let i = 1; i <= Math.min(totalPages, 5); i++) {
+                const isActive = i === currentFilters.page;
+                html += `
+                    <button class="btn ${isActive ? 'btn-primary gradient-primary' : 'btn-outline hover-lift'}" 
+                            style="width: 40px; height: 40px; border-radius: 10px;" 
+                            onclick="goToPage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            if (totalPages > 5) {
+                html += `<span style="align-self: center;">...</span>`;
+                html += `
+                    <button class="btn btn-outline hover-lift" 
+                            style="width: 40px; height: 40px; border-radius: 10px;" 
+                            onclick="goToPage(${totalPages})">
+                        ${totalPages}
+                    </button>
+                `;
+            }
+            
+            pageNumbers.innerHTML = html;
+        }
+        
+        function goToPage(page) {
+            currentFilters.page = page;
+            if (currentFilters.query) {
+                searchSchemes();
+            } else {
+                loadSchemes();
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        function previousPage() {
+            if (currentFilters.page > 1) {
+                goToPage(currentFilters.page - 1);
+            }
+        }
+        
+        function nextPage() {
+            if (hasMore) {
+                goToPage(currentFilters.page + 1);
+            }
+        }
+        
+        async function checkEligibility(schemeId) {
+            if (!api.isAuthenticated()) {
+                showToast('Please login to check eligibility', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+                return;
+            }
+            
+            try {
+                showLoading();
+                
+                const result = await api.checkEligibility(schemeId);
+                
+                if (result.success) {
+                    const data = result.data;
+                    const isEligible = data.is_eligible || false;
+                    const confidence = data.confidence || 0;
+                    
+                    showToast(
+                        `${isEligible ? '✅ You are eligible!' : '❌ Not eligible'} (Confidence: ${Math.round(confidence * 100)}%)`,
+                        isEligible ? 'success' : 'warning'
+                    );
+                    
+                    if (isEligible) {
+                        setTimeout(() => {
+                            viewDetails(schemeId);
+                        }, 2000);
+                    }
+                } else {
+                    showToast(result.error || 'Failed to check eligibility', 'error');
+                }
+            } catch (error) {
+                console.error('Error checking eligibility:', error);
+                showToast('Failed to check eligibility. Please try again.', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+        
+        function viewDetails(schemeId) {
+            window.location.href = `scheme-details.html?id=${schemeId}`;
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
         
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
+            localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+        }
+        
+        function showLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) overlay.style.display = 'flex';
+        }
+        
+        function hideLoading() {
+            const overlay = document.getElementById('loading-overlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+        
+        function showToast(message, type = 'info') {
+            if (typeof window.showToast === 'function') {
+                window.showToast(message, type);
+                return;
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#10B981' : type === 'error' ? '#EF4444' : type === 'warning' ? '#F59E0B' : '#3B82F6'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease-out;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            `;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
     </script>
 </body>

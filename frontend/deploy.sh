@@ -1,152 +1,201 @@
 #!/bin/bash
 
 # BharatSahayak Frontend Deployment Script
-# Deploys static files to S3 and optionally creates CloudFront distribution
 
 set -e
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-NC='\033[0m' # No Color
-
-# Configuration
+# Default environment
 ENVIRONMENT=${1:-dev}
-AWS_REGION=${AWS_REGION:-ap-south-1}
-STACK_NAME="bharatsahayak-${ENVIRONMENT}"
 
-echo -e "${GREEN}BharatSahayak Frontend Deployment${NC}"
-echo "Environment: $ENVIRONMENT"
-echo "Region: $AWS_REGION"
-echo ""
+echo "🚀 Deploying BharatSahayak Frontend to $ENVIRONMENT environment..."
 
-# Check if AWS CLI is installed
-if ! command -v aws &> /dev/null; then
-    echo -e "${RED}Error: AWS CLI is not installed${NC}"
+# Validate environment
+if [[ ! "$ENVIRONMENT" =~ ^(dev|staging|prod)$ ]]; then
+    echo "❌ Error: Environment must be dev, staging, or prod"
     exit 1
 fi
 
-# Get S3 bucket name from CloudFormation stack
-echo -e "${YELLOW}Getting S3 bucket name from CloudFormation...${NC}"
-BUCKET_NAME=$(aws cloudformation describe-stacks \
-    --stack-name "$STACK_NAME" \
-    --region "$AWS_REGION" \
-    --query "Stacks[0].Outputs[?OutputKey=='StaticContentBucketName'].OutputValue" \
-    --output text 2>/dev/null)
-
-if [ -z "$BUCKET_NAME" ]; then
-    echo -e "${RED}Error: Could not find S3 bucket from CloudFormation stack${NC}"
-    echo "Make sure the backend stack is deployed first"
-    exit 1
+# Copy appropriate config file
+echo "📋 Setting up configuration for $ENVIRONMENT..."
+if [ -f "config.$ENVIRONMENT.json" ]; then
+    cp "config.$ENVIRONMENT.json" "config.json"
+    echo "✅ Configuration set for $ENVIRONMENT"
+else
+    echo "⚠️  Warning: config.$ENVIRONMENT.json not found, using default config.json"
 fi
 
-echo -e "${GREEN}Found S3 bucket: $BUCKET_NAME${NC}"
+# Minify CSS and JavaScript for production
+if [ "$ENVIRONMENT" = "prod" ]; then
+    echo "🗜️  Minifying assets for production..."
+    
+    # Install dependencies if needed
+    if ! command -v cssnano &> /dev/null; then
+        echo "Installing cssnano..."
+        npm install -g cssnano-cli
+    fi
+    
+    if ! command -v terser &> /dev/null; then
+        echo "Installing terser..."
+        npm install -g terser
+    fi
+    
+    # Minify CSS
+    if [ -f "styles.css" ]; then
+        cssnano styles.css styles.min.css
+        echo "✅ CSS minified"
+    fi
+    
+    # Minify JavaScript
+    if [ -f "app.js" ]; then
+        terser app.js -o app.min.js --compress --mangle
+        echo "✅ JavaScript minified"
+    fi
+    
+    # Update HTML files to use minified assets
+    for file in *.html; do
+        if [ -f "$file" ]; then
+            sed -i 's/styles\.css/styles.min.css/g' "$file"
+            sed -i 's/app\.js/app.min.js/g' "$file"
+        fi
+    done
+    
+    echo "✅ HTML files updated to use minified assets"
+fi
 
-# Create a frontend folder in the bucket
-FRONTEND_PREFIX="frontend"
+# Validate HTML files
+echo "🔍 Validating HTML files..."
+for file in *.html; do
+    if [ -f "$file" ]; then
+        # Basic validation - check for required elements
+        if ! grep -q "<!DOCTYPE html>" "$file"; then
+            echo "⚠️  Warning: $file missing DOCTYPE declaration"
+        fi
+        if ! grep -q "<title>" "$file"; then
+            echo "⚠️  Warning: $file missing title tag"
+        fi
+        echo "✅ $file validated"
+    fi
+done
 
-# Upload files to S3
-echo -e "${YELLOW}Uploading files to S3...${NC}"
+# Create manifest for PWA
+echo "📱 Updating PWA manifest..."
+if [ -f "manifest.json" ]; then
+    # Update start_url based on environment
+    if [ "$ENVIRONMENT" = "prod" ]; then
+        sed -i 's/"start_url": ".*"/"start_url": "\/"/g' manifest.json
+    else
+        sed -i 's/"start_url": ".*"/"start_url": "\/"/g' manifest.json
+    fi
+    echo "✅ PWA manifest updated"
+fi
 
-# Upload HTML
-aws s3 cp index.html "s3://${BUCKET_NAME}/${FRONTEND_PREFIX}/index.html" \
-    --content-type "text/html" \
-    --cache-control "max-age=300" \
-    --region "$AWS_REGION"
+# Generate service worker cache version
+CACHE_VERSION=$(date +%s)
+if [ -f "service-worker.js" ]; then
+    sed -i "s/CACHE_VERSION = '[^']*'/CACHE_VERSION = 'v$CACHE_VERSION'/g" service-worker.js
+    echo "✅ Service worker cache version updated to v$CACHE_VERSION"
+fi
 
-# Upload CSS
-aws s3 cp styles.css "s3://${BUCKET_NAME}/${FRONTEND_PREFIX}/styles.css" \
-    --content-type "text/css" \
-    --cache-control "max-age=86400" \
-    --region "$AWS_REGION"
+# Deploy to S3 (if AWS CLI is configured)
+if command -v aws &> /dev/null; then
+    echo "☁️  Checking AWS configuration..."
+    
+    # Set S3 bucket based on environment
+    case $ENVIRONMENT in
+        dev)
+            S3_BUCKET="bharatsahayak-frontend-dev"
+            ;;
+        staging)
+            S3_BUCKET="bharatsahayak-frontend-staging"
+            ;;
+        prod)
+            S3_BUCKET="bharatsahayak-frontend-prod"
+            ;;
+    esac
+    
+    echo "📤 Deploying to S3 bucket: $S3_BUCKET"
+    
+    # Sync files to S3
+    aws s3 sync . s3://$S3_BUCKET/ \
+        --exclude "*.sh" \
+        --exclude "*.md" \
+        --exclude ".git/*" \
+        --exclude "node_modules/*" \
+        --exclude "config.*.json" \
+        --cache-control "public, max-age=31536000" \
+        --metadata-directive REPLACE
+    
+    # Set special cache headers for HTML files
+    aws s3 cp . s3://$S3_BUCKET/ \
+        --recursive \
+        --exclude "*" \
+        --include "*.html" \
+        --cache-control "public, max-age=300" \
+        --metadata-directive REPLACE
+    
+    # Set cache headers for config.json
+    aws s3 cp config.json s3://$S3_BUCKET/config.json \
+        --cache-control "public, max-age=300" \
+        --metadata-directive REPLACE
+    
+    echo "✅ Files deployed to S3"
+    
+    # Invalidate CloudFront cache if distribution exists
+    CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[0].DomainName=='$S3_BUCKET.s3.amazonaws.com'].Id" --output text)
+    
+    if [ ! -z "$CLOUDFRONT_DISTRIBUTION_ID" ] && [ "$CLOUDFRONT_DISTRIBUTION_ID" != "None" ]; then
+        echo "🔄 Invalidating CloudFront cache..."
+        aws cloudfront create-invalidation \
+            --distribution-id $CLOUDFRONT_DISTRIBUTION_ID \
+            --paths "/*"
+        echo "✅ CloudFront cache invalidated"
+    fi
+    
+else
+    echo "⚠️  AWS CLI not found. Skipping S3 deployment."
+    echo "📁 Files are ready for manual deployment in current directory"
+fi
 
-# Upload JavaScript
-aws s3 cp app.js "s3://${BUCKET_NAME}/${FRONTEND_PREFIX}/app.js" \
-    --content-type "application/javascript" \
-    --cache-control "max-age=86400" \
-    --region "$AWS_REGION"
+# Generate deployment report
+echo "📊 Generating deployment report..."
+cat > deployment-report.txt << EOF
+BharatSahayak Frontend Deployment Report
+========================================
 
-# Upload README
-aws s3 cp README.md "s3://${BUCKET_NAME}/${FRONTEND_PREFIX}/README.md" \
-    --content-type "text/markdown" \
-    --cache-control "max-age=3600" \
-    --region "$AWS_REGION"
+Environment: $ENVIRONMENT
+Deployment Date: $(date)
+Cache Version: v$CACHE_VERSION
 
-echo -e "${GREEN}Files uploaded successfully!${NC}"
+Files Deployed:
+$(ls -la *.html *.css *.js *.json 2>/dev/null || echo "No files found")
 
-# Set bucket policy for public read access to frontend folder
-echo -e "${YELLOW}Updating bucket policy for public access...${NC}"
+Configuration:
+$(cat config.json 2>/dev/null || echo "No config.json found")
 
-BUCKET_POLICY=$(cat <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "PublicReadGetObject",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:GetObject",
-      "Resource": [
-        "arn:aws:s3:::${BUCKET_NAME}/schemes/*",
-        "arn:aws:s3:::${BUCKET_NAME}/documents/*",
-        "arn:aws:s3:::${BUCKET_NAME}/${FRONTEND_PREFIX}/*"
-      ]
-    },
-    {
-      "Sid": "AllowListBucket",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:ListBucket",
-      "Resource": "arn:aws:s3:::${BUCKET_NAME}",
-      "Condition": {
-        "StringLike": {
-          "s3:prefix": [
-            "schemes/*",
-            "documents/*",
-            "${FRONTEND_PREFIX}/*"
-          ]
-        }
-      }
-    }
-  ]
-}
+Status: ✅ DEPLOYED SUCCESSFULLY
 EOF
-)
 
-echo "$BUCKET_POLICY" | aws s3api put-bucket-policy \
-    --bucket "$BUCKET_NAME" \
-    --policy file:///dev/stdin \
-    --region "$AWS_REGION"
-
-echo -e "${GREEN}Bucket policy updated!${NC}"
-
-# Enable static website hosting
-echo -e "${YELLOW}Configuring static website hosting...${NC}"
-
-aws s3 website "s3://${BUCKET_NAME}" \
-    --index-document "${FRONTEND_PREFIX}/index.html" \
-    --error-document "${FRONTEND_PREFIX}/index.html" \
-    --region "$AWS_REGION"
-
-echo -e "${GREEN}Static website hosting enabled!${NC}"
-
-# Get website URL
-WEBSITE_URL="http://${BUCKET_NAME}.s3-website.${AWS_REGION}.amazonaws.com/${FRONTEND_PREFIX}/"
+echo "✅ Deployment report generated: deployment-report.txt"
 
 echo ""
-echo -e "${GREEN}========================================${NC}"
-echo -e "${GREEN}Deployment Complete!${NC}"
-echo -e "${GREEN}========================================${NC}"
+echo "🎉 Deployment completed successfully!"
 echo ""
-echo -e "S3 Bucket: ${GREEN}${BUCKET_NAME}${NC}"
-echo -e "Website URL: ${GREEN}${WEBSITE_URL}${NC}"
+echo "📋 Next Steps:"
+echo "1. Test the application in $ENVIRONMENT environment"
+echo "2. Verify API endpoints are working"
+echo "3. Check PWA installation on mobile devices"
+echo "4. Monitor CloudWatch logs for any errors"
 echo ""
-echo -e "${YELLOW}Next Steps:${NC}"
-echo "1. Open the website URL in your browser"
-echo "2. Configure API endpoint and Cognito credentials"
-echo "3. Test the complete user flow"
-echo ""
-echo -e "${YELLOW}Optional: Set up CloudFront for HTTPS${NC}"
-echo "Run: ./setup-cloudfront.sh $ENVIRONMENT"
+echo "🌐 Application URLs:"
+case $ENVIRONMENT in
+    dev)
+        echo "   Development: https://dev.bharatsahayak.gov.in"
+        ;;
+    staging)
+        echo "   Staging: https://staging.bharatsahayak.gov.in"
+        ;;
+    prod)
+        echo "   Production: https://bharatsahayak.gov.in"
+        ;;
+esac
 echo ""

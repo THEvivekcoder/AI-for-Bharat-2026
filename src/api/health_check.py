@@ -1,100 +1,120 @@
-"""Lambda handler for health symptom checking."""
+"""Lambda handler for health check endpoint."""
 
 import json
 import os
 import logging
-from typing import Dict, Any, List
-
-from src.services.health_advisor import HealthAdvisor
+from typing import Dict, Any
+from datetime import datetime
+import boto3
+from botocore.exceptions import ClientError
 
 # Configure logging
 logger = logging.getLogger()
 logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO'))
 
-# Initialize health advisor
-health_advisor = HealthAdvisor()
+# Environment variables
+ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development')
+VERSION = os.environ.get('VERSION', '1.0.0')
+AWS_REGION = os.environ.get('AWS_REGION', 'ap-south-1')
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
-    Handle POST /health/check requests.
+    Handle health check requests.
     
-    Request Body:
-    {
-        "symptoms": ["fever", "cough", "headache"],
-        "user_info": {
-            "age": 35,
-            "gender": "male"
-        }
-    }
+    GET /health-check
     
     Response:
     {
-        "urgency_level": "soon",
-        "possible_conditions": ["Common cold", "Viral fever"],
-        "self_care_recommendations": [...],
-        "when_to_seek_care": "...",
-        "red_flags": [...],
-        "disclaimer": "...",
-        "confidence": 0.75
+        "status": "healthy",
+        "timestamp": "2024-01-20T10:00:00Z",
+        "environment": "development",
+        "version": "1.0.0",
+        "region": "ap-south-1",
+        "services": {
+            "dynamodb": "healthy",
+            "cognito": "healthy"
+        }
     }
-    
-    Error Responses:
-    - 400: Invalid request body
-    - 500: Internal server error
     """
     try:
-        # Parse request body
-        body = event.get('body')
-        if not body:
-            return error_response(400, "Request body is required")
+        timestamp = datetime.utcnow().isoformat() + 'Z'
         
-        try:
-            if isinstance(body, str):
-                data = json.loads(body)
-            else:
-                data = body
-        except json.JSONDecodeError:
-            return error_response(400, "Invalid JSON in request body")
+        # Check service health
+        services_health = check_services_health()
         
-        # Extract symptoms
-        symptoms = data.get('symptoms', [])
+        # Determine overall status
+        overall_status = "healthy"
+        if any(status != "healthy" for status in services_health.values()):
+            overall_status = "degraded"
         
-        if not isinstance(symptoms, list):
-            return error_response(400, "symptoms must be a list")
+        response_data = {
+            "status": overall_status,
+            "timestamp": timestamp,
+            "environment": ENVIRONMENT,
+            "version": VERSION,
+            "region": AWS_REGION,
+            "services": services_health,
+            "lambda": {
+                "function_name": context.function_name if context else "unknown",
+                "memory_limit": context.memory_limit_in_mb if context else "unknown",
+                "request_id": context.request_id if context else "unknown"
+            }
+        }
         
-        # Validate symptoms
-        if not symptoms:
-            return error_response(400, "At least one symptom is required")
+        logger.info(f"Health check: {overall_status}")
         
-        # Validate each symptom is a string
-        for i, symptom in enumerate(symptoms):
-            if not isinstance(symptom, str):
-                return error_response(400, f"Symptom {i} must be a string")
-            if not symptom.strip():
-                return error_response(400, f"Symptom {i} cannot be empty")
-        
-        # Extract optional user info
-        user_info = data.get('user_info', {})
-        
-        logger.info(f"Analyzing symptoms: {symptoms}")
-        
-        # Analyze symptoms
-        guidance = health_advisor.analyze_symptoms(symptoms, user_info)
-        
-        # Convert to response format
-        response_data = guidance.model_dump()
-        
-        logger.info(f"Generated guidance with urgency level: {guidance.urgency_level}")
         return success_response(response_data)
         
-    except ValueError as e:
-        logger.error(f"Invalid parameter value: {str(e)}")
-        return error_response(400, f"Invalid parameter value: {str(e)}")
-    
     except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
-        return error_response(500, "Internal server error")
+        logger.error(f"Health check error: {str(e)}", exc_info=True)
+        return error_response(500, "Health check failed", {
+            "status": "unhealthy",
+            "timestamp": datetime.utcnow().isoformat() + 'Z',
+            "error": str(e)
+        })
+
+
+def check_services_health() -> Dict[str, str]:
+    """
+    Check health of dependent services.
+    
+    Returns:
+        Dictionary with service names and their health status
+    """
+    services = {}
+    
+    # Check DynamoDB
+    try:
+        dynamodb = boto3.client('dynamodb', region_name=AWS_REGION)
+        # Simple operation to check connectivity
+        dynamodb.list_tables(Limit=1)
+        services['dynamodb'] = 'healthy'
+    except ClientError as e:
+        logger.error(f"DynamoDB health check failed: {str(e)}")
+        services['dynamodb'] = 'unhealthy'
+    except Exception as e:
+        logger.error(f"DynamoDB health check error: {str(e)}")
+        services['dynamodb'] = 'unknown'
+    
+    # Check Cognito
+    try:
+        cognito = boto3.client('cognito-idp', region_name=AWS_REGION)
+        user_pool_id = os.environ.get('USER_POOL_ID')
+        if user_pool_id:
+            # Simple operation to check connectivity
+            cognito.describe_user_pool(UserPoolId=user_pool_id)
+            services['cognito'] = 'healthy'
+        else:
+            services['cognito'] = 'not_configured'
+    except ClientError as e:
+        logger.error(f"Cognito health check failed: {str(e)}")
+        services['cognito'] = 'unhealthy'
+    except Exception as e:
+        logger.error(f"Cognito health check error: {str(e)}")
+        services['cognito'] = 'unknown'
+    
+    return services
 
 
 def success_response(data: Dict[str, Any], status_code: int = 200) -> Dict[str, Any]:
@@ -103,21 +123,27 @@ def success_response(data: Dict[str, Any], status_code: int = 200) -> Dict[str, 
         'statusCode': status_code,
         'headers': {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
         },
         'body': json.dumps(data)
     }
 
 
-def error_response(status_code: int, message: str) -> Dict[str, Any]:
+def error_response(status_code: int, message: str, data: Dict[str, Any] = None) -> Dict[str, Any]:
     """Create an error API response."""
+    response_data = data or {'error': message}
+    
     return {
         'statusCode': status_code,
         'headers': {
             'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+            'Cache-Control': 'no-cache, no-store, must-revalidate'
         },
-        'body': json.dumps({
-            'error': message
-        })
+        'body': json.dumps(response_data)
     }

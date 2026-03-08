@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BharatSahayak - Integration Test</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #06038D;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h2 {
+            color: #333;
+            margin-top: 0;
+        }
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .test-status {
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        .status-pending { background: #ffeaa7; color: #2d3436; }
+        .status-running { background: #74b9ff; color: white; }
+        .status-success { background: #00b894; color: white; }
+        .status-error { background: #e17055; color: white; }
+        .test-button {
+            background: #06038D;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .test-button:hover {
+            background: #040266;
+        }
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log-area {
+            background: #2d3436;
+            color: #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .config-section {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        .config-input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 BharatSahayak Integration Test Suite</h1>
+        
+        <!-- Configuration Section -->
+        <div class="config-section">
+            <h3>API Configuration</h3>
+            <input type="text" id="api-endpoint" class="config-input" placeholder="API Endpoint" value="https://dvt82zj0c4.execute-api.ap-south-1.amazonaws.com/dev">
+            <button onclick="loadConfig()" class="test-button">Load Config</button>
+            <button onclick="testConnection()" class="test-button">Test Connection</button>
+        </div>
+
+        <!-- Authentication Tests -->
+        <div class="test-section">
+            <h2>🔐 Authentication Tests</h2>
+            <div class="test-item">
+                <span>Registration API</span>
+                <div>
+                    <span id="auth-register-status" class="test-status status-pending">PENDING</span>
+                    <button onclick="testRegistration()" class="test-button">Test</button>
+                </div>
+            </div>
+            <div class="test-item">
+                <span>Login API</span>
+                <div>
+                    <span id="auth-login-status" class="test-status status-pending">PENDING</span>
+                    <button onclick="testLogin()" class="test-button">Test</button>
+                </div>
+            </div>
+            <div class="test-item">
+                <span>OTP Verification</span>
+                <div>
+                    <span id="auth-verify-status" class="test-status status-pending">PENDING</span>
+                    <button onclick="testOTPVerification()" class="test-button">Test</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scheme Tests -->
+        <div class="test-section">
+            <h2>📄 Scheme API Tests</h2>
+            <div class="test-item">
+                <span>Get All Schemes</span>
+                <div>
+                    <span id="schemes-list-status" class="test-status status-pending">PENDING</span>
+                    <button onclick="testSchemesList()" class="test-button">Test</button>
+                </div>
+            </div>
+            <div class="test-item">
+                <span>Search Schemes</span>
+                <div>
+                    <span id="schemes-search-status" class="test-status status-pending">PENDING</span>
+                    <button onclick="testSchemesSearch()" class="test-button">Test</button>
+                </div>
+            </div>
+            <div class="test-item">
+                <span>Eligibility Check</span>
+                <div>
+                    <span id="eligibility-check-status" class="test-status status-pending">PENDING</span>
+                    <button onclick="testEligibilityCheck()" class="test-button">Test</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agriculture Tests -->
+        <div class="test-section">
+            <h2>🌾 Agriculture API Tests</h2>
+            <div class="test-item">
+                <span>Crop Advice</span>
+                <div>
+                    <span id="crop-advice-status" class="test-status status-pending">PENDING</span>
+                    <button onclick="testCropAdvice()" class="test-button">Test</button>
+                </div>
+            </div>
+            <div class="test-item">
+                <span>Market Prices</span>
+                <div>
+                    <span id="market-prices-status" class="test-status status-pending">PENDING</span>
+                    <button onclick="testMarketPrices()" class="test-button">Test</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Voice Tests -->
+        <div class="test-section">
+            <h2>🎤 Voice API Tests</h2>
+            <div class="test-item">
+                <span>Voice to Text</span>
+                <div>
+                    <span id="voice-text-status" class="test-status status-pending">PENDING</span>
+                    <button onclick="testVoiceToText()" class="test-button">Test</button>
+                </div>
+            </div>
+            <div class="test-item">
+                <span>Conversational Query</span>
+                <div>
+                    <span id="voice-query-status" class="test-status status-pending">PENDING</span>
+                    <button onclick="testConversationalQuery()" class="test-button">Test</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Run All Tests -->
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="runAllTests()" class="test-button" style="font-size: 16px; padding: 12px 24px;">
+                🚀 Run All Tests
+            </button>
+            <button onclick="clearLogs()" class="test-button" style="background: #636e72;">
+                🗑️ Clear Logs
+            </button>
+        </div>
+
+        <!-- Log Area -->
+        <div class="log-area" id="log-area">
+            === BharatSahayak Integration Test Logs ===<br>
+            Ready to run tests...<br>
+        </div>
+    </div>
+
+    <script>
+        let apiEndpoint = 'https://dvt82zj0c4.execute-api.ap-south-1.amazonaws.com/dev';
+        let testResults = {};
+
+        function log(message, type = 'info') {
+            const logArea = document.getElementById('log-area');
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            logArea.innerHTML += `[${timestamp}] ${prefix} ${message}<br>`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function updateStatus(testId, status) {
+            const element = document.getElementById(testId);
+            element.className = `test-status status-${status}`;
+            element.textContent = status.toUpperCase();
+        }
+
+        function loadConfig() {
+            apiEndpoint = document.getElementById('api-endpoint').value.trim();
+            log(`Configuration loaded: ${apiEndpoint}`);
+        }
+
+        async function testConnection() {
+            updateStatus('auth-register-status', 'running');
+            log('Testing API connection...');
+            
+            try {
+                const response = await fetch(`${apiEndpoint}/health`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    log('✅ API connection successful', 'success');
+                    updateStatus('auth-register-status', 'success');
+                } else {
+                    log(`❌ API connection failed: ${response.status}`, 'error');
+                    updateStatus('auth-register-status', 'error');
+                }
+            } catch (error) {
+                log(`❌ Connection error: ${error.message}`, 'error');
+                updateStatus('auth-register-status', 'error');
+            }
+        }
+
+        async function testRegistration() {
+            updateStatus('auth-register-status', 'running');
+            log('Testing registration API...');
+            
+            const testData = {
+                phone_number: '+919876543210',
+                language: 'hi',
+                location: {
+                    state: 'Uttar Pradesh',
+                    district: 'Lucknow',
+                    pincode: '226001'
+                }
+            };
+
+            try {
+                const response = await fetch(`${apiEndpoint}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Registration API working', 'success');
+                    updateStatus('auth-register-status', 'success');
+                    testResults.registration = { success: true, data };
+                } else {
+                    log(`⚠️ Registration API returned: ${data.error || data.message}`, 'error');
+                    updateStatus('auth-register-status', 'error');
+                    testResults.registration = { success: false, error: data.error };
+                }
+            } catch (error) {
+                log(`❌ Registration test failed: ${error.message}`, 'error');
+                updateStatus('auth-register-status', 'error');
+                testResults.registration = { success: false, error: error.message };
+            }
+        }
+
+        async function testLogin() {
+            updateStatus('auth-login-status', 'running');
+            log('Testing login API...');
+            
+            try {
+                const response = await fetch(`${apiEndpoint}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phone_number: '+919876543210' })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Login API working', 'success');
+                    updateStatus('auth-login-status', 'success');
+                    testResults.login = { success: true, data };
+                } else {
+                    log(`⚠️ Login API returned: ${data.error || data.message}`, 'error');
+                    updateStatus('auth-login-status', 'error');
+                    testResults.login = { success: false, error: data.error };
+                }
+            } catch (error) {
+                log(`❌ Login test failed: ${error.message}`, 'error');
+                updateStatus('auth-login-status', 'error');
+                testResults.login = { success: false, error: error.message };
+            }
+        }
+
+        async function testOTPVerification() {
+            updateStatus('auth-verify-status', 'running');
+            log('Testing OTP verification API...');
+            
+            try {
+                const response = await fetch(`${apiEndpoint}/auth/verify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        phone_number: '+919876543210',
+                        otp: '123456',
+                        session: 'test-session'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.status === 400 || response.status === 401) {
+                    log('✅ OTP verification API responding (expected validation error)', 'success');
+                    updateStatus('auth-verify-status', 'success');
+                } else if (response.ok) {
+                    log('✅ OTP verification API working', 'success');
+                    updateStatus('auth-verify-status', 'success');
+                } else {
+                    log(`⚠️ OTP verification unexpected response: ${response.status}`, 'error');
+                    updateStatus('auth-verify-status', 'error');
+                }
+            } catch (error) {
+                log(`❌ OTP verification test failed: ${error.message}`, 'error');
+                updateStatus('auth-verify-status', 'error');
+            }
+        }
+
+        async function testSchemesList() {
+            updateStatus('schemes-list-status', 'running');
+            log('Testing schemes list API...');
+            
+            try {
+                const response = await fetch(`${apiEndpoint}/schemes`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Schemes list API working (${data.schemes?.length || 0} schemes)`, 'success');
+                    updateStatus('schemes-list-status', 'success');
+                } else {
+                    log(`⚠️ Schemes list API error: ${data.error || data.message}`, 'error');
+                    updateStatus('schemes-list-status', 'error');
+                }
+            } catch (error) {
+                log(`❌ Schemes list test failed: ${error.message}`, 'error');
+                updateStatus('schemes-list-status', 'error');
+            }
+        }
+
+        async function testSchemesSearch() {
+            updateStatus('schemes-search-status', 'running');
+            log('Testing schemes search API...');
+            
+            try {
+                const response = await fetch(`${apiEndpoint}/schemes/search?query=agriculture&category=agriculture`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log(`✅ Schemes search API working (${data.schemes?.length || 0} results)`, 'success');
+                    updateStatus('schemes-search-status', 'success');
+                } else {
+                    log(`⚠️ Schemes search API error: ${data.error || data.message}`, 'error');
+                    updateStatus('schemes-search-status', 'error');
+                }
+            } catch (error) {
+                log(`❌ Schemes search test failed: ${error.message}`, 'error');
+                updateStatus('schemes-search-status', 'error');
+            }
+        }
+
+        async function testEligibilityCheck() {
+            updateStatus('eligibility-check-status', 'running');
+            log('Testing eligibility check API...');
+            
+            try {
+                const response = await fetch(`${apiEndpoint}/schemes/check-eligibility`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
+                    },
+                    body: JSON.stringify({
+                        scheme_id: 'test-scheme-id'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.status === 401) {
+                    log('✅ Eligibility check API responding (auth required)', 'success');
+                    updateStatus('eligibility-check-status', 'success');
+                } else if (response.ok) {
+                    log('✅ Eligibility check API working', 'success');
+                    updateStatus('eligibility-check-status', 'success');
+                } else {
+                    log(`⚠️ Eligibility check API error: ${data.error || data.message}`, 'error');
+                    updateStatus('eligibility-check-status', 'error');
+                }
+            } catch (error) {
+                log(`❌ Eligibility check test failed: ${error.message}`, 'error');
+                updateStatus('eligibility-check-status', 'error');
+            }
+        }
+
+        async function testCropAdvice() {
+            updateStatus('crop-advice-status', 'running');
+            log('Testing crop advice API...');
+            
+            try {
+                const response = await fetch(`${apiEndpoint}/crop-advice?location=Uttar Pradesh&season=kharif`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Crop advice API working', 'success');
+                    updateStatus('crop-advice-status', 'success');
+                } else {
+                    log(`⚠️ Crop advice API error: ${data.error || data.message}`, 'error');
+                    updateStatus('crop-advice-status', 'error');
+                }
+            } catch (error) {
+                log(`❌ Crop advice test failed: ${error.message}`, 'error');
+                updateStatus('crop-advice-status', 'error');
+            }
+        }
+
+        async function testMarketPrices() {
+            updateStatus('market-prices-status', 'running');
+            log('Testing market prices API...');
+            
+            try {
+                const response = await fetch(`${apiEndpoint}/market-prices?location=Uttar Pradesh&commodity=wheat`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    log('✅ Market prices API working', 'success');
+                    updateStatus('market-prices-status', 'success');
+                } else {
+                    log(`⚠️ Market prices API error: ${data.error || data.message}`, 'error');
+                    updateStatus('market-prices-status', 'error');
+                }
+            } catch (error) {
+                log(`❌ Market prices test failed: ${error.message}`, 'error');
+                updateStatus('market-prices-status', 'error');
+            }
+        }
+
+        async function testVoiceToText() {
+            updateStatus('voice-text-status', 'running');
+            log('Testing voice to text API...');
+            
+            try {
+                // Create a dummy audio blob for testing
+                const response = await fetch(`${apiEndpoint}/voice-to-text`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
+                    },
+                    body: JSON.stringify({
+                        audio_data: 'dummy-audio-data',
+                        language: 'hi'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.status === 401) {
+                    log('✅ Voice to text API responding (auth required)', 'success');
+                    updateStatus('voice-text-status', 'success');
+                } else if (response.ok) {
+                    log('✅ Voice to text API working', 'success');
+                    updateStatus('voice-text-status', 'success');
+                } else {
+                    log(`⚠️ Voice to text API error: ${data.error || data.message}`, 'error');
+                    updateStatus('voice-text-status', 'error');
+                }
+            } catch (error) {
+                log(`❌ Voice to text test failed: ${error.message}`, 'error');
+                updateStatus('voice-text-status', 'error');
+            }
+        }
+
+        async function testConversationalQuery() {
+            updateStatus('voice-query-status', 'running');
+            log('Testing conversational query API...');
+            
+            try {
+                const response = await fetch(`${apiEndpoint}/conversational-query`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
+                    },
+                    body: JSON.stringify({
+                        query: 'Tell me about agriculture schemes',
+                        language: 'hi'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.status === 401) {
+                    log('✅ Conversational query API responding (auth required)', 'success');
+                    updateStatus('voice-query-status', 'success');
+                } else if (response.ok) {
+                    log('✅ Conversational query API working', 'success');
+                    updateStatus('voice-query-status', 'success');
+                } else {
+                    log(`⚠️ Conversational query API error: ${data.error || data.message}`, 'error');
+                    updateStatus('voice-query-status', 'error');
+                }
+            } catch (error) {
+                log(`❌ Conversational query test failed: ${error.message}`, 'error');
+                updateStatus('voice-query-status', 'error');
+            }
+        }
+
+        async function runAllTests() {
+            log('🚀 Starting comprehensive test suite...');
+            
+            const tests = [
+                testConnection,
+                testRegistration,
+                testLogin,
+                testOTPVerification,
+                testSchemesList,
+                testSchemesSearch,
+                testEligibilityCheck,
+                testCropAdvice,
+                testMarketPrices,
+                testVoiceToText,
+                testConversationalQuery
+            ];
+
+            for (const test of tests) {
+                await test();
+                await new Promise(resolve => setTimeout(resolve, 500)); // Small delay between tests
+            }
+
+            log('🏁 All tests completed!');
+            
+            // Generate summary
+            const successCount = Object.values(testResults).filter(r => r.success).length;
+            const totalCount = Object.keys(testResults).length;
+            log(`📊 Test Summary: ${successCount}/${totalCount} tests passed`);
+        }
+
+        function clearLogs() {
+            document.getElementById('log-area').innerHTML = '=== BharatSahayak Integration Test Logs ===<br>Logs cleared...<br>';
+        }
+
+        // Initialize
+        loadConfig();
+    </script>
+</body>
+</html>

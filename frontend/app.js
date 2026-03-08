@@ -1,12 +1,13 @@
 // Global state
 let config = {
-    apiEndpoint: 'https://dvt82zj0c4.execute-api.ap-south-1.amazonaws.com/dev/',
+    apiEndpoint: 'https://dvt82zj0c4.execute-api.ap-south-1.amazonaws.com/dev',
     userPoolId: 'ap-south-1_KSJ0FKz20',
     clientId: '10emq71eioca5qkns6on0l22om'
 };
 
 let authToken = null;
 let currentUser = null;
+let apiClient = null;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,10 +16,57 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Configuration Management
+async function loadConfig() {
+    try {
+        // Try to load config from localStorage first
+        const saved = localStorage.getItem('bharatsahayak-config');
+        if (saved) {
+            const savedConfig = JSON.parse(saved);
+            config = { ...config, ...savedConfig };
+        }
+        
+        // Try to fetch config from server if available
+        try {
+            const response = await fetch('/config.json');
+            if (response.ok) {
+                const serverConfig = await response.json();
+                config = { ...config, ...serverConfig };
+                localStorage.setItem('bharatsahayak-config', JSON.stringify(config));
+            }
+        } catch (e) {
+            console.log('No server config found, using defaults');
+        }
+        
+        // Update UI if config elements exist
+        const apiEndpointEl = document.getElementById('api-endpoint');
+        const userPoolIdEl = document.getElementById('user-pool-id');
+        const clientIdEl = document.getElementById('client-id');
+        
+        if (apiEndpointEl) apiEndpointEl.value = config.apiEndpoint;
+        if (userPoolIdEl) userPoolIdEl.value = config.userPoolId;
+        if (clientIdEl) clientIdEl.value = config.clientId;
+        
+        // Initialize API client
+        apiClient = new APIClient(config);
+        
+    } catch (error) {
+        console.error('Error loading config:', error);
+    }
+}
+
 function saveConfig() {
-    config.apiEndpoint = document.getElementById('api-endpoint').value.trim();
-    config.userPoolId = document.getElementById('user-pool-id').value.trim();
-    config.clientId = document.getElementById('client-id').value.trim();
+    const apiEndpointEl = document.getElementById('api-endpoint');
+    const userPoolIdEl = document.getElementById('user-pool-id');
+    const clientIdEl = document.getElementById('client-id');
+    
+    if (!apiEndpointEl || !userPoolIdEl || !clientIdEl) {
+        console.error('Config elements not found');
+        return;
+    }
+    
+    config.apiEndpoint = apiEndpointEl.value.trim();
+    config.userPoolId = userPoolIdEl.value.trim();
+    config.clientId = clientIdEl.value.trim();
     
     if (!config.apiEndpoint || !config.userPoolId || !config.clientId) {
         showStatus('config-status', 'Please fill in all configuration fields', 'error');
@@ -34,14 +82,194 @@ function saveConfig() {
     showStatus('config-status', 'Configuration saved successfully!', 'success');
 }
 
-function loadConfig() {
-    const saved = localStorage.getItem('bharatsahayak-config');
-    if (saved) {
-        config = JSON.parse(saved);
-        document.getElementById('api-endpoint').value = config.apiEndpoint;
-        document.getElementById('user-pool-id').value = config.userPoolId;
-        document.getElementById('client-id').value = config.clientId;
+// API Helper Functions
+class APIClient {
+    constructor(config) {
+        this.config = config;
+        this.retryAttempts = config.api?.retryAttempts || 3;
+        this.retryDelay = config.api?.retryDelay || 1000;
+        this.timeout = config.api?.timeout || 30000;
     }
+
+    async request(endpoint, options = {}) {
+        const url = `${this.config.apiEndpoint}${endpoint}`;
+        const defaultOptions = {
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            },
+            timeout: this.timeout
+        };
+
+        // Add auth token if available
+        const authToken = localStorage.getItem('bharatsahayak-auth-token');
+        if (authToken && !options.skipAuth) {
+            defaultOptions.headers['Authorization'] = `Bearer ${authToken}`;
+        }
+
+        const requestOptions = { ...defaultOptions, ...options };
+
+        for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+                const response = await fetch(url, {
+                    ...requestOptions,
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    return { success: true, data };
+                } else {
+                    // Handle 401 - redirect to login
+                    if (response.status === 401) {
+                        localStorage.removeItem('bharatsahayak-auth-token');
+                        localStorage.removeItem('bharatsahayak-user');
+                        if (window.location.pathname !== '/login.html') {
+                            window.location.href = 'login.html';
+                        }
+                        return { success: false, error: 'Authentication required', status: 401 };
+                    }
+
+                    return { 
+                        success: false, 
+                        error: data.error || data.message || 'Request failed', 
+                        status: response.status 
+                    };
+                }
+            } catch (error) {
+                console.error(`API request attempt ${attempt} failed:`, error);
+                
+                if (attempt === this.retryAttempts) {
+                    if (error.name === 'AbortError') {
+                        return { success: false, error: 'Request timeout', status: 408 };
+                    }
+                    return { success: false, error: 'Network error', status: 0 };
+                }
+                
+                // Wait before retry
+                await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
+            }
+        }
+    }
+
+    async get(endpoint, options = {}) {
+        return this.request(endpoint, { ...options, method: 'GET' });
+    }
+
+    async post(endpoint, data, options = {}) {
+        return this.request(endpoint, {
+            ...options,
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async put(endpoint, data, options = {}) {
+        return this.request(endpoint, {
+            ...options,
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async delete(endpoint, options = {}) {
+        return this.request(endpoint, { ...options, method: 'DELETE' });
+    }
+}
+
+// Initialize API client
+let apiClient;
+
+// Authentication State Management
+function loadAuthState() {
+    const token = localStorage.getItem('bharatsahayak-auth-token');
+    const user = localStorage.getItem('bharatsahayak-user');
+    
+    if (token && user) {
+        authToken = token;
+        currentUser = JSON.parse(user);
+        return true;
+    }
+    return false;
+}
+
+function saveAuthState(token, user) {
+    authToken = token;
+    currentUser = user;
+    localStorage.setItem('bharatsahayak-auth-token', token);
+    localStorage.setItem('bharatsahayak-user', JSON.stringify(user));
+}
+
+function clearAuthState() {
+    authToken = null;
+    currentUser = null;
+    localStorage.removeItem('bharatsahayak-auth-token');
+    localStorage.removeItem('bharatsahayak-user');
+    localStorage.removeItem('bharatsahayak-guest');
+}
+
+function isAuthenticated() {
+    return !!authToken && !!currentUser;
+}
+
+function isGuest() {
+    return localStorage.getItem('bharatsahayak-guest') === 'true';
+}
+
+function requireAuth() {
+    if (!isAuthenticated() && !isGuest()) {
+        window.location.href = 'login.html';
+        return false;
+    }
+    return true;
+}
+
+// Authentication API Functions
+async function registerUser(userData) {
+    if (!apiClient) {
+        throw new Error('API client not initialized');
+    }
+    
+    const result = await apiClient.post('/auth/register', userData, { skipAuth: true });
+    return result;
+}
+
+async function loginUser(phoneNumber) {
+    if (!apiClient) {
+        throw new Error('API client not initialized');
+    }
+    
+    const result = await apiClient.post('/auth/login', { phone_number: phoneNumber }, { skipAuth: true });
+    return result;
+}
+
+async function verifyOTP(phoneNumber, otp, session) {
+    if (!apiClient) {
+        throw new Error('API client not initialized');
+    }
+    
+    const result = await apiClient.post('/auth/verify', {
+        phone_number: phoneNumber,
+        otp: otp,
+        session: session
+    }, { skipAuth: true });
+    
+    if (result.success) {
+        saveAuthState(result.data.token, result.data.user);
+    }
+    
+    return result;
+}
+
+async function logout() {
+    clearAuthState();
+    window.location.href = 'login.html';
 }
 
 // Authentication

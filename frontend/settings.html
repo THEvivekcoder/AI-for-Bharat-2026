@@ -215,8 +215,68 @@
         </div>
     </div>
 
+    <script src="api-client.js"></script>
     <script src="app.js"></script>
     <script>
+        window.addEventListener('api-ready', async function() {
+            await loadSettings();
+        });
+
+        async function loadSettings() {
+            try {
+                const result = await api.getUserProfile();
+                if (result.success) {
+                    const profile = result.data;
+                    
+                    // Load language
+                    const langSelect = document.getElementById('language-select') || 
+                                      document.querySelector('select');
+                    if (langSelect && profile.language) {
+                        langSelect.value = profile.language;
+                    }
+                    
+                    // Load notifications
+                    const notifToggle = document.getElementById('notifications-enabled') || 
+                                       document.querySelector('input[type="checkbox"]');
+                    if (notifToggle && profile.preferences) {
+                        notifToggle.checked = profile.preferences.notification_enabled !== false;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        async function saveSettings() {
+            try {
+                const langSelect = document.getElementById('language-select') || 
+                                  document.querySelector('select');
+                const notifToggle = document.getElementById('notifications-enabled') || 
+                                   document.querySelector('input[type="checkbox"]');
+                
+                const settings = {
+                    language: langSelect?.value || 'hi',
+                    preferences: {
+                        notification_enabled: notifToggle?.checked !== false
+                    }
+                };
+                
+                const result = await api.updateUserProfile(settings);
+                
+                if (result.success) {
+                    showToast('Settings saved successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    showToast(result.error || 'Failed to save settings', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Failed to save settings', 'error');
+            }
+        }
+        
         function toggleTheme() {
             const html = document.documentElement;
             const currentTheme = html.getAttribute('data-theme');
@@ -225,14 +285,9 @@
             localStorage.setItem('theme', newTheme);
             
             const icon = document.getElementById('theme-icon');
-            icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        }
-        
-        function saveSettings() {
-            showToast('Settings saved successfully!', 'success');
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
+            if (icon) {
+                icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+            }
         }
         
         function showToast(message, type) {

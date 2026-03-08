@@ -160,8 +160,61 @@
         </div>
     </div>
 
+    <script src="api-client.js"></script>
     <script src="app.js"></script>
     <script>
+        window.addEventListener('api-ready', async function() {
+            await loadUserProfile();
+        });
+
+        async function loadUserProfile() {
+            try {
+                const result = await api.getUserProfile();
+                
+                if (result.success) {
+                    displayProfile(result.data);
+                } else {
+                    showToast(result.error || 'Failed to load profile', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Failed to load profile', 'error');
+            }
+        }
+
+        function displayProfile(profile) {
+            // Update name
+            const nameEl = document.querySelector('h1');
+            if (nameEl) {
+                const firstName = profile.name?.split(' ')[0] || 'User';
+                const lastName = profile.name?.split(' ').slice(1).join(' ') || '';
+                nameEl.innerHTML = `<span class="text-blue">${firstName}</span> ${lastName ? `<span class="text-green">${lastName}</span>` : ''}`;
+            }
+            
+            // Update phone
+            const phoneEl = document.querySelector('[style*="phone"]') || document.querySelectorAll('p')[0];
+            if (phoneEl) phoneEl.textContent = profile.phone_number;
+            
+            // Update profile fields
+            const fields = document.querySelectorAll('[style*="font-size: 1.1rem"]');
+            if (fields[0]) fields[0].textContent = profile.age || 'N/A';
+            if (fields[1]) fields[1].textContent = profile.gender || 'N/A';
+            if (fields[2]) fields[2].textContent = profile.education_level || 'N/A';
+            if (fields[3]) fields[3].textContent = profile.occupation || 'N/A';
+            if (fields[4]) fields[4].textContent = profile.income_bracket || 'N/A';
+            if (fields[5] && profile.location) {
+                fields[5].textContent = `${profile.location.district}, ${profile.location.state} - ${profile.location.pincode}`;
+            }
+        }
+
+        function showToast(message, type = 'info') {
+            if (typeof window.showToast === 'function') {
+                window.showToast(message, type);
+                return;
+            }
+            alert(message);
+        }
+        
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
         }

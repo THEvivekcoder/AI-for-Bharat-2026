@@ -279,8 +279,179 @@
         </div>
     </div>
 
+    <script src="api-client.js"></script>
     <script src="app.js"></script>
     <script>
+        window.addEventListener('api-ready', async function() {
+            await loadEligibleSchemes();
+        });
+
+        async function loadEligibleSchemes() {
+            try {
+                showLoading();
+                
+                const result = await api.getEligibleSchemes();
+                
+                if (result.success) {
+                    const schemes = result.data.eligible_schemes || [];
+                    displayEligibleSchemes(schemes);
+                    updateCount(schemes.length);
+                } else {
+                    showToast(result.error || 'Failed to load eligible schemes', 'error');
+                    displayEmptyState();
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Failed to load eligible schemes', 'error');
+                displayEmptyState();
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function displayEligibleSchemes(schemes) {
+            const container = document.querySelector('[style*="grid-template-columns: repeat(auto-fill"]');
+            if (!container) return;
+            
+            if (schemes.length === 0) {
+                displayEmptyState();
+                return;
+            }
+            
+            container.innerHTML = schemes.map(scheme => {
+                const categoryColors = {
+                    'agriculture': '#10B981',
+                    'health': '#3B82F6',
+                    'education': '#F59E0B',
+                    'employment': '#8B5CF6',
+                    'social_welfare': '#EC4899'
+                };
+                
+                const categoryIcons = {
+                    'agriculture': '🌾',
+                    'health': '🏥',
+                    'education': '📚',
+                    'employment': '💼',
+                    'social_welfare': '🤝'
+                };
+                
+                const color = categoryColors[scheme.category] || '#3B82F6';
+                const icon = categoryIcons[scheme.category] || '📋';
+                
+                return `
+                    <div class="glass-effect hover-lift" style="padding: 2rem; border-radius: 20px; border-left: 5px solid ${color};">
+                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                            <span style="background: linear-gradient(135deg, ${color}, ${color}dd); color: white; padding: 0.5rem 1rem; border-radius: 10px; font-size: 0.85rem; font-weight: 600;">
+                                ${icon} ${scheme.category}
+                            </span>
+                            <div style="background: rgba(16, 185, 129, 0.1); color: #10B981; padding: 0.5rem 1rem; border-radius: 10px; font-weight: 600; font-size: 0.9rem;">
+                                <i class="fas fa-check-circle"></i> ${Math.round(scheme.relevance_score * 100)}% Match
+                            </div>
+                        </div>
+                        
+                        <h4 class="text-green" style="font-size: 1.5rem; margin-bottom: 0.75rem; font-weight: 700;">
+                            ${escapeHtml(scheme.name)}
+                        </h4>
+                        <p style="opacity: 0.9; margin-bottom: 1rem;">
+                            ${escapeHtml(scheme.description)}
+                        </p>
+                        
+                        <div style="background: rgba(16, 185, 129, 0.1); padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                            <div style="font-weight: 600; margin-bottom: 0.5rem; color: #10B981;">
+                                <i class="fas fa-check"></i> Why you're eligible:
+                            </div>
+                            <ul style="margin: 0; padding-left: 1.5rem; opacity: 0.9;">
+                                ${scheme.eligibility_explanation.reasoning.map(reason => 
+                                    `<li>${escapeHtml(reason)}</li>`
+                                ).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div style="display: flex; gap: 0.75rem; margin-bottom: 1rem; font-size: 0.9rem;">
+                            <span style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                                <i class="fas fa-building text-green"></i> ${escapeHtml(scheme.department || 'Government')}
+                            </span>
+                            <span style="background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 8px;">
+                                <i class="fas fa-map-marker-alt text-orange"></i> ${escapeHtml(scheme.state || 'Central')}
+                            </span>
+                        </div>
+                        
+                        <div style="display: flex; gap: 0.75rem;">
+                            <button class="btn btn-primary btn-sm gradient-secondary hover-lift" style="flex: 1;" onclick="viewDetails('${scheme.scheme_id}')">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                            <button class="btn btn-outline btn-sm hover-lift" style="flex: 1;" onclick="applyNow('${scheme.scheme_id}')">
+                                <i class="fas fa-file-alt"></i> Apply Now
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function displayEmptyState() {
+            const container = document.querySelector('[style*="grid-template-columns: repeat(auto-fill"]');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem;">
+                    <i class="fas fa-inbox" style="font-size: 4rem; color: #9CA3AF; margin-bottom: 1rem;"></i>
+                    <h3 style="color: #6B7280; margin-bottom: 0.5rem;">No Eligible Schemes Found</h3>
+                    <p style="color: #9CA3AF;">Complete your profile to find schemes you're eligible for</p>
+                    <button onclick="window.location.href='profile-setup.html'" class="btn btn-primary" style="margin-top: 1rem;">
+                        <i class="fas fa-user-edit"></i> Complete Profile
+                    </button>
+                </div>
+            `;
+        }
+
+        function updateCount(count) {
+            const countElement = document.querySelector('[style*="font-size: 1.5rem"]');
+            if (countElement) {
+                countElement.textContent = count;
+            }
+        }
+
+        function viewDetails(schemeId) {
+            window.location.href = `scheme-details.html?id=${schemeId}`;
+        }
+
+        function applyNow(schemeId) {
+            window.location.href = `scheme-details.html?id=${schemeId}#apply`;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function showLoading() {
+            document.body.style.cursor = 'wait';
+        }
+
+        function hideLoading() {
+            document.body.style.cursor = 'default';
+        }
+
+        function showToast(message, type = 'info') {
+            if (typeof window.showToast === 'function') {
+                window.showToast(message, type);
+                return;
+            }
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed; top: 20px; right: 20px;
+                background: ${type === 'error' ? '#EF4444' : '#3B82F6'};
+                color: white; padding: 1rem 1.5rem; border-radius: 8px;
+                z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            `;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+        
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
         }

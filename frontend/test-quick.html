@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Test - BharatSahayak</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h1 { color: #333; margin-bottom: 1rem; text-align: center; }
+        .test-box {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 5px solid #3B82F6;
+        }
+        .test-box.success { border-left-color: #10B981; background: #f0fdf4; }
+        .test-box.error { border-left-color: #EF4444; background: #fef2f2; }
+        .status { font-weight: 700; font-size: 1.2rem; margin-bottom: 0.5rem; }
+        .status.success { color: #10B981; }
+        .status.error { color: #EF4444; }
+        .status.pending { color: #F59E0B; }
+        .details { font-size: 0.95rem; color: #666; margin-top: 0.5rem; }
+        .code {
+            background: #1f2937;
+            color: #10B981;
+            padding: 0.75rem;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+            overflow-x: auto;
+        }
+        button {
+            background: #3B82F6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 0.5rem;
+            transition: all 0.3s;
+        }
+        button:hover { background: #2563EB; transform: translateY(-2px); }
+        .button-group { text-align: center; margin: 2rem 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Quick Integration Test</h1>
+        <p style="text-align: center; color: #666; margin-bottom: 2rem;">
+            This page will quickly verify if the backend integration is working
+        </p>
+
+        <!-- Test 1: API Client -->
+        <div class="test-box" id="test1">
+            <div class="status pending">⏳ Test 1: API Client Loading</div>
+            <div class="details">Checking if api-client.js is loaded and initialized...</div>
+            <div class="code" id="test1-result">Waiting...</div>
+        </div>
+
+        <!-- Test 2: Configuration -->
+        <div class="test-box" id="test2">
+            <div class="status pending">⏳ Test 2: API Configuration</div>
+            <div class="details">Verifying API endpoint configuration...</div>
+            <div class="code" id="test2-result">Waiting...</div>
+        </div>
+
+        <!-- Test 3: Backend Connection -->
+        <div class="test-box" id="test3">
+            <div class="status pending">⏳ Test 3: Backend Connection</div>
+            <div class="details">Testing connection to backend API...</div>
+            <div class="code" id="test3-result">Waiting...</div>
+        </div>
+
+        <!-- Test 4: Schemes API -->
+        <div class="test-box" id="test4">
+            <div class="status pending">⏳ Test 4: Schemes API</div>
+            <div class="details">Testing schemes endpoint...</div>
+            <div class="code" id="test4-result">Waiting...</div>
+        </div>
+
+        <div class="button-group">
+            <button onclick="runAllTests()">🔄 Run All Tests</button>
+            <button onclick="location.href='debug-test.html'" style="background: #6B7280;">📊 Full Debug Page</button>
+            <button onclick="location.href='login.html'" style="background: #10B981;">✅ Go to Login</button>
+        </div>
+
+        <div style="background: #fffbeb; padding: 1rem; border-radius: 8px; border-left: 4px solid #F59E0B; margin-top: 2rem;">
+            <strong>📝 Note:</strong> If any test fails, open browser console (F12) to see detailed error messages.
+        </div>
+    </div>
+
+    <script src="api-client.js"></script>
+    <script>
+        let testsRun = false;
+
+        function updateTest(testNum, status, message, details = '') {
+            const box = document.getElementById(`test${testNum}`);
+            const statusEl = box.querySelector('.status');
+            const resultEl = document.getElementById(`test${testNum}-result`);
+            
+            box.className = 'test-box ' + status;
+            statusEl.className = 'status ' + status;
+            
+            const icons = { success: '✅', error: '❌', pending: '⏳' };
+            statusEl.textContent = `${icons[status]} Test ${testNum}: ${message}`;
+            resultEl.textContent = details;
+        }
+
+        async function runAllTests() {
+            if (testsRun) {
+                location.reload();
+                return;
+            }
+            testsRun = true;
+
+            console.log('=== Starting Quick Tests ===');
+
+            // Test 1: API Client
+            await new Promise(resolve => setTimeout(resolve, 500));
+            if (typeof api === 'undefined') {
+                updateTest(1, 'error', 'API Client NOT Loaded', 
+                    'ERROR: api-client.js failed to load or define "api" object');
+                return;
+            }
+            if (!api.initialized) {
+                updateTest(1, 'error', 'API Client NOT Initialized', 
+                    'ERROR: API client loaded but initialize() not called');
+                return;
+            }
+            updateTest(1, 'success', 'API Client Loaded ✓', 
+                'API client is loaded and initialized successfully');
+
+            // Test 2: Configuration
+            if (!api.config || !api.config.apiEndpoint) {
+                updateTest(2, 'error', 'Configuration Missing', 
+                    'ERROR: API configuration not loaded');
+                return;
+            }
+            const endpoint = api.config.apiEndpoint;
+            const isCorrect = endpoint.includes('dvt82zj0c4.execute-api');
+            updateTest(2, isCorrect ? 'success' : 'error', 
+                isCorrect ? 'Configuration Correct ✓' : 'Wrong API Endpoint', 
+                `Endpoint: ${endpoint}\n${isCorrect ? 'This is the correct AWS endpoint' : 'ERROR: Should be dvt82zj0c4.execute-api.ap-south-1.amazonaws.com'}`);
+            
+            if (!isCorrect) return;
+
+            // Test 3: Backend Connection
+            updateTest(3, 'pending', 'Testing Backend...', 'Connecting...');
+            try {
+                const response = await fetch(endpoint + '/schemes?limit=1', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    updateTest(3, 'success', 'Backend Connected ✓', 
+                        `Status: ${response.status} OK\nBackend is reachable and responding`);
+                } else {
+                    updateTest(3, 'error', 'Backend Error', 
+                        `Status: ${response.status}\nBackend returned error: ${response.statusText}`);
+                    return;
+                }
+            } catch (error) {
+                updateTest(3, 'error', 'Connection Failed', 
+                    `ERROR: ${error.message}\nPossible causes:\n- Backend is down\n- CORS not configured\n- Network issue`);
+                return;
+            }
+
+            // Test 4: Schemes API
+            updateTest(4, 'pending', 'Testing Schemes API...', 'Fetching schemes...');
+            try {
+                const result = await api.getAllSchemes({ limit: 3 });
+                
+                if (result.success) {
+                    const count = result.data.schemes?.length || 0;
+                    updateTest(4, 'success', 'Schemes API Working ✓', 
+                        `Successfully fetched ${count} schemes\nAPI integration is working correctly!`);
+                } else {
+                    updateTest(4, 'error', 'Schemes API Failed', 
+                        `ERROR: ${result.error}\nStatus: ${result.status}`);
+                }
+            } catch (error) {
+                updateTest(4, 'error', 'Schemes API Exception', 
+                    `ERROR: ${error.message}`);
+            }
+
+            console.log('=== Tests Complete ===');
+        }
+
+        // Auto-run tests when API is ready
+        window.addEventListener('api-ready', function() {
+            console.log('API ready, running tests...');
+            setTimeout(runAllTests, 500);
+        });
+
+        // Fallback: run after 2 seconds if api-ready doesn't fire
+        setTimeout(() => {
+            if (!testsRun) {
+                console.log('Running tests (fallback)...');
+                runAllTests();
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

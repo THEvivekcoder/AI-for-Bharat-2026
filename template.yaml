@@ -488,6 +488,39 @@ Resources:
             Auth:
               Authorizer: NONE
 
+  # Auth: User Login (ADDED)
+  LoginFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-login-${Environment}
+      CodeUri: .
+      Handler: src.api.auth_login.lambda_handler
+      Environment:
+        Variables:
+          USER_POOL_ID: !Ref UserPool
+          USER_POOL_CLIENT_ID: !Ref UserPoolClient
+          USERS_TABLE: !Ref UsersTable
+          AWS_REGION: !Ref AWS::Region
+          LOG_LEVEL: !If [IsProd, INFO, DEBUG]
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref UsersTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - cognito-idp:InitiateAuth
+                - cognito-idp:AdminInitiateAuth
+              Resource: !GetAtt UserPool.Arn
+      Events:
+        LoginApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /auth/login
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
   # User Profile: Get
   GetProfileFunction:
     Type: AWS::Serverless::Function
@@ -532,6 +565,31 @@ Resources:
             Path: /user/profile
             Method: PUT
 
+  # User Stats (ADDED)
+  UserStatsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-user-stats-${Environment}
+      CodeUri: .
+      Handler: src.api.user_stats.lambda_handler
+      Environment:
+        Variables:
+          PROFILES_TABLE: !Ref UserProfilesTable
+          INTERACTIONS_TABLE: !Ref InteractionsTable
+          JWT_SECRET: !Ref JWTSecret
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref UserProfilesTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref InteractionsTable
+      Events:
+        UserStatsApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /user/stats
+            Method: GET
+
   # Schemes: Search
   SearchSchemesFunction:
     Type: AWS::Serverless::Function
@@ -551,6 +609,29 @@ Resources:
           Properties:
             RestApiId: !Ref BharatSahayakApi
             Path: /schemes
+            Method: GET
+            Auth:
+              Authorizer: NONE
+
+  # Schemes: Search Explicit Route (ADDED)
+  SearchSchemesExplicitFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-search-schemes-explicit-${Environment}
+      CodeUri: .
+      Handler: src.api.schemes_search.lambda_handler
+      Environment:
+        Variables:
+          SCHEMES_TABLE: !Ref SchemesTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SchemesTable
+      Events:
+        SearchSchemesExplicitApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /schemes/search
             Method: GET
             Auth:
               Authorizer: NONE
@@ -620,7 +701,7 @@ Resources:
           Properties:
             RestApiId: !Ref BharatSahayakApi
             Path: /schemes/eligible
-            Method: POST
+            Method: GET
 
   # Farmer Advisory: Crop Recommendations
   CropAdviceFunction:
@@ -640,8 +721,10 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref BharatSahayakApi
-            Path: /farmer/crop-advice
-            Method: POST
+            Path: /crop-advice
+            Method: GET
+            Auth:
+              Authorizer: NONE
 
   # Farmer Advisory: Mandi Prices
   MarketPriceFunction:
@@ -661,7 +744,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref BharatSahayakApi
-            Path: /farmer/market-price
+            Path: /market-prices
             Method: GET
             Auth:
               Authorizer: NONE
@@ -745,8 +828,8 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref BharatSahayakApi
-            Path: /health/check
-            Method: POST
+            Path: /health-check
+            Method: GET
             Auth:
               Authorizer: NONE
 
@@ -777,7 +860,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref BharatSahayakApi
-            Path: /voice/transcribe
+            Path: /voice-to-text
             Method: POST
             Auth:
               Authorizer: NONE
@@ -834,6 +917,31 @@ Resources:
           Properties:
             RestApiId: !Ref BharatSahayakApi
             Path: /voice/detect-language
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  # Conversational Query (ADDED)
+  ConversationalQueryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-conversational-query-${Environment}
+      CodeUri: .
+      Handler: src.api.conversational_query.lambda_handler
+      Timeout: 60
+      MemorySize: 512
+      Environment:
+        Variables:
+          SCHEMES_TABLE: !Ref SchemesTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref SchemesTable
+      Events:
+        ConversationalQueryApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /conversational-query
             Method: POST
             Auth:
               Authorizer: NONE

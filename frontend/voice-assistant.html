@@ -349,41 +349,138 @@
         </div>
     </div>
 
+    <script src="api-client.js"></script>
     <script src="app.js"></script>
     <script>
         let isListening = false;
         let selectedLanguage = 'hi';
+        let mediaRecorder = null;
+        let audioChunks = [];
         
-        function toggleVoice() {
+        async function toggleVoice() {
             const button = document.getElementById('voice-button');
             const icon = document.getElementById('voice-icon');
             const status = document.getElementById('voice-status');
             const rings = document.getElementById('voice-rings');
             
-            isListening = !isListening;
-            
-            if (isListening) {
-                button.classList.add('active');
-                icon.className = 'fas fa-stop';
-                status.textContent = 'Listening... Speak now';
-                status.className = 'text-green';
-                rings.style.display = 'block';
-                
-                // Simulate listening
-                setTimeout(() => {
-                    showTranscript('मुझे कृषि योजनाएं दिखाएं');
-                    setTimeout(() => {
-                        showResponse('मैंने आपके लिए कृषि योजनाएं खोजी हैं। यहां कुछ लोकप्रिय योजनाएं हैं:\n\n1. PM-KISAN - किसानों के लिए आय सहायता\n2. प्रधानमंत्री फसल बीमा योजना - फसल बीमा\n3. किसान क्रेडिट कार्ड - कृषि ऋण\n\nक्या आप किसी विशेष योजना के बारे में अधिक जानना चाहेंगे?');
-                        toggleVoice();
-                    }, 2000);
-                }, 3000);
+            if (!isListening) {
+                // Start listening
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    
+                    mediaRecorder.ondataavailable = (event) => {
+                        audioChunks.push(event.data);
+                    };
+                    
+                    mediaRecorder.onstop = async () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                        await processVoiceInput(audioBlob);
+                    };
+                    
+                    mediaRecorder.start();
+                    isListening = true;
+                    
+                    button.classList.add('active');
+                    icon.className = 'fas fa-stop';
+                    status.textContent = 'Listening... Speak now';
+                    status.className = 'text-green';
+                    rings.style.display = 'block';
+                    
+                } catch (error) {
+                    console.error('Error accessing microphone:', error);
+                    showToast('Microphone access denied. Please allow microphone access and try again.', 'error');
+                }
             } else {
+                // Stop listening
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+                }
+                
+                isListening = false;
                 button.classList.remove('active');
                 icon.className = 'fas fa-microphone';
-                status.textContent = 'Tap the microphone to start speaking';
+                status.textContent = 'Processing...';
                 status.className = 'text-purple';
                 rings.style.display = 'none';
             }
+        }
+        
+        async function processVoiceInput(audioBlob) {
+            try {
+                showLoading();
+                
+                // Convert audio blob to base64
+                const reader = new FileReader();
+                reader.onloadend = async () => {
+                    const base64Audio = reader.result.split(',')[1];
+                    
+                    try {
+                        // Use API client
+                        const result = await api.voiceToText(base64Audio, selectedLanguage);
+                        
+                        if (result.success) {
+                            const transcript = result.data.text || 'Could not understand audio';
+                            showTranscript(transcript);
+                            
+                            // Get AI response
+                            await getConversationalResponse(transcript);
+                        } else {
+                            showToast(result.error || 'Voice processing failed', 'error');
+                            resetVoiceStatus();
+                        }
+                    } catch (error) {
+                        console.error('Voice processing error:', error);
+                        showToast('Voice processing failed. Please try again.', 'error');
+                        resetVoiceStatus();
+                    } finally {
+                        hideLoading();
+                    }
+                };
+                reader.readAsDataURL(audioBlob);
+                
+            } catch (error) {
+                console.error('Error processing voice input:', error);
+                showToast('Error processing voice input', 'error');
+                resetVoiceStatus();
+                hideLoading();
+            }
+        }
+        
+        async function getConversationalResponse(query) {
+            try {
+                // Use API client
+                const result = await api.conversationalQuery(query, selectedLanguage);
+                
+                if (result.success) {
+                    showResponse(result.data.answer || 'I could not process your request');
+                    
+                    // Show sources if available
+                    if (result.data.sources && result.data.sources.length > 0) {
+                        console.log('Sources:', result.data.sources);
+                    }
+                } else {
+                    showResponse('Sorry, I could not process your request. Please try again.');
+                }
+            } catch (error) {
+                console.error('Conversational query error:', error);
+                showResponse('Sorry, there was an error processing your request.');
+            } finally {
+                resetVoiceStatus();
+            }
+        }
+        
+        function resetVoiceStatus() {
+            const button = document.getElementById('voice-button');
+            const icon = document.getElementById('voice-icon');
+            const status = document.getElementById('voice-status');
+            
+            button.classList.remove('active');
+            icon.className = 'fas fa-microphone';
+            status.textContent = 'Tap the microphone to start speaking';
+            status.className = 'text-purple';
         }
         
         function showTranscript(text) {
@@ -406,9 +503,23 @@
         
         function useSuggestion(text) {
             showTranscript(text);
-            setTimeout(() => {
-                showResponse('Processing your query: "' + text + '"\n\nI found several relevant schemes for you. Let me show you the details...');
-            }, 1500);
+            getConversationalResponse(text);
+        }
+        
+        function showLoading() {
+            document.body.style.cursor = 'wait';
+        }
+        
+        function hideLoading() {
+            document.body.style.cursor = 'default';
+        }
+        
+        function showToast(message, type = 'info') {
+            if (typeof window.showToast === 'function') {
+                window.showToast(message, type);
+                return;
+            }
+            alert(message);
         }
         
         function toggleTheme() {

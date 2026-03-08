@@ -252,6 +252,7 @@
         </div>
     </div>
 
+    <script src="api-client.js"></script>
     <script src="app.js"></script>
     <script>
         let currentStep = 1;
@@ -314,30 +315,59 @@
         }
 
         async function completeSetup() {
-            const profile = {
-                age: document.getElementById('profile-age').value,
-                gender: document.getElementById('profile-gender').value,
-                education_level: document.getElementById('profile-education').value,
-                state: document.getElementById('profile-state').value,
-                district: document.getElementById('profile-district').value,
-                pincode: document.getElementById('profile-pincode').value,
-                area_type: document.getElementById('profile-area').value,
-                occupation: document.getElementById('profile-occupation').value,
-                income_bracket: document.getElementById('profile-income').value,
-                social_category: document.getElementById('profile-category').value
-            };
+            try {
+                showLoading();
+                
+                const profileData = {
+                    age: parseInt(document.getElementById('profile-age').value),
+                    gender: document.getElementById('profile-gender').value,
+                    education_level: document.getElementById('profile-education').value,
+                    occupation: document.getElementById('profile-occupation')?.value,
+                    income_bracket: document.getElementById('profile-income')?.value,
+                    household_size: parseInt(document.getElementById('profile-household')?.value || 1),
+                    location: {
+                        state: document.getElementById('profile-state').value,
+                        district: document.getElementById('profile-district').value,
+                        pincode: document.getElementById('profile-pincode').value
+                    },
+                    preferences: {
+                        notification_enabled: true,
+                        preferred_categories: []
+                    }
+                };
+                
+                const result = await api.updateUserProfile(profileData);
+                
+                if (result.success) {
+                    showToast('Profile updated successfully!', 'success');
+                    setTimeout(() => {
+                        window.location.href = 'dashboard.html';
+                    }, 1500);
+                } else {
+                    showToast(result.error || 'Failed to update profile', 'error');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Failed to update profile', 'error');
+            } finally {
+                hideLoading();
+            }
+        }
 
-            showLoading();
-            
-            // Save profile (replace with actual API call)
-            await updateProfile();
-            
-            hideLoading();
-            showToast('Profile saved successfully!', 'success');
-            
-            setTimeout(() => {
-                window.location.href = 'dashboard.html';
-            }, 1500);
+        function showLoading() {
+            document.body.style.cursor = 'wait';
+        }
+
+        function hideLoading() {
+            document.body.style.cursor = 'default';
+        }
+
+        function showToast(message, type = 'info') {
+            if (typeof window.showToast === 'function') {
+                window.showToast(message, type);
+                return;
+            }
+            alert(message);
         }
 
         // Initialize

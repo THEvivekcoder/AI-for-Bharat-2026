@@ -302,8 +302,90 @@
         </div>
     </div>
 
+    <script src="api-client.js"></script>
     <script src="app.js"></script>
     <script>
+        window.addEventListener('api-ready', async function() {
+            await loadCropAdvice();
+            await loadMarketPrices();
+        });
+
+        async function loadCropAdvice() {
+            try {
+                const profileResult = await api.getUserProfile();
+                if (!profileResult.success) {
+                    console.log('Profile not loaded, skipping crop advice');
+                    return;
+                }
+                
+                const location = profileResult.data.location;
+                const month = new Date().getMonth() + 1;
+                const season = (month >= 6 && month <= 10) ? 'kharif' : (month >= 11 || month <= 3) ? 'rabi' : 'zaid';
+                
+                const result = await api.getCropAdvice(location.state, season);
+                
+                if (result.success && result.data.recommendations) {
+                    displayCropRecommendations(result.data.recommendations);
+                }
+            } catch (error) {
+                console.error('Error loading crop advice:', error);
+            }
+        }
+
+        async function loadMarketPrices() {
+            try {
+                const profileResult = await api.getUserProfile();
+                if (!profileResult.success) return;
+                
+                const location = profileResult.data.location;
+                const crops = ['wheat', 'rice', 'soybean', 'cotton'];
+                
+                for (const crop of crops) {
+                    const result = await api.getMarketPrices(location.state, crop);
+                    if (result.success && result.data.prices && result.data.prices.length > 0) {
+                        console.log(`${crop}: ₹${result.data.prices[0].price_per_quintal}/quintal`);
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading market prices:', error);
+            }
+        }
+
+        function displayCropRecommendations(recommendations) {
+            // Find a container to display recommendations
+            const container = document.querySelector('.container') || document.body;
+            const html = `
+                <div style="margin-top: 2rem;">
+                    <h3 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;">
+                        <i class="fas fa-seedling text-green"></i> Recommended Crops
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                        ${recommendations.map(rec => `
+                            <div class="glass-effect" style="padding: 1.5rem; border-radius: 15px; border-left: 5px solid #10B981;">
+                                <h4 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; color: #10B981;">
+                                    ${rec.crop_name}
+                                </h4>
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                                    <span style="background: rgba(16, 185, 129, 0.1); padding: 0.25rem 0.75rem; border-radius: 5px; font-size: 0.85rem;">
+                                        ${Math.round(rec.suitability_score * 100)}% Match
+                                    </span>
+                                    <span style="background: rgba(59, 130, 246, 0.1); padding: 0.25rem 0.75rem; border-radius: 5px; font-size: 0.85rem;">
+                                        ${rec.duration_days} days
+                                    </span>
+                                </div>
+                                <p style="font-size: 0.9rem; opacity: 0.8; margin-bottom: 1rem;">${rec.reasoning}</p>
+                                <div style="background: rgba(16, 185, 129, 0.1); padding: 0.75rem; border-radius: 8px; font-size: 0.85rem;">
+                                    <div><strong>Yield:</strong> ${rec.expected_yield}</div>
+                                    <div><strong>Profit:</strong> ${rec.estimated_profit}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', html);
+        }
+        
         function toggleTheme() {
             document.body.classList.toggle('dark-mode');
         }

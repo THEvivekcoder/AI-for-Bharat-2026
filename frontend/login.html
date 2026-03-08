@@ -7,7 +7,40 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
+    <script src="api-client.js"></script>
     <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --text-blue: #3b82f6;
+            --primary: #06038D;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --white: #ffffff;
+            --border-light: #e5e7eb;
+            --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --radius: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-lg: 0 4px 16px rgba(0,0,0,0.12);
+            --shadow-xl: 0 8px 32px rgba(0,0,0,0.16);
+            --shadow-colored: 0 4px 16px rgba(102, 126, 234, 0.3);
+            --transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1f2937;
+            --bg-secondary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --border-light: #4b5563;
+        }
         .auth-container {
             min-height: 100vh;
             display: flex;
@@ -198,6 +231,117 @@
                 padding: 2rem;
             }
         }
+
+        /* Toast Notifications */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 300px;
+            animation: slideIn 0.3s ease-out;
+            border-left: 4px solid;
+        }
+
+        .toast-success {
+            border-left-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .toast-error {
+            border-left-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .toast-warning {
+            border-left-color: var(--warning);
+            background: rgba(245, 158, 11, 0.1);
+        }
+
+        .toast-info {
+            border-left-color: var(--info);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .toast i {
+            font-size: 1.25rem;
+        }
+
+        .toast-success i { color: var(--success); }
+        .toast-error i { color: var(--danger); }
+        .toast-warning i { color: var(--warning); }
+        .toast-info i { color: var(--info); }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        /* Loading Overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(4px);
+        }
+
+        .loading-spinner {
+            text-align: center;
+            color: white;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -213,10 +357,10 @@
 
             <!-- Tabs -->
             <div class="auth-tabs">
-                <button class="auth-tab active" onclick="switchTab('login')">
+                <button class="auth-tab active" onclick="switchTab('login', this)">
                     <i class="fas fa-sign-in-alt"></i> Login
                 </button>
-                <button class="auth-tab" onclick="switchTab('register')">
+                <button class="auth-tab" onclick="switchTab('register', this)">
                     <i class="fas fa-user-plus"></i> Register
                 </button>
             </div>
@@ -283,6 +427,59 @@
                         </select>
                     </div>
 
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-map-marker-alt"></i> State
+                        </label>
+                        <select id="register-state" class="form-control" required>
+                            <option value="">Select State</option>
+                            <option value="Andhra Pradesh">Andhra Pradesh</option>
+                            <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                            <option value="Assam">Assam</option>
+                            <option value="Bihar">Bihar</option>
+                            <option value="Chhattisgarh">Chhattisgarh</option>
+                            <option value="Goa">Goa</option>
+                            <option value="Gujarat">Gujarat</option>
+                            <option value="Haryana">Haryana</option>
+                            <option value="Himachal Pradesh">Himachal Pradesh</option>
+                            <option value="Jharkhand">Jharkhand</option>
+                            <option value="Karnataka">Karnataka</option>
+                            <option value="Kerala">Kerala</option>
+                            <option value="Madhya Pradesh">Madhya Pradesh</option>
+                            <option value="Maharashtra">Maharashtra</option>
+                            <option value="Manipur">Manipur</option>
+                            <option value="Meghalaya">Meghalaya</option>
+                            <option value="Mizoram">Mizoram</option>
+                            <option value="Nagaland">Nagaland</option>
+                            <option value="Odisha">Odisha</option>
+                            <option value="Punjab">Punjab</option>
+                            <option value="Rajasthan">Rajasthan</option>
+                            <option value="Sikkim">Sikkim</option>
+                            <option value="Tamil Nadu">Tamil Nadu</option>
+                            <option value="Telangana">Telangana</option>
+                            <option value="Tripura">Tripura</option>
+                            <option value="Uttar Pradesh">Uttar Pradesh</option>
+                            <option value="Uttarakhand">Uttarakhand</option>
+                            <option value="West Bengal">West Bengal</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-building"></i> District
+                        </label>
+                        <input type="text" id="register-district" class="form-control" 
+                               placeholder="Enter your district" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-mail-bulk"></i> Pincode
+                        </label>
+                        <input type="text" id="register-pincode" class="form-control" 
+                               placeholder="Enter 6-digit pincode" maxlength="6" pattern="[0-9]{6}" required>
+                    </div>
+
                     <div class="checkbox-group">
                         <input type="checkbox" id="terms" required>
                         <label for="terms" style="margin: 0; font-weight: 400;">
@@ -313,18 +510,39 @@
     <script>
         let otpSent = false;
 
-        function switchTab(tab) {
+        // Wait for API to be ready
+        window.addEventListener('api-ready', function() {
+            console.log('🔐 Login: API ready');
+        });
+
+        function switchTab(tab, clickedElement) {
             // Update tabs
             document.querySelectorAll('.auth-tab').forEach(btn => btn.classList.remove('active'));
             document.querySelectorAll('.auth-tab-content').forEach(content => content.classList.remove('active'));
             
-            event.target.closest('.auth-tab').classList.add('active');
+            // Add active class to clicked tab
+            if (clickedElement) {
+                clickedElement.classList.add('active');
+            } else {
+                // Fallback: find the tab by content
+                const tabButtons = document.querySelectorAll('.auth-tab');
+                tabButtons.forEach(btn => {
+                    if (btn.onclick.toString().includes(`'${tab}'`)) {
+                        btn.classList.add('active');
+                    }
+                });
+            }
+            
+            // Show corresponding content
             document.getElementById(`${tab}-tab`).classList.add('active');
             
             // Reset forms
             otpSent = false;
-            document.getElementById('otp-group').style.display = 'none';
-            document.getElementById('login-btn').innerHTML = '<i class="fas fa-paper-plane"></i> Send OTP';
+            const otpGroup = document.getElementById('otp-group');
+            const loginBtn = document.getElementById('login-btn');
+            
+            if (otpGroup) otpGroup.style.display = 'none';
+            if (loginBtn) loginBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send OTP';
         }
 
         async function handleLogin(event) {
@@ -342,14 +560,32 @@
                 }
                 
                 showLoading();
-                // Simulate OTP send (replace with actual API call)
-                setTimeout(() => {
+                
+                try {
+                    console.log('📞 Sending OTP to:', phone);
+                    const result = await api.login(phone);
+                    
+                    if (result.success) {
+                        hideLoading();
+                        otpSent = true;
+                        document.getElementById('otp-group').style.display = 'block';
+                        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Verify & Login';
+                        showToast('OTP sent to your phone', 'success');
+                        
+                        // Store session for OTP verification
+                        localStorage.setItem('bharatsahayak-login-session', JSON.stringify({
+                            session: result.data.session,
+                            phone_number: phone
+                        }));
+                    } else {
+                        hideLoading();
+                        showToast(result.error || 'Failed to send OTP. Please try again.', 'error');
+                    }
+                } catch (error) {
                     hideLoading();
-                    otpSent = true;
-                    document.getElementById('otp-group').style.display = 'block';
-                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Verify & Login';
-                    showToast('OTP sent to your phone', 'success');
-                }, 1000);
+                    console.error('Login error:', error);
+                    showToast('Network error. Please check your connection and try again.', 'error');
+                }
             } else {
                 // Verify OTP
                 if (!otp) {
@@ -358,15 +594,30 @@
                 }
                 
                 showLoading();
-                // Simulate OTP verification (replace with actual API call)
-                setTimeout(() => {
+                
+                try {
+                    const loginSession = JSON.parse(localStorage.getItem('bharatsahayak-login-session') || '{}');
+                    
+                    console.log('🔑 Verifying OTP...');
+                    const result = await api.verifyOTP(phone, otp, loginSession.session);
+                    
+                    if (result.success) {
+                        hideLoading();
+                        showToast('Login successful!', 'success');
+                        localStorage.removeItem('bharatsahayak-login-session');
+                        
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1000);
+                    } else {
+                        hideLoading();
+                        showToast(result.error || 'Invalid OTP. Please try again.', 'error');
+                    }
+                } catch (error) {
                     hideLoading();
-                    showToast('Login successful!', 'success');
-                    // Redirect to dashboard
-                    setTimeout(() => {
-                        window.location.href = 'dashboard.html';
-                    }, 1000);
-                }, 1000);
+                    console.error('OTP verification error:', error);
+                    showToast('Network error. Please check your connection and try again.', 'error');
+                }
             }
         }
 
@@ -375,10 +626,13 @@
             
             const phone = document.getElementById('register-phone').value.trim();
             const language = document.getElementById('register-language').value;
+            const state = document.getElementById('register-state').value;
+            const district = document.getElementById('register-district').value.trim();
+            const pincode = document.getElementById('register-pincode').value.trim();
             const terms = document.getElementById('terms').checked;
 
-            if (!phone || !language) {
-                showToast('Please fill all fields', 'error');
+            if (!phone || !language || !state || !district || !pincode) {
+                showToast('Please fill all required fields', 'error');
                 return;
             }
 
@@ -387,16 +641,50 @@
                 return;
             }
 
+            // Validate pincode format
+            if (!/^\d{6}$/.test(pincode)) {
+                showToast('Please enter a valid 6-digit pincode', 'error');
+                return;
+            }
+
             showLoading();
-            // Simulate registration (replace with actual API call)
-            setTimeout(() => {
+            
+            try {
+                const userData = {
+                    phone_number: phone,
+                    language: language,
+                    location: {
+                        state: state,
+                        district: district,
+                        pincode: pincode
+                    }
+                };
+
+                console.log('📝 Registering user:', userData);
+                const result = await api.register(userData);
+                
+                if (result.success) {
+                    hideLoading();
+                    showToast('Registration successful! Please verify OTP to continue.', 'success');
+                    
+                    localStorage.setItem('bharatsahayak-registration', JSON.stringify({
+                        user_id: result.data.user_id,
+                        session: result.data.session,
+                        phone_number: phone
+                    }));
+                    
+                    setTimeout(() => {
+                        window.location.href = 'profile-setup.html';
+                    }, 1500);
+                } else {
+                    hideLoading();
+                    showToast(result.error || 'Registration failed. Please try again.', 'error');
+                }
+            } catch (error) {
                 hideLoading();
-                showToast('Registration successful! Redirecting to profile setup...', 'success');
-                // Redirect to profile setup
-                setTimeout(() => {
-                    window.location.href = 'profile-setup.html';
-                }, 1500);
-            }, 1000);
+                console.error('Registration error:', error);
+                showToast('Network error. Please check your connection and try again.', 'error');
+            }
         }
 
         function continueAsGuest() {
@@ -444,14 +732,18 @@
             }, 3000);
         }
 
-        // Check URL parameters
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('mode') === 'register') {
-            document.querySelectorAll('.auth-tab')[1].click();
-        }
-        if (urlParams.get('guest') === 'true') {
-            continueAsGuest();
-        }
+        // Check URL parameters and initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            if (urlParams.get('mode') === 'register') {
+                switchTab('register', document.querySelectorAll('.auth-tab')[1]);
+            }
+            
+            if (urlParams.get('guest') === 'true') {
+                continueAsGuest();
+            }
+        });
     </script>
 </body>
 </html>

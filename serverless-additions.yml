@@ -1,0 +1,125 @@
+# Additional Lambda Functions for BharatSahayak
+# Add these to your existing serverless.yml file
+
+functions:
+  # Login endpoint for existing users
+  authLogin:
+    handler: src/api/auth_login.lambda_handler
+    description: Handle login for existing users (send OTP)
+    events:
+      - http:
+          path: /auth/login
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+    environment:
+      USER_POOL_ID: ${env:USER_POOL_ID}
+      USER_POOL_CLIENT_ID: ${env:USER_POOL_CLIENT_ID}
+      USERS_TABLE: ${self:custom.usersTable}
+      AWS_REGION: ${self:provider.region}
+      LOG_LEVEL: INFO
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - cognito-idp:InitiateAuth
+          - cognito-idp:AdminInitiateAuth
+        Resource: !GetAtt CognitoUserPool.Arn
+      - Effect: Allow
+        Action:
+          - dynamodb:GetItem
+          - dynamodb:Query
+        Resource:
+          - !GetAtt UsersTable.Arn
+          - !Sub "${UsersTable.Arn}/index/*"
+
+  # Health check endpoint
+  healthCheck:
+    handler: src/api/health_check.lambda_handler
+    description: Health check endpoint for monitoring
+    events:
+      - http:
+          path: /health-check
+          method: get
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - Authorization
+            allowCredentials: false
+    environment:
+      ENVIRONMENT: ${self:provider.stage}
+      VERSION: ${self:custom.version, '1.0.0'}
+      AWS_REGION: ${self:provider.region}
+      USER_POOL_ID: ${env:USER_POOL_ID}
+      LOG_LEVEL: INFO
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - dynamodb:ListTables
+        Resource: "*"
+      - Effect: Allow
+        Action:
+          - cognito-idp:DescribeUserPool
+        Resource: !GetAtt CognitoUserPool.Arn
+
+# Add CORS configuration to existing endpoints
+# Make sure all your existing endpoints have proper CORS headers
+
+custom:
+  version: '1.0.0'
+  usersTable: bharatsahayak-users-${self:provider.stage}
+  
+  # CORS configuration
+  cors:
+    origin: '*'
+    headers:
+      - Content-Type
+      - Authorization
+      - X-Amz-Date
+      - X-Api-Key
+      - X-Amz-Security-Token
+      - X-Amz-User-Agent
+    allowCredentials: false
+
+# CloudWatch Alarms for monitoring
+resources:
+  Resources:
+    # Alarm for health check failures
+    HealthCheckAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-${self:provider.stage}-health-check-alarm
+        AlarmDescription: Alert when health check fails
+        MetricName: Errors
+        Namespace: AWS/Lambda
+        Statistic: Sum
+        Period: 300
+        EvaluationPeriods: 2
+        Threshold: 5
+        ComparisonOperator: GreaterThanThreshold
+        Dimensions:
+          - Name: FunctionName
+            Value: !Ref HealthCheckLambdaFunction
+        TreatMissingData: notBreaching
+
+    # Alarm for login failures
+    LoginFailureAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-${self:provider.stage}-login-failure-alarm
+        AlarmDescription: Alert when login failures exceed threshold
+        MetricName: Errors
+        Namespace: AWS/Lambda
+        Statistic: Sum
+        Period: 300
+        EvaluationPeriods: 2
+        Threshold: 10
+        ComparisonOperator: GreaterThanThreshold
+        Dimensions:
+          - Name: FunctionName
+            Value: !Ref AuthLoginLambdaFunction
+        TreatMissingData: notBreaching
