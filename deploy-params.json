@@ -1,0 +1,6 @@
+{
+  "Parameters": {
+    "Environment": "dev",
+    "JWTSecret": "-GRKd3337BNuZh2WPNcfMmGTUCkJKizIEl-r8QoNrxM"
+  }
+}

@@ -27,6 +27,12 @@ Parameters:
       - staging
       - prod
     Description: Deployment environment
+  
+  JWTSecret:
+    Type: String
+    NoEcho: true
+    Description: JWT secret for authentication (will be generated if not provided)
+    Default: 'CHANGE_ME_GENERATE_SECURE_SECRET_HERE'
 
 Resources:
   # API Gateway
@@ -54,8 +60,6 @@ Resources:
           HttpMethod: '*'
           ThrottlingBurstLimit: 100
           ThrottlingRateLimit: 50
-          LoggingLevel: INFO
-          DataTraceEnabled: true
           MetricsEnabled: true
         - ResourcePath: '/schemes'
           HttpMethod: GET
@@ -121,22 +125,6 @@ Resources:
               type: string
             details:
               type: object
-      GatewayResponses:
-        DEFAULT_4XX:
-          ResponseParameters:
-            gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-            gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-        DEFAULT_5XX:
-          ResponseParameters:
-            gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-            gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
-        THROTTLED:
-          StatusCode: 429
-          ResponseParameters:
-            gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-            gatewayresponse.header.Retry-After: "'60'"
-          ResponseTemplates:
-            application/json: '{"error":"RATE_LIMIT_EXCEEDED","message":"Too many requests. Please try again in 60 seconds.","retry_after_seconds":60}'
 
   # Cognito User Pool
   UserPool:
@@ -480,7 +468,7 @@ Resources:
         Variables:
           USER_POOL_ID: !Ref UserPool
           USER_POOL_CLIENT_ID: !Ref UserPoolClient
-          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+          JWT_SECRET: !Ref JWTSecret
       Policies:
         - Statement:
             - Effect: Allow
@@ -510,7 +498,7 @@ Resources:
       Environment:
         Variables:
           PROFILES_TABLE: !Ref UserProfilesTable
-          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+          JWT_SECRET: !Ref JWTSecret
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref UserProfilesTable
@@ -532,7 +520,7 @@ Resources:
       Environment:
         Variables:
           PROFILES_TABLE: !Ref UserProfilesTable
-          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+          JWT_SECRET: !Ref JWTSecret
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref UserProfilesTable
@@ -600,7 +588,7 @@ Resources:
       Environment:
         Variables:
           SCHEMES_TABLE: !Ref SchemesTable
-          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+          JWT_SECRET: !Ref JWTSecret
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref SchemesTable
@@ -622,7 +610,7 @@ Resources:
       Environment:
         Variables:
           SCHEMES_TABLE: !Ref SchemesTable
-          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+          JWT_SECRET: !Ref JWTSecret
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref SchemesTable
@@ -956,7 +944,7 @@ Resources:
       Environment:
         Variables:
           INTERACTIONS_TABLE: !Ref InteractionsTable
-          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+          JWT_SECRET: !Ref JWTSecret
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref InteractionsTable
@@ -992,48 +980,48 @@ Resources:
             Method: GET
 
   # OpenSearch Domain for RAG Vector Database
-  OpenSearchDomain:
-    Type: AWS::OpenSearchService::Domain
-    Properties:
-      DomainName: !Sub bharatsahayak-rag-${Environment}
-      EngineVersion: 'OpenSearch_2.11'
-      ClusterConfig:
-        InstanceType: !If [IsProd, 't3.medium.search', 't3.small.search']
-        InstanceCount: !If [IsProd, 2, 1]
-        DedicatedMasterEnabled: !If [IsProd, true, false]
-        DedicatedMasterType: !If [IsProd, 't3.small.search', '']
-        DedicatedMasterCount: !If [IsProd, 3, 0]
-        ZoneAwarenessEnabled: !If [IsProd, true, false]
-      EBSOptions:
-        EBSEnabled: true
-        VolumeType: gp3
-        VolumeSize: !If [IsProd, 100, 20]
-      EncryptionAtRestOptions:
-        Enabled: true
-      NodeToNodeEncryptionOptions:
-        Enabled: true
-      DomainEndpointOptions:
-        EnforceHTTPS: true
-        TLSSecurityPolicy: 'Policy-Min-TLS-1-2-2019-07'
-      AccessPolicies:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !GetAtt RAGLambdaExecutionRole.Arn
-            Action:
-              - 'es:ESHttpGet'
-              - 'es:ESHttpPost'
-              - 'es:ESHttpPut'
-              - 'es:ESHttpDelete'
-            Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/bharatsahayak-rag-${Environment}/*'
-      AdvancedOptions:
-        'rest.action.multi.allow_explicit_index': 'true'
-      Tags:
-        - Key: Purpose
-          Value: RAGVectorDatabase
-        - Key: Environment
-          Value: !Ref Environment
+  # DISABLED FOR MVP: Costs $50-80/month - enable only if budget allows
+  # To enable: Uncomment this resource and the RAG Lambda functions below
+  # OpenSearchDomain:
+  #   Type: AWS::OpenSearchService::Domain
+  #   Properties:
+  #     DomainName: !Sub bharatsahayak-rag-${Environment}
+  #     EngineVersion: 'OpenSearch_2.11'
+  #     ClusterConfig:
+  #       InstanceType: 't3.small.search'
+  #       InstanceCount: 1
+  #       DedicatedMasterEnabled: false
+  #       ZoneAwarenessEnabled: false
+  #     EBSOptions:
+  #       EBSEnabled: true
+  #       VolumeType: gp3
+  #       VolumeSize: 20
+  #     EncryptionAtRestOptions:
+  #       Enabled: true
+  #     NodeToNodeEncryptionOptions:
+  #       Enabled: true
+  #     DomainEndpointOptions:
+  #       EnforceHTTPS: true
+  #       TLSSecurityPolicy: 'Policy-Min-TLS-1-2-2019-07'
+  #     AccessPolicies:
+  #       Version: '2012-10-17'
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             AWS: !GetAtt RAGLambdaExecutionRole.Arn
+  #           Action:
+  #             - 'es:ESHttpGet'
+  #             - 'es:ESHttpPost'
+  #             - 'es:ESHttpPut'
+  #             - 'es:ESHttpDelete'
+  #           Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/bharatsahayak-rag-${Environment}/*'
+  #     AdvancedOptions:
+  #       'rest.action.multi.allow_explicit_index': 'true'
+  #     Tags:
+  #       - Key: Purpose
+  #         Value: RAGVectorDatabase
+  #       - Key: Environment
+  #         Value: !Ref Environment
 
   # DynamoDB Table for Conversation Sessions
   ConversationSessionsTable:
@@ -1061,110 +1049,113 @@ Resources:
         Enabled: true
 
   # IAM Role for RAG Lambda Functions
-  RAGLambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: !Sub bharatsahayak-rag-lambda-role-${Environment}
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-      Policies:
-        - PolicyName: OpenSearchAccess
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'es:ESHttpGet'
-                  - 'es:ESHttpPost'
-                  - 'es:ESHttpPut'
-                  - 'es:ESHttpDelete'
-                Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/bharatsahayak-rag-${Environment}/*'
-        - PolicyName: BedrockAccess
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'bedrock:InvokeModel'
-                  - 'bedrock:InvokeModelWithResponseStream'
-                Resource:
-                  - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-v2'
-                  - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-instant-v1'
-                  - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/amazon.titan-embed-text-v1'
-        - PolicyName: DynamoDBAccess
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'dynamodb:GetItem'
-                  - 'dynamodb:PutItem'
-                  - 'dynamodb:UpdateItem'
-                  - 'dynamodb:Query'
-                  - 'dynamodb:Scan'
-                Resource:
-                  - !GetAtt ConversationSessionsTable.Arn
-                  - !Sub '${ConversationSessionsTable.Arn}/index/*'
-                  - !GetAtt SchemesTable.Arn
-                  - !Sub '${SchemesTable.Arn}/index/*'
+  # DISABLED FOR MVP: Uncomment when enabling OpenSearch
+  # RAGLambdaExecutionRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     RoleName: !Sub bharatsahayak-rag-lambda-role-${Environment}
+  #     AssumeRolePolicyDocument:
+  #       Version: '2012-10-17'
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             Service: lambda.amazonaws.com
+  #           Action: sts:AssumeRole
+  #     ManagedPolicyArns:
+  #       - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+  #     Policies:
+  #       - PolicyName: OpenSearchAccess
+  #         PolicyDocument:
+  #           Version: '2012-10-17'
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - 'es:ESHttpGet'
+  #                 - 'es:ESHttpPost'
+  #                 - 'es:ESHttpPut'
+  #                 - 'es:ESHttpDelete'
+  #               Resource: !Sub 'arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/bharatsahayak-rag-${Environment}/*'
+  #       - PolicyName: BedrockAccess
+  #         PolicyDocument:
+  #           Version: '2012-10-17'
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - 'bedrock:InvokeModel'
+  #                 - 'bedrock:InvokeModelWithResponseStream'
+  #               Resource:
+  #                 - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-v2'
+  #                 - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/anthropic.claude-instant-v1'
+  #                 - !Sub 'arn:aws:bedrock:${AWS::Region}::foundation-model/amazon.titan-embed-text-v1'
+  #       - PolicyName: DynamoDBAccess
+  #         PolicyDocument:
+  #           Version: '2012-10-17'
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - 'dynamodb:GetItem'
+  #                 - 'dynamodb:PutItem'
+  #                 - 'dynamodb:UpdateItem'
+  #                 - 'dynamodb:Query'
+  #                 - 'dynamodb:Scan'
+  #               Resource:
+  #                 - !GetAtt ConversationSessionsTable.Arn
+  #                 - !Sub '${ConversationSessionsTable.Arn}/index/*'
+  #                 - !GetAtt SchemesTable.Arn
+  #                 - !Sub '${SchemesTable.Arn}/index/*'
 
   # RAG: Conversational Query Handler
-  ConversationalQueryFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub bharatsahayak-conversational-query-${Environment}
-      CodeUri: .
-      Handler: src.api.conversational_query.lambda_handler
-      Timeout: 60
-      MemorySize: 1024
-      Role: !GetAtt RAGLambdaExecutionRole.Arn
-      Environment:
-        Variables:
-          OPENSEARCH_ENDPOINT: !GetAtt OpenSearchDomain.DomainEndpoint
-          CONVERSATION_SESSIONS_TABLE: !Ref ConversationSessionsTable
-          SCHEMES_TABLE: !Ref SchemesTable
-          BEDROCK_MODEL_ID: 'anthropic.claude-instant-v1'
-          EMBEDDING_MODEL_ID: 'amazon.titan-embed-text-v1'
-          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
-      Events:
-        ConversationalQueryApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref BharatSahayakApi
-            Path: /ask
-            Method: POST
+  # DISABLED FOR MVP: Uncomment when enabling OpenSearch
+  # ConversationalQueryFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub bharatsahayak-conversational-query-${Environment}
+  #     CodeUri: .
+  #     Handler: src.api.conversational_query.lambda_handler
+  #     Timeout: 60
+  #     MemorySize: 1024
+  #     Role: !GetAtt RAGLambdaExecutionRole.Arn
+  #     Environment:
+  #       Variables:
+  #         OPENSEARCH_ENDPOINT: !GetAtt OpenSearchDomain.DomainEndpoint
+  #         CONVERSATION_SESSIONS_TABLE: !Ref ConversationSessionsTable
+  #         SCHEMES_TABLE: !Ref SchemesTable
+  #         BEDROCK_MODEL_ID: 'anthropic.claude-instant-v1'
+  #         EMBEDDING_MODEL_ID: 'amazon.titan-embed-text-v1'
+  #         JWT_SECRET: !Ref JWTSecret
+  #     Events:
+  #       ConversationalQueryApi:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref BharatSahayakApi
+  #           Path: /ask
+  #           Method: POST
 
   # RAG: Index Documents Function
-  IndexDocumentsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub bharatsahayak-index-documents-${Environment}
-      CodeUri: .
-      Handler: src.api.index_documents.lambda_handler
-      Timeout: 300
-      MemorySize: 2048
-      Role: !GetAtt RAGLambdaExecutionRole.Arn
-      Environment:
-        Variables:
-          OPENSEARCH_ENDPOINT: !GetAtt OpenSearchDomain.DomainEndpoint
-          SCHEMES_TABLE: !Ref SchemesTable
-          EMBEDDING_MODEL_ID: 'amazon.titan-embed-text-v1'
-      Events:
-        IndexDocumentsApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref BharatSahayakApi
-            Path: /rag/index
-            Method: POST
-            Auth:
-              Authorizer: NONE
+  # DISABLED FOR MVP: Uncomment when enabling OpenSearch
+  # IndexDocumentsFunction:
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     FunctionName: !Sub bharatsahayak-index-documents-${Environment}
+  #     CodeUri: .
+  #     Handler: src.api.index_documents.lambda_handler
+  #     Timeout: 300
+  #     MemorySize: 2048
+  #     Role: !GetAtt RAGLambdaExecutionRole.Arn
+  #     Environment:
+  #       Variables:
+  #         OPENSEARCH_ENDPOINT: !GetAtt OpenSearchDomain.DomainEndpoint
+  #         SCHEMES_TABLE: !Ref SchemesTable
+  #         EMBEDDING_MODEL_ID: 'amazon.titan-embed-text-v1'
+  #     Events:
+  #       IndexDocumentsApi:
+  #         Type: Api
+  #         Properties:
+  #           RestApiId: !Ref BharatSahayakApi
+  #           Path: /rag/index
+  #           Method: POST
+  #           Auth:
+  #             Authorizer: NONE
 
   # RAG: Create/Clear Session
   SessionManagementFunction:
@@ -1178,7 +1169,7 @@ Resources:
       Environment:
         Variables:
           CONVERSATION_SESSIONS_TABLE: !Ref ConversationSessionsTable
-          JWT_SECRET: !Sub '{{resolve:secretsmanager:bharatsahayak-jwt-secret-${Environment}:SecretString:jwt_secret}}'
+          JWT_SECRET: !Ref JWTSecret
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref ConversationSessionsTable
@@ -1269,11 +1260,12 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-TranslationCacheTable
 
-  OpenSearchDomainEndpoint:
-    Description: OpenSearch Domain Endpoint for RAG Vector Database
-    Value: !GetAtt OpenSearchDomain.DomainEndpoint
-    Export:
-      Name: !Sub ${AWS::StackName}-OpenSearchEndpoint
+  # DISABLED FOR MVP: Uncomment when enabling OpenSearch
+  # OpenSearchDomainEndpoint:
+  #   Description: OpenSearch Domain Endpoint for RAG Vector Database
+  #   Value: !GetAtt OpenSearchDomain.DomainEndpoint
+  #   Export:
+  #     Name: !Sub ${AWS::StackName}-OpenSearchEndpoint
 
   ConversationSessionsTableName:
     Description: DynamoDB Conversation Sessions Table Name

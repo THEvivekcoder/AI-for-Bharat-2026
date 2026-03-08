@@ -14,7 +14,8 @@ logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO'))
 
 # Initialize repository
 HEALTH_FACILITIES_TABLE = os.environ.get('HEALTH_FACILITIES_TABLE', 'bharatsahayak-health-facilities-dev')
-repository = HealthFacilityRepository(table_name=HEALTH_FACILITIES_TABLE)
+AWS_REGION = os.environ.get('AWS_REGION', 'ap-south-1')
+repository = HealthFacilityRepository(table_name=HEALTH_FACILITIES_TABLE, region_name=AWS_REGION)
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:

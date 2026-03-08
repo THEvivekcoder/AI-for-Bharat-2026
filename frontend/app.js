@@ -1,8 +1,8 @@
 // Global state
 let config = {
-    apiEndpoint: '',
-    userPoolId: '',
-    clientId: ''
+    apiEndpoint: 'https://dvt82zj0c4.execute-api.ap-south-1.amazonaws.com/dev/',
+    userPoolId: 'ap-south-1_KSJ0FKz20',
+    clientId: '10emq71eioca5qkns6on0l22om'
 };
 
 let authToken = null;

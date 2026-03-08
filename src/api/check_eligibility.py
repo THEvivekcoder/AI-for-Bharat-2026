@@ -16,7 +16,8 @@ logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO'))
 
 # Initialize repository and checker
 SCHEMES_TABLE = os.environ.get('SCHEMES_TABLE', 'bharatsahayak-schemes-dev')
-scheme_repo = SchemeRepository(table_name=SCHEMES_TABLE)
+AWS_REGION = os.environ.get('AWS_REGION', 'ap-south-1')
+scheme_repo = SchemeRepository(table_name=SCHEMES_TABLE, region_name=AWS_REGION)
 eligibility_checker = EligibilityChecker()
 
 

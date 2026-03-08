@@ -16,7 +16,8 @@ logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO'))
 
 # Initialize repository
 INTERACTIONS_TABLE = os.environ.get('INTERACTIONS_TABLE', 'bharatsahayak-interactions-dev')
-impact_repo = ImpactRepository(table_name=INTERACTIONS_TABLE)
+AWS_REGION = os.environ.get('AWS_REGION', 'ap-south-1')
+impact_repo = ImpactRepository(table_name=INTERACTIONS_TABLE, region_name=AWS_REGION)
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:

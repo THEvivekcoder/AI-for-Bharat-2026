@@ -22,10 +22,11 @@ cognito_client = boto3.client('cognito-idp')
 USER_POOL_ID = os.environ.get('USER_POOL_ID')
 USERS_TABLE = os.environ.get('USERS_TABLE', 'bharatsahayak-users-dev')
 PROFILES_TABLE = os.environ.get('PROFILES_TABLE', 'bharatsahayak-user-profiles-dev')
+AWS_REGION = os.environ.get('AWS_REGION', 'ap-south-1')
 
 # Initialize repositories
-user_repo = UserRepository(table_name=USERS_TABLE)
-profile_repo = ProfileRepository(table_name=PROFILES_TABLE)
+user_repo = UserRepository(table_name=USERS_TABLE, region_name=AWS_REGION)
+profile_repo = ProfileRepository(table_name=PROFILES_TABLE, region_name=AWS_REGION)
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:

@@ -61,7 +61,7 @@ The system exposes the following REST API endpoints through AWS API Gateway:
 
 ## Tasks
 
-- [ ] 1. Set up AWS infrastructure and project foundation
+- [x] 1. Set up AWS infrastructure and project foundation
   - [x] 1.1 Initialize Python project with AWS SAM or Serverless Framework
     - Create project structure with src/, tests/, and infrastructure directories
     - Set up requirements.txt with boto3, fastapi, pydantic, pytest
@@ -94,7 +94,7 @@ The system exposes the following REST API endpoints through AWS API Gateway:
     - Implement serialization/deserialization methods
     - _Requirements: 8.1, 2.1, 2.3_
   
-  - [ ] 2.2 Write property test for data model round-trip
+  - [x] 2.2 Write property test for data model round-trip
     - **Property 20: Profile Data Round-Trip**
     - **Validates: Requirements 8.1** 
     - Test that storing and retrieving user profiles preserves all fields
@@ -169,7 +169,7 @@ The system exposes the following REST API endpoints through AWS API Gateway:
     - Include application process and required documents
     - _Requirements: 2.2_
   
-  - [ ] 5.5 Write property test for complete information display
+  - [x] 5.5 Write property test for complete information display
     - **Property 5: Complete Information Display**
     - **Validates: Requirements 2.2**
     - Test that all required fields are present in scheme details

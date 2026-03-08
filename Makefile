@@ -1,7 +1,7 @@
 # BharatSahayak - Makefile for Deployment and Testing
 # Usage: make <target>
 
-.PHONY: help install test deploy clean setup-aws load-data deploy-frontend all
+.PHONY: help install test deploy clean setup-aws load-data deploy-frontend all setup-secrets
 
 # Default target
 help:
@@ -17,11 +17,12 @@ help:
 	@echo "  make lint             - Run code linting"
 	@echo ""
 	@echo "AWS Deployment:"
-	@echo "  make setup-aws        - Create all AWS resources (DynamoDB, S3, Cognito)"
-	@echo "  make deploy-lambda    - Build and deploy Lambda functions"
+	@echo "  make setup-secrets    - Create JWT secret in AWS Secrets Manager (REQUIRED FIRST)"
+	@echo "  make setup-aws        - Info about AWS resource automation"
+	@echo "  make deploy-lambda    - Build and deploy ALL AWS resources via SAM"
 	@echo "  make deploy-frontend  - Deploy frontend to S3"
 	@echo "  make load-data        - Load sample scheme data to DynamoDB"
-	@echo "  make deploy-all       - Complete deployment (AWS + Lambda + Frontend + Data)"
+	@echo "  make deploy-all       - Complete deployment (Lambda + Frontend + Data)"
 	@echo ""
 	@echo "Utilities:"
 	@echo "  make logs             - Tail Lambda function logs"
@@ -31,8 +32,9 @@ help:
 	@echo ""
 	@echo "Quick Start:"
 	@echo "  1. make install"
-	@echo "  2. Configure .env file with your AWS credentials"
-	@echo "  3. make deploy-all"
+	@echo "  2. aws configure (enter your AWS credentials)"
+	@echo "  3. make setup-secrets (create JWT secret)"
+	@echo "  4. make deploy-all (deploy everything)"
 	@echo ""
 
 # Install dependencies
@@ -95,114 +97,161 @@ clean:
 	find . -type f -name "*.pyc" -delete
 	@echo "✓ Cleaned"
 
-# Setup AWS resources
-setup-aws:
-	@echo "Creating AWS resources..."
+# Setup JWT secret in AWS Secrets Manager (REQUIRED BEFORE DEPLOYMENT)
+setup-secrets:
+	@echo "=========================================="
+	@echo "Creating JWT Secret in AWS Secrets Manager"
+	@echo "=========================================="
 	@echo ""
-	@echo "Step 1: Creating DynamoDB tables..."
+	@echo "Generating secure JWT secret..."
 	@bash -c ' \
-		aws dynamodb create-table \
-			--table-name BharatSahayak-Users \
-			--attribute-definitions AttributeName=user_id,AttributeType=S \
-			--key-schema AttributeName=user_id,KeyType=HASH \
-			--billing-mode PAY_PER_REQUEST \
-			--region us-east-1 2>/dev/null || echo "Users table already exists"; \
-		aws dynamodb create-table \
-			--table-name BharatSahayak-Schemes \
-			--attribute-definitions AttributeName=scheme_id,AttributeType=S AttributeName=category,AttributeType=S \
-			--key-schema AttributeName=scheme_id,KeyType=HASH \
-			--global-secondary-indexes "[{\"IndexName\":\"category-index\",\"KeySchema\":[{\"AttributeName\":\"category\",\"KeyType\":\"HASH\"}],\"Projection\":{\"ProjectionType\":\"ALL\"}}]" \
-			--billing-mode PAY_PER_REQUEST \
-			--region us-east-1 2>/dev/null || echo "Schemes table already exists"; \
-		aws dynamodb create-table \
-			--table-name BharatSahayak-UserProfiles \
-			--attribute-definitions AttributeName=user_id,AttributeType=S \
-			--key-schema AttributeName=user_id,KeyType=HASH \
-			--billing-mode PAY_PER_REQUEST \
-			--region us-east-1 2>/dev/null || echo "UserProfiles table already exists"; \
-		aws dynamodb create-table \
-			--table-name BharatSahayak-Interactions \
-			--attribute-definitions AttributeName=user_id,AttributeType=S AttributeName=timestamp,AttributeType=S \
-			--key-schema AttributeName=user_id,KeyType=HASH AttributeName=timestamp,KeyType=RANGE \
-			--billing-mode PAY_PER_REQUEST \
-			--region us-east-1 2>/dev/null || echo "Interactions table already exists"; \
+		JWT_SECRET=$$(python -c "import secrets; print(secrets.token_urlsafe(32))"); \
+		echo "Generated secret: $$JWT_SECRET"; \
+		echo ""; \
+		echo "Creating secret in AWS Secrets Manager..."; \
+		aws secretsmanager create-secret \
+			--name bharatsahayak-jwt-secret-dev \
+			--description "JWT secret for BharatSahayak dev environment" \
+			--secret-string "{\"jwt_secret\":\"$$JWT_SECRET\"}" \
+			--region ap-south-1 2>/dev/null && echo "✓ Secret created successfully!" || echo "⚠ Secret already exists (this is OK)"; \
 	'
-	@echo "✓ DynamoDB tables created"
 	@echo ""
-	@echo "Step 2: Creating S3 bucket..."
-	@bash -c ' \
-		aws s3 mb s3://bharatsahayak-content --region us-east-1 2>/dev/null || echo "S3 bucket already exists"; \
-		aws s3api put-bucket-versioning --bucket bharatsahayak-content --versioning-configuration Status=Enabled 2>/dev/null; \
-	'
-	@echo "✓ S3 bucket created"
+	@echo "✓ JWT secret setup complete!"
 	@echo ""
-	@echo "Step 3: Creating Cognito User Pool..."
-	@echo "⚠ Manual step required: Run the following commands and update .env file:"
+	@echo "For production, run:"
+	@echo "  aws secretsmanager create-secret \\"
+	@echo "    --name bharatsahayak-jwt-secret-prod \\"
+	@echo "    --secret-string '{\"jwt_secret\":\"YOUR_PROD_SECRET\"}' \\"
+	@echo "    --region ap-south-1"
 	@echo ""
-	@echo "aws cognito-idp create-user-pool \\"
-	@echo "    --pool-name BharatSahayak-Users \\"
-	@echo "    --username-attributes phone_number \\"
-	@echo "    --auto-verified-attributes phone_number \\"
-	@echo "    --region us-east-1"
-	@echo ""
-	@echo "Then create app client with the UserPoolId from above:"
-	@echo "aws cognito-idp create-user-pool-client \\"
-	@echo "    --user-pool-id YOUR_USER_POOL_ID \\"
-	@echo "    --client-name BharatSahayak-Client \\"
-	@echo "    --no-generate-secret \\"
-	@echo "    --region us-east-1"
-	@echo ""
-	@echo "✓ AWS resources setup initiated"
 
-# Deploy Lambda functions
+# Setup AWS resources (AUTOMATED via SAM)
+setup-aws:
+	@echo "=========================================="
+	@echo "AWS Resource Setup"
+	@echo "=========================================="
+	@echo ""
+	@echo "✓ Good news: AWS resources are FULLY AUTOMATED via SAM template!"
+	@echo ""
+	@echo "The template.yaml file defines:"
+	@echo "  • 10 DynamoDB tables"
+	@echo "  • 3 S3 buckets with policies"
+	@echo "  • Cognito User Pool with SMS OTP"
+	@echo "  • 24 Lambda functions"
+	@echo "  • API Gateway with CORS"
+	@echo "  • OpenSearch domain for RAG"
+	@echo "  • IAM roles and permissions"
+	@echo ""
+	@echo "To deploy all resources, simply run:"
+	@echo "  make deploy-lambda"
+	@echo ""
+	@echo "Or manually:"
+	@echo "  sam build && sam deploy --guided"
+	@echo ""
+	@echo "=========================================="
+
+# Deploy Lambda functions (FULLY AUTOMATED)
 deploy-lambda:
-	@echo "Building SAM application..."
+	@echo "=========================================="
+	@echo "Deploying BharatSahayak to AWS"
+	@echo "=========================================="
+	@echo ""
+	@echo "Step 1: Validating SAM template..."
+	sam validate --lint
+	@echo "✓ Template is valid"
+	@echo ""
+	@echo "Step 2: Building application..."
 	sam build
 	@echo "✓ Build complete"
 	@echo ""
-	@echo "Deploying to AWS..."
+	@echo "Step 3: Deploying to AWS..."
+	@echo "(This will create ALL resources: DynamoDB, S3, Cognito, Lambda, API Gateway, OpenSearch)"
 	sam deploy
-	@echo "✓ Lambda functions deployed"
 	@echo ""
-	@echo "Getting API Gateway URL..."
+	@echo "✓ Deployment complete!"
+	@echo ""
+	@echo "=========================================="
+	@echo "Getting deployment information..."
+	@echo "=========================================="
 	@bash -c 'aws cloudformation describe-stacks \
-		--stack-name bharatsahayak-stack \
-		--query "Stacks[0].Outputs[?OutputKey==\`ApiUrl\`].OutputValue" \
-		--output text'
+		--stack-name bharatsahayak \
+		--query "Stacks[0].Outputs" \
+		--output table'
 	@echo ""
-	@echo "⚠ Update .env file with the API_GATEWAY_URL above"
+	@echo "⚠ IMPORTANT: Save the API endpoint URL above!"
+	@echo "   Update frontend/app.js with this URL"
+	@echo ""
 
 # Load sample data
 load-data:
-	@echo "Loading sample scheme data..."
-	python scripts/load_schemes.py
-	@echo "✓ Sample data loaded"
+	@echo "=========================================="
+	@echo "Loading Sample Data"
+	@echo "=========================================="
+	@echo ""
+	@echo "Loading government schemes..."
+	python infrastructure/scripts/load_schemes.py --source sample
+	@echo ""
+	@echo "Loading skill programs and jobs..."
+	python infrastructure/scripts/load_skills.py
+	@echo ""
+	@echo "Loading health facilities..."
+	python infrastructure/scripts/load_health_facilities.py
+	@echo ""
+	@echo "✓ All sample data loaded successfully!"
+	@echo ""
 
 # Deploy frontend
 deploy-frontend:
-	@echo "Deploying frontend to S3..."
-	@bash -c ' \
-		aws s3 mb s3://bharatsahayak-frontend --region us-east-1 2>/dev/null || echo "Frontend bucket exists"; \
-		aws s3 website s3://bharatsahayak-frontend --index-document index.html --error-document index.html; \
-		cd frontend && aws s3 sync . s3://bharatsahayak-frontend --exclude "*.sh" --exclude "*.md" --exclude "DEPLOYMENT.md"; \
-	'
-	@echo "✓ Frontend deployed"
+	@echo "=========================================="
+	@echo "Deploying Frontend"
+	@echo "=========================================="
 	@echo ""
-	@echo "Frontend URL: http://bharatsahayak-frontend.s3-website-us-east-1.amazonaws.com"
+	@echo "⚠ IMPORTANT: Update frontend/app.js with your API URL first!"
+	@echo ""
+	@echo "Get your API URL:"
+	@bash -c 'aws cloudformation describe-stacks \
+		--stack-name bharatsahayak \
+		--query "Stacks[0].Outputs[?OutputKey==\`ApiEndpoint\`].OutputValue" \
+		--output text'
+	@echo ""
+	@read -p "Press Enter after updating frontend/app.js, or Ctrl+C to cancel..."
+	@echo ""
+	@echo "Deploying to S3..."
+	@bash -c 'cd frontend && bash deploy.sh'
+	@echo ""
+	@echo "✓ Frontend deployed!"
+	@echo ""
+	@echo "Frontend URL: http://bharatsahayak-frontend-dev.s3-website.ap-south-1.amazonaws.com"
+	@echo ""
 
 # Complete deployment
-deploy-all: setup-aws deploy-lambda load-data deploy-frontend
+deploy-all: setup-secrets deploy-lambda load-data deploy-frontend
 	@echo ""
 	@echo "=========================================="
-	@echo "✓ Complete deployment finished!"
+	@echo "✓ DEPLOYMENT COMPLETE!"
 	@echo "=========================================="
+	@echo ""
+	@echo "Your BharatSahayak system is now live!"
+	@echo ""
+	@echo "Resources created:"
+	@echo "  ✓ 10 DynamoDB tables"
+	@echo "  ✓ 3 S3 buckets"
+	@echo "  ✓ 24 Lambda functions"
+	@echo "  ✓ 1 API Gateway"
+	@echo "  ✓ 1 Cognito User Pool"
+	@echo "  ✓ 1 OpenSearch domain"
+	@echo "  ✓ Sample data loaded (20+ schemes, 10 programs, 10 jobs)"
 	@echo ""
 	@echo "Next steps:"
-	@echo "1. Update .env file with Cognito User Pool ID and Client ID"
-	@echo "2. Update frontend/app.js with API Gateway URL"
-	@echo "3. Test the application"
+	@echo "  1. Test the API endpoints"
+	@echo "  2. Test the frontend"
+	@echo "  3. Register a test user"
+	@echo "  4. Search for schemes"
 	@echo ""
-	@echo "Frontend: http://bharatsahayak-frontend.s3-website-us-east-1.amazonaws.com"
+	@echo "Useful commands:"
+	@echo "  make logs          - View Lambda logs"
+	@echo "  make test          - Run tests"
+	@echo "  make destroy       - Delete all resources"
 	@echo ""
 
 # View Lambda logs
@@ -240,3 +289,29 @@ dev-setup: install
 	@echo "1. Copy .env.example to .env and configure"
 	@echo "2. Run 'make test' to verify setup"
 	@echo "3. Run 'make deploy-all' when ready to deploy"
+
+
+# Pre-deployment setup (automated)
+pre-deploy:
+	@echo "Running pre-deployment setup..."
+	python scripts/pre_deployment_setup.py
+	@echo "✓ Pre-deployment setup complete"
+
+# Post-deployment configuration (automated)
+post-deploy:
+	@echo "Running post-deployment configuration..."
+	python scripts/post_deployment_config.py
+	@echo "✓ Post-deployment configuration complete"
+
+# Complete automated deployment flow
+deploy-complete: pre-deploy deploy-lambda post-deploy load-data deploy-frontend
+	@echo ""
+	@echo "=========================================="
+	@echo "✅ Complete deployment finished!"
+	@echo "=========================================="
+	@echo ""
+	@echo "Your BharatSahayak system is ready!"
+	@echo ""
+	@echo "Test it:"
+	@echo "  Frontend: http://bharatsahayak-frontend-dev.s3-website.ap-south-1.amazonaws.com"
+	@echo ""

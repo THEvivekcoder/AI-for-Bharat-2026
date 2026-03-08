@@ -14,7 +14,8 @@ logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO'))
 
 # Initialize repository
 PROFILES_TABLE = os.environ.get('PROFILES_TABLE', 'bharatsahayak-user-profiles-dev')
-profile_repo = ProfileRepository(table_name=PROFILES_TABLE)
+AWS_REGION = os.environ.get('AWS_REGION', 'ap-south-1')
+profile_repo = ProfileRepository(table_name=PROFILES_TABLE, region_name=AWS_REGION)
 
 
 @require_auth

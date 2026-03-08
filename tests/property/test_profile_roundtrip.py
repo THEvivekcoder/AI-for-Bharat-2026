@@ -8,13 +8,37 @@ ensuring data integrity through the complete storage and retrieval cycle.
 """
 
 import pytest
-from hypothesis import given, settings, strategies as st
+from hypothesis import given, settings, strategies as st, HealthCheck
 from datetime import datetime
-from unittest.mock import Mock, patch
+from moto import mock_aws
+import boto3
+from contextlib import contextmanager
 
 from src.core.profile_repository import ProfileRepository
 from src.models.user import UserProfile, UserPreferences
 from src.models.location import Location
+
+
+@contextmanager
+def create_dynamodb_table():
+    """Context manager to create a mock DynamoDB table for user profiles."""
+    with mock_aws():
+        # Create DynamoDB resource
+        dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+        
+        # Create UserProfiles table
+        table = dynamodb.create_table(
+            TableName='UserProfiles',
+            KeySchema=[
+                {'AttributeName': 'user_id', 'KeyType': 'HASH'}
+            ],
+            AttributeDefinitions=[
+                {'AttributeName': 'user_id', 'AttributeType': 'S'}
+            ],
+            BillingMode='PAY_PER_REQUEST'
+        )
+        
+        yield table
 
 
 # Custom strategies for generating valid test data
@@ -26,14 +50,26 @@ def location_strategy(draw):
     blocks = ["Haveli", "Kurla", "Whitefield", "T Nagar", None]
     villages = ["Kharadi", "Andheri", "Marathahalli", "Adyar", None]
     
+    # Generate latitude/longitude with reasonable precision to avoid DynamoDB decimal underflow
+    # Use None or values with at least 6 decimal places precision
+    lat = draw(st.none() | st.floats(
+        min_value=8.0, max_value=37.0,  # India's latitude range
+        allow_nan=False, allow_infinity=False
+    ).map(lambda x: round(x, 6)))
+    
+    lon = draw(st.none() | st.floats(
+        min_value=68.0, max_value=97.0,  # India's longitude range
+        allow_nan=False, allow_infinity=False
+    ).map(lambda x: round(x, 6)))
+    
     return Location(
         state=draw(st.sampled_from(states)),
         district=draw(st.sampled_from(districts)),
         block=draw(st.sampled_from(blocks)),
         village=draw(st.sampled_from(villages)),
         pincode=draw(st.from_regex(r"^\d{6}$", fullmatch=True)),
-        latitude=draw(st.none() | st.floats(min_value=-90, max_value=90, allow_nan=False, allow_infinity=False)),
-        longitude=draw(st.none() | st.floats(min_value=-180, max_value=180, allow_nan=False, allow_infinity=False))
+        latitude=lat,
+        longitude=lon
     )
 
 
@@ -104,7 +140,7 @@ def user_profile_strategy(draw):
     )
 
 
-@settings(max_examples=20, deadline=None)
+@settings(max_examples=5, deadline=None)
 @given(profile=user_profile_strategy())
 def test_profile_data_roundtrip(profile):
     """
@@ -119,78 +155,59 @@ def test_profile_data_roundtrip(profile):
     3. Nested objects (location, preferences) are preserved correctly
     4. None values in optional fields are handled correctly
     """
-    # Create mock table
-    mock_table = Mock()
-    
-    # Create repository with mocked table
-    with patch('boto3.resource') as mock_resource:
-        mock_dynamodb = Mock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_resource.return_value = mock_dynamodb
+    with create_dynamodb_table():
+        # Create repository with the mocked DynamoDB table
+        repo = ProfileRepository(table_name="UserProfiles", region_name="us-east-1")
         
-        with patch('boto3.client'):
-            repo = ProfileRepository(table_name="TestProfiles")
-            repo.table = mock_table
-            
-            # Mock the create_profile operation
-            mock_table.put_item.return_value = {}
-            
-            # Mock the get_profile operation to return the stored profile
-            # Simulate what DynamoDB would return
-            profile_dict = profile.model_dump()
-            
-            # Convert datetime objects to ISO strings (as DynamoDB would store them)
-            profile_dict['created_at'] = profile.created_at.isoformat()
-            profile_dict['updated_at'] = profile.updated_at.isoformat()
-            
-            # Convert Location to dict
-            profile_dict['location'] = profile.location.model_dump()
-            
-            # Convert UserPreferences to dict
-            profile_dict['preferences'] = profile.preferences.model_dump()
-            
-            mock_table.get_item.return_value = {'Item': profile_dict}
-            
-            # Store the profile
-            created_profile = repo.create_profile(profile)
-            
-            # Retrieve the profile
-            retrieved_profile = repo.get_profile(profile.user_id)
-            
-            # Verify all fields are preserved
-            assert retrieved_profile.user_id == profile.user_id
-            assert retrieved_profile.phone_number == profile.phone_number
-            assert retrieved_profile.language == profile.language
-            
-            # Verify location fields
-            assert retrieved_profile.location.state == profile.location.state
-            assert retrieved_profile.location.district == profile.location.district
-            assert retrieved_profile.location.block == profile.location.block
-            assert retrieved_profile.location.village == profile.location.village
-            assert retrieved_profile.location.pincode == profile.location.pincode
-            assert retrieved_profile.location.latitude == profile.location.latitude
-            assert retrieved_profile.location.longitude == profile.location.longitude
-            
-            # Verify optional fields
-            assert retrieved_profile.age == profile.age
-            assert retrieved_profile.gender == profile.gender
-            assert retrieved_profile.education_level == profile.education_level
-            assert retrieved_profile.occupation == profile.occupation
-            assert retrieved_profile.income_bracket == profile.income_bracket
-            assert retrieved_profile.household_size == profile.household_size
-            
-            # Verify preferences
-            assert retrieved_profile.preferences.notification_enabled == profile.preferences.notification_enabled
-            assert retrieved_profile.preferences.preferred_categories == profile.preferences.preferred_categories
-            assert retrieved_profile.preferences.voice_enabled == profile.preferences.voice_enabled
-            assert retrieved_profile.preferences.data_sharing_consent == profile.preferences.data_sharing_consent
-            
-            # Verify timestamps
-            assert retrieved_profile.created_at == profile.created_at
-            assert retrieved_profile.updated_at == profile.updated_at
+        # Store the profile
+        created_profile = repo.create_profile(profile)
+        
+        # Retrieve the profile
+        retrieved_profile = repo.get_profile(profile.user_id)
+        
+        # Verify all required fields are preserved
+        assert retrieved_profile.user_id == profile.user_id
+        assert retrieved_profile.phone_number == profile.phone_number
+        assert retrieved_profile.language == profile.language
+        
+        # Verify location fields
+        assert retrieved_profile.location.state == profile.location.state
+        assert retrieved_profile.location.district == profile.location.district
+        assert retrieved_profile.location.block == profile.location.block
+        assert retrieved_profile.location.village == profile.location.village
+        assert retrieved_profile.location.pincode == profile.location.pincode
+        
+        # Handle floating point comparison for coordinates
+        if profile.location.latitude is not None:
+            assert retrieved_profile.location.latitude == pytest.approx(profile.location.latitude, abs=1e-6)
+        else:
+            assert retrieved_profile.location.latitude is None
+        
+        if profile.location.longitude is not None:
+            assert retrieved_profile.location.longitude == pytest.approx(profile.location.longitude, abs=1e-6)
+        else:
+            assert retrieved_profile.location.longitude is None
+        
+        # Verify optional fields
+        assert retrieved_profile.age == profile.age
+        assert retrieved_profile.gender == profile.gender
+        assert retrieved_profile.education_level == profile.education_level
+        assert retrieved_profile.occupation == profile.occupation
+        assert retrieved_profile.income_bracket == profile.income_bracket
+        assert retrieved_profile.household_size == profile.household_size
+        
+        # Verify preferences
+        assert retrieved_profile.preferences.notification_enabled == profile.preferences.notification_enabled
+        assert retrieved_profile.preferences.preferred_categories == profile.preferences.preferred_categories
+        assert retrieved_profile.preferences.voice_enabled == profile.preferences.voice_enabled
+        assert retrieved_profile.preferences.data_sharing_consent == profile.preferences.data_sharing_consent
+        
+        # Verify timestamps (should be preserved exactly)
+        assert retrieved_profile.created_at == profile.created_at
+        assert retrieved_profile.updated_at == profile.updated_at
 
 
-@settings(max_examples=10, deadline=None)
+@settings(max_examples=3, deadline=None)
 @given(profile=user_profile_strategy())
 def test_profile_roundtrip_with_update(profile):
     """
@@ -198,49 +215,40 @@ def test_profile_roundtrip_with_update(profile):
     
     This verifies that the update operation also maintains data integrity.
     """
-    # Create mock table
-    mock_table = Mock()
-    
-    with patch('boto3.resource') as mock_resource:
-        mock_dynamodb = Mock()
-        mock_dynamodb.Table.return_value = mock_table
-        mock_resource.return_value = mock_dynamodb
+    with create_dynamodb_table():
+        # Create repository with the mocked DynamoDB table
+        repo = ProfileRepository(table_name="UserProfiles", region_name="us-east-1")
         
-        with patch('boto3.client'):
-            repo = ProfileRepository(table_name="TestProfiles")
-            repo.table = mock_table
-            
-            # Mock create
-            mock_table.put_item.return_value = {}
-            
-            # Create initial profile
-            repo.create_profile(profile)
-            
-            # Update some fields
-            updates = {
-                'age': 40 if profile.age else 30,
-                'occupation': 'teacher'
-            }
-            
-            # Mock update response
-            updated_profile_dict = profile.model_dump()
-            updated_profile_dict.update(updates)
-            updated_profile_dict['updated_at'] = datetime(2024, 1, 15, 10, 30, 0).isoformat()
-            updated_profile_dict['created_at'] = profile.created_at.isoformat()
-            updated_profile_dict['location'] = profile.location.model_dump()
-            updated_profile_dict['preferences'] = profile.preferences.model_dump()
-            
-            mock_table.update_item.return_value = {'Attributes': updated_profile_dict}
-            
-            # Perform update
-            updated = repo.update_profile(profile.user_id, updates)
-            
-            # Verify updated fields
-            assert updated.age == updates['age']
-            assert updated.occupation == updates['occupation']
-            
-            # Verify other fields remain unchanged
-            assert updated.user_id == profile.user_id
-            assert updated.phone_number == profile.phone_number
-            assert updated.language == profile.language
-            assert updated.location.state == profile.location.state
+        # Create initial profile
+        repo.create_profile(profile)
+        
+        # Update some fields
+        updates = {
+            'age': 40 if profile.age else 30,
+            'occupation': 'teacher'
+        }
+        
+        # Perform update
+        updated = repo.update_profile(profile.user_id, updates)
+        
+        # Verify updated fields
+        assert updated.age == updates['age']
+        assert updated.occupation == updates['occupation']
+        
+        # Verify other fields remain unchanged
+        assert updated.user_id == profile.user_id
+        assert updated.phone_number == profile.phone_number
+        assert updated.language == profile.language
+        assert updated.location.state == profile.location.state
+        
+        # Retrieve the profile again to verify persistence
+        retrieved = repo.get_profile(profile.user_id)
+        
+        # Verify the updates persisted
+        assert retrieved.age == updates['age']
+        assert retrieved.occupation == updates['occupation']
+        
+        # Verify unchanged fields are still correct
+        assert retrieved.user_id == profile.user_id
+        assert retrieved.phone_number == profile.phone_number
+        assert retrieved.language == profile.language

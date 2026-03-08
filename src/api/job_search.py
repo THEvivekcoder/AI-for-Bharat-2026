@@ -19,7 +19,8 @@ logger.setLevel(os.environ.get('LOG_LEVEL', 'INFO'))
 
 # Initialize repository
 JOBS_TABLE = os.environ.get('JOB_POSTINGS_TABLE', 'bharatsahayak-job-postings-dev')
-job_repo = JobPostingRepository(table_name=JOBS_TABLE)
+AWS_REGION = os.environ.get('AWS_REGION', 'ap-south-1')
+job_repo = JobPostingRepository(table_name=JOBS_TABLE, region_name=AWS_REGION)
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:

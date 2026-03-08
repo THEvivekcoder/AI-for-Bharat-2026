@@ -63,6 +63,7 @@ class BaseRepository:
         """
         Serialize item for DynamoDB storage.
         Converts datetime and date objects to ISO format strings.
+        Converts float to Decimal for DynamoDB compatibility.
         
         Args:
             item: Dictionary to serialize
@@ -71,6 +72,7 @@ class BaseRepository:
             Serialized dictionary
         """
         from datetime import datetime, date
+        from decimal import Decimal
         
         serialized = {}
         for key, value in item.items():
@@ -78,6 +80,8 @@ class BaseRepository:
                 serialized[key] = value.isoformat()
             elif isinstance(value, date):
                 serialized[key] = value.isoformat()
+            elif isinstance(value, float):
+                serialized[key] = Decimal(str(value))
             elif isinstance(value, dict):
                 serialized[key] = self._serialize_item(value)
             elif isinstance(value, list):
@@ -93,6 +97,7 @@ class BaseRepository:
         """
         Deserialize item from DynamoDB storage.
         Converts ISO format strings back to datetime or date objects where appropriate.
+        Converts Decimal back to float for numeric fields.
         
         Args:
             item: Dictionary to deserialize
@@ -101,11 +106,15 @@ class BaseRepository:
             Deserialized dictionary
         """
         from datetime import datetime, date
+        from decimal import Decimal
         
         deserialized = {}
         for key, value in item.items():
+            # Convert Decimal to float
+            if isinstance(value, Decimal):
+                deserialized[key] = float(value)
             # Try to parse datetime fields
-            if isinstance(value, str) and key in ['created_at', 'updated_at', 'last_updated']:
+            elif isinstance(value, str) and key in ['created_at', 'updated_at', 'last_updated']:
                 try:
                     deserialized[key] = datetime.fromisoformat(value.replace('Z', '+00:00'))
                 except (ValueError, AttributeError):
