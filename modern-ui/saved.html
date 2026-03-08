@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Saved Schemes - BharatSahayak</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">🇮🇳 BharatSahayak</a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html">
+          <span class="icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="search.html">
+          <span class="icon">🔍</span>
+          <span>Search Schemes</span>
+        </a>
+        <a href="saved.html">
+          <span class="icon">⭐</span>
+          <span>Saved Schemes</span>
+        </a>
+        <a href="#">
+          <span class="icon">📈</span>
+          <span>Activity</span>
+        </a>
+        <a href="#">
+          <span class="icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+        <a href="#" onclick="auth.logout(); return false;" style="margin-top: 2rem; color: var(--danger);">
+          <span class="icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <button class="menu-toggle">☰</button>
+        <h1 style="font-size: 1.25rem; font-weight: 600;">Saved Schemes</h1>
+        <div class="user-menu">
+          <span id="userName" style="color: var(--gray);"></span>
+          <div class="user-avatar" id="userAvatar"></div>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <div class="card mb-4">
+          <div class="flex-between">
+            <div>
+              <h2>Your Bookmarked Schemes</h2>
+              <p class="text-muted">Quick access to schemes you're interested in</p>
+            </div>
+            <div class="stat-value" id="savedCount" style="font-size: 2.5rem;">0</div>
+          </div>
+        </div>
+
+        <div class="grid grid-3" id="savedSchemesList"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    // Check auth
+    if (!auth.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+    
+    // Load user info
+    const user = auth.getUser();
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+    
+    // Load saved schemes
+    const saved = savedSchemes.getAll();
+    document.getElementById('savedCount').textContent = saved.length;
+    
+    if (saved.length === 0) {
+      document.getElementById('savedSchemesList').innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1;">
+          <div class="empty-state-icon">⭐</div>
+          <h3>No saved schemes yet</h3>
+          <p>Start exploring and save schemes you're interested in</p>
+          <a href="search.html" class="btn btn-primary mt-3">Search Schemes</a>
+        </div>
+      `;
+    } else {
+      renderSchemeCards(saved, 'savedSchemesList');
+    }
+  </script>
+</body>
+</html>

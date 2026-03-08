@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - BharatSahayak</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">🇮🇳 BharatSahayak</a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html">
+          <span class="icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="search.html">
+          <span class="icon">🔍</span>
+          <span>Search Schemes</span>
+        </a>
+        <a href="saved.html">
+          <span class="icon">⭐</span>
+          <span>Saved Schemes</span>
+        </a>
+        <a href="#">
+          <span class="icon">📈</span>
+          <span>Activity</span>
+        </a>
+        <a href="#">
+          <span class="icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+        <a href="#" onclick="auth.logout(); return false;" style="margin-top: 2rem; color: var(--danger);">
+          <span class="icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <button class="menu-toggle">☰</button>
+        <h1 style="font-size: 1.25rem; font-weight: 600;">Dashboard</h1>
+        <div class="user-menu">
+          <span id="userName" style="color: var(--gray);"></span>
+          <div class="user-avatar" id="userAvatar"></div>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <!-- Welcome Message -->
+        <div class="card mb-4">
+          <h2 id="welcomeMessage">Welcome back!</h2>
+          <p class="text-muted">Discover government schemes tailored for you</p>
+        </div>
+
+        <!-- AI Search Bar -->
+        <div class="card mb-4">
+          <h3 class="mb-3">🤖 Ask AI About Schemes</h3>
+          <div class="search-bar">
+            <input type="text" class="search-input" placeholder="Ask anything... e.g., 'Show me education schemes for students'" id="aiSearch">
+            <span class="search-icon">🔍</span>
+          </div>
+          <div class="tags">
+            <span class="tag" style="cursor: pointer;" onclick="quickSearch('education')">Education</span>
+            <span class="tag" style="cursor: pointer;" onclick="quickSearch('health')">Health</span>
+            <span class="tag" style="cursor: pointer;" onclick="quickSearch('agriculture')">Agriculture</span>
+            <span class="tag" style="cursor: pointer;" onclick="quickSearch('skill')">Skill Development</span>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value" id="eligibleCount">0</div>
+            <div class="stat-label">Eligible Schemes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="savedCount">0</div>
+            <div class="stat-label">Saved Schemes</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">1,500+</div>
+            <div class="stat-label">Total Schemes</div>
+          </div>
+        </div>
+
+        <!-- Recommended Schemes -->
+        <h3 class="mb-3 mt-4">Recommended for You</h3>
+        <div class="grid grid-3" id="recommendedSchemes"></div>
+
+        <!-- Recent Activity -->
+        <h3 class="mb-3 mt-4">Recent Activity</h3>
+        <div class="card">
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; justify-content: space-between; padding: 1rem; background: var(--light-gray); border-radius: var(--radius);">
+              <span>Viewed: Pradhan Mantri Awas Yojana</span>
+              <span class="text-muted" style="font-size: 0.875rem;">2 hours ago</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 1rem; background: var(--light-gray); border-radius: var(--radius);">
+              <span>Saved: PM Kaushal Vikas Yojana</span>
+              <span class="text-muted" style="font-size: 0.875rem;">1 day ago</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; padding: 1rem; background: var(--light-gray); border-radius: var(--radius);">
+              <span>Searched: Agriculture schemes</span>
+              <span class="text-muted" style="font-size: 0.875rem;">2 days ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    // Check auth
+    if (!auth.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+    
+    // Load user info
+    const user = auth.getUser();
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+    document.getElementById('welcomeMessage').textContent = `Welcome back, ${user.name}!`;
+    
+    // Load stats
+    document.getElementById('savedCount').textContent = savedSchemes.getAll().length;
+    document.getElementById('eligibleCount').textContent = sampleSchemes.length;
+    
+    // Load recommended schemes
+    renderSchemeCards(sampleSchemes, 'recommendedSchemes');
+    
+    // AI Search
+    document.getElementById('aiSearch').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        const query = e.target.value;
+        window.location.href = `search.html?q=${encodeURIComponent(query)}`;
+      }
+    });
+    
+    function quickSearch(category) {
+      window.location.href = `search.html?category=${category}`;
+    }
+  </script>
+</body>
+</html>

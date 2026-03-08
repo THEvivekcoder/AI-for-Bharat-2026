@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BharatSahayak - AI-Powered Government Scheme Finder</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="index.html" class="logo">🇮🇳 BharatSahayak</a>
+      <div class="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <div class="nav-buttons">
+        <a href="login.html" class="btn btn-secondary">Login</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>Find Government Schemes Made Easy</h1>
+      <p>AI-powered platform helping millions discover and access government benefits in their language</p>
+      <div class="hero-buttons">
+        <a href="login.html" class="btn btn-primary" style="background: white; color: var(--primary);">Get Started</a>
+        <button onclick="auth.loginAsGuest()" class="btn btn-secondary" style="border-color: white; color: white;">Try as Guest</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem & Solution -->
+  <section class="section" style="background: white;">
+    <div class="container">
+      <h2 class="section-title">Bridging the Information Gap</h2>
+      <div class="grid grid-2">
+        <div>
+          <h3 style="color: var(--danger); margin-bottom: 1rem;">The Problem</h3>
+          <p style="color: var(--gray); line-height: 1.8;">
+            Over 1,500 government schemes exist in India, but 70% of eligible citizens remain unaware. 
+            Complex eligibility criteria, language barriers, and scattered information prevent millions 
+            from accessing benefits they deserve.
+          </p>
+        </div>
+        <div>
+          <h3 style="color: var(--success); margin-bottom: 1rem;">Our Solution</h3>
+          <p style="color: var(--gray); line-height: 1.8;">
+            BharatSahayak uses AI to simplify scheme discovery. Voice-first interface in 10+ Indian languages, 
+            intelligent eligibility matching, and personalized recommendations ensure every citizen can find 
+            and access the right schemes effortlessly.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="section">
+    <div class="container">
+      <h2 class="section-title">Powerful Features</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🎤</div>
+          <h3>Voice Interface</h3>
+          <p>Search schemes using voice in your preferred language</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3>AI-Powered Matching</h3>
+          <p>Intelligent recommendations based on your profile</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🌐</div>
+          <h3>Multilingual Support</h3>
+          <p>Available in 10+ Indian languages</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">✅</div>
+          <h3>Eligibility Check</h3>
+          <p>Instant verification of scheme eligibility</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3>Mobile First</h3>
+          <p>Works seamlessly on any device</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <h3>Secure & Private</h3>
+          <p>Your data is encrypted and protected</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section id="how-it-works" class="section" style="background: white;">
+    <div class="container">
+      <h2 class="section-title">How It Works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <h3 style="margin-bottom: 0.5rem;">Create Profile</h3>
+          <p style="color: var(--gray);">Tell us about yourself - location, age, occupation, and preferences</p>
+        </div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <h3 style="margin-bottom: 0.5rem;">AI Matches Schemes</h3>
+          <p style="color: var(--gray);">Our AI analyzes 1,500+ schemes and finds the best matches for you</p>
+        </div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <h3 style="margin-bottom: 0.5rem;">Apply & Track</h3>
+          <p style="color: var(--gray);">Get step-by-step guidance to apply and track your applications</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h4>BharatSahayak</h4>
+        <p style="color: var(--gray); margin-top: 0.5rem;">
+          Empowering citizens with AI-driven access to government schemes
+        </p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#how-it-works">How It Works</a></li>
+          <li><a href="search.html">Search Schemes</a></li>
+          <li><a href="login.html">Login</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Support</h4>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">FAQs</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:support@bharatsahayak.in">support@bharatsahayak.in</a></li>
+          <li><a href="tel:1800-123-4567">1800-123-4567</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 BharatSahayak. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+</body>
+</html>

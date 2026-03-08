@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - BharatSahayak</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <a href="index.html" class="logo" style="display: block; text-align: center; margin-bottom: 2rem;">🇮🇳 BharatSahayak</a>
+      
+      <h2>Welcome Back</h2>
+      
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="email">Email or Phone</label>
+          <input type="text" id="email" class="form-control" placeholder="Enter your email or phone" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Enter your password" required>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Login</button>
+        
+        <button type="button" onclick="auth.loginAsGuest()" class="btn btn-secondary" style="width: 100%;">Continue as Guest</button>
+      </form>
+      
+      <div class="divider"></div>
+      
+      <p class="text-center text-muted">
+        Don't have an account? <a href="#" onclick="showSignup(); return false;" style="color: var(--primary); font-weight: 600;">Sign Up</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      // Simulate login
+      const user = {
+        id: 'user_' + Date.now(),
+        name: email.split('@')[0],
+        email: email,
+        isGuest: false
+      };
+      
+      auth.setUser(user);
+      
+      // Check if profile setup needed
+      if (!storage.get('profileComplete')) {
+        window.location.href = 'profile-setup.html';
+      } else {
+        window.location.href = 'dashboard.html';
+      }
+    }
+    
+    function showSignup() {
+      alert('Signup functionality - In production, this would show a signup form');
+    }
+  </script>
+</body>
+</html>

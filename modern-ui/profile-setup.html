@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile Setup - BharatSahayak</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card" style="max-width: 600px;">
+      <h2>Complete Your Profile</h2>
+      <p class="text-center text-muted mb-4">Help us personalize your experience</p>
+      
+      <form id="profileForm" onsubmit="handleProfileSetup(event)">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" class="form-control" placeholder="Enter your full name" required>
+        </div>
+        
+        <div class="grid grid-2">
+          <div class="form-group">
+            <label for="state">State</label>
+            <select id="state" class="form-control" required>
+              <option value="">Select State</option>
+              <option value="andhra-pradesh">Andhra Pradesh</option>
+              <option value="bihar">Bihar</option>
+              <option value="delhi">Delhi</option>
+              <option value="gujarat">Gujarat</option>
+              <option value="karnataka">Karnataka</option>
+              <option value="maharashtra">Maharashtra</option>
+              <option value="tamil-nadu">Tamil Nadu</option>
+              <option value="uttar-pradesh">Uttar Pradesh</option>
+              <option value="west-bengal">West Bengal</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label for="district">District</label>
+            <input type="text" id="district" class="form-control" placeholder="Enter district">
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="language">Preferred Language</label>
+          <select id="language" class="form-control" required>
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="bn">Bengali</option>
+            <option value="te">Telugu</option>
+            <option value="mr">Marathi</option>
+            <option value="ta">Tamil</option>
+            <option value="gu">Gujarati</option>
+            <option value="kn">Kannada</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label>Interests (Select all that apply)</label>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="checkbox" name="interests" value="education"> Education
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="checkbox" name="interests" value="health"> Health
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="checkbox" name="interests" value="agriculture"> Agriculture
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="checkbox" name="interests" value="skill"> Skill Development
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="checkbox" name="interests" value="housing"> Housing
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+              <input type="checkbox" name="interests" value="employment"> Employment
+            </label>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="profilePic">Profile Picture (Optional)</label>
+          <input type="file" id="profilePic" class="form-control" accept="image/*">
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Complete Setup</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    // Check if user is logged in
+    if (!auth.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+    
+    function handleProfileSetup(e) {
+      e.preventDefault();
+      
+      const interests = Array.from(document.querySelectorAll('input[name="interests"]:checked'))
+        .map(cb => cb.value);
+      
+      const profile = {
+        name: document.getElementById('name').value,
+        state: document.getElementById('state').value,
+        district: document.getElementById('district').value,
+        language: document.getElementById('language').value,
+        interests: interests
+      };
+      
+      // Update user with profile
+      const user = auth.getUser();
+      user.profile = profile;
+      user.name = profile.name;
+      auth.setUser(user);
+      
+      storage.set('profileComplete', true);
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</body>
+</html>

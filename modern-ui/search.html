@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Schemes - BharatSahayak</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">🇮🇳 BharatSahayak</a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html">
+          <span class="icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="search.html">
+          <span class="icon">🔍</span>
+          <span>Search Schemes</span>
+        </a>
+        <a href="saved.html">
+          <span class="icon">⭐</span>
+          <span>Saved Schemes</span>
+        </a>
+        <a href="#">
+          <span class="icon">📈</span>
+          <span>Activity</span>
+        </a>
+        <a href="#">
+          <span class="icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+        <a href="#" onclick="auth.logout(); return false;" style="margin-top: 2rem; color: var(--danger);">
+          <span class="icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <button class="menu-toggle">☰</button>
+        <h1 style="font-size: 1.25rem; font-weight: 600;">Search Schemes</h1>
+        <div class="user-menu">
+          <span id="userName" style="color: var(--gray);"></span>
+          <div class="user-avatar" id="userAvatar"></div>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <input type="text" class="search-input" placeholder="Search for schemes..." id="searchInput">
+          <span class="search-icon">🔍</span>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+          <h3 class="mb-3">Filters</h3>
+          <div class="grid grid-3">
+            <div class="filter-group">
+              <label for="categoryFilter">Category</label>
+              <select id="categoryFilter" class="form-control">
+                <option value="all">All Categories</option>
+                <option value="education">Education</option>
+                <option value="health">Health</option>
+                <option value="agriculture">Agriculture</option>
+                <option value="skill_development">Skill Development</option>
+                <option value="housing">Housing</option>
+                <option value="employment">Employment</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label for="stateFilter">State</label>
+              <select id="stateFilter" class="form-control">
+                <option value="all">All States</option>
+                <option value="andhra-pradesh">Andhra Pradesh</option>
+                <option value="bihar">Bihar</option>
+                <option value="delhi">Delhi</option>
+                <option value="gujarat">Gujarat</option>
+                <option value="karnataka">Karnataka</option>
+                <option value="maharashtra">Maharashtra</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label for="eligibilityFilter">Eligibility</label>
+              <select id="eligibilityFilter" class="form-control">
+                <option value="all">All</option>
+                <option value="student">Students</option>
+                <option value="farmer">Farmers</option>
+                <option value="women">Women</option>
+                <option value="youth">Youth</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results Count -->
+        <div class="flex-between mb-3">
+          <h3 id="resultsCount">Loading schemes...</h3>
+          <button class="btn btn-ghost" onclick="resetFilters()">Reset Filters</button>
+        </div>
+
+        <!-- Results Grid -->
+        <div class="grid grid-3" id="searchResults"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    // Check auth
+    if (!auth.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+    
+    // Load user info
+    const user = auth.getUser();
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+    
+    // Get URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialQuery = urlParams.get('q') || '';
+    const initialCategory = urlParams.get('category') || 'all';
+    
+    if (initialQuery) {
+      document.getElementById('searchInput').value = initialQuery;
+    }
+    if (initialCategory !== 'all') {
+      document.getElementById('categoryFilter').value = initialCategory;
+    }
+    
+    // Perform search
+    function performSearch() {
+      const query = document.getElementById('searchInput').value;
+      const category = document.getElementById('categoryFilter').value;
+      
+      const results = searchSchemes(query, { category });
+      
+      document.getElementById('resultsCount').textContent = `${results.length} schemes found`;
+      renderSchemeCards(results, 'searchResults');
+    }
+    
+    // Event listeners
+    document.getElementById('searchInput').addEventListener('input', performSearch);
+    document.getElementById('categoryFilter').addEventListener('change', performSearch);
+    document.getElementById('stateFilter').addEventListener('change', performSearch);
+    document.getElementById('eligibilityFilter').addEventListener('change', performSearch);
+    
+    function resetFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('categoryFilter').value = 'all';
+      document.getElementById('stateFilter').value = 'all';
+      document.getElementById('eligibilityFilter').value = 'all';
+      performSearch();
+    }
+    
+    // Initial search
+    performSearch();
+  </script>
+</body>
+</html>
