@@ -2,7 +2,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "bharatsahayak"
+stack_name = "bharatsahayak-stack"
 
 [default.build.parameters]
 cached = true
