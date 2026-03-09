@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - BharatSahayak</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">🇮🇳 BharatSahayak</a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html">
+          <span class="icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="search.html">
+          <span class="icon">🔍</span>
+          <span>Search Schemes</span>
+        </a>
+        <a href="saved.html">
+          <span class="icon">⭐</span>
+          <span>Saved Schemes</span>
+        </a>
+        <a href="activity.html">
+          <span class="icon">📈</span>
+          <span>Activity</span>
+        </a>
+        <a href="settings.html">
+          <span class="icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+        <a href="#" onclick="event.preventDefault(); auth.logout();" style="margin-top: 2rem; color: var(--danger);">
+          <span class="icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <button class="menu-toggle">☰</button>
+        <h1 style="font-size: 1.25rem; font-weight: 600;">Settings</h1>
+        <div class="user-menu">
+          <span id="userName" style="color: var(--gray);"></span>
+          <div class="user-avatar" id="userAvatar"></div>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <div class="card mb-4">
+          <h2>Settings</h2>
+          <p class="text-muted">Manage your account preferences</p>
+        </div>
+
+        <!-- Account Settings -->
+        <div class="card mb-4">
+          <h3 class="mb-3">Account</h3>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--light-gray); border-radius: var(--radius);">
+              <div>
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">Profile</div>
+                <div style="font-size: 0.875rem; color: var(--gray);">Update your personal information</div>
+              </div>
+              <a href="profile.html" class="btn btn-secondary">Edit Profile</a>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--light-gray); border-radius: var(--radius);">
+              <div>
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">Email</div>
+                <div style="font-size: 0.875rem; color: var(--gray);" id="userEmail">Loading...</div>
+              </div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--light-gray); border-radius: var(--radius);">
+              <div>
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">Account Type</div>
+                <div style="font-size: 0.875rem; color: var(--gray);" id="accountType">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preferences -->
+        <div class="card mb-4">
+          <h3 class="mb-3">Preferences</h3>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--light-gray); border-radius: var(--radius);">
+              <div>
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">Language</div>
+                <div style="font-size: 0.875rem; color: var(--gray);">English</div>
+              </div>
+              <button class="btn btn-ghost">Change</button>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--light-gray); border-radius: var(--radius);">
+              <div>
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">Notifications</div>
+                <div style="font-size: 0.875rem; color: var(--gray);">Email notifications enabled</div>
+              </div>
+              <button class="btn btn-ghost">Manage</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data & Privacy -->
+        <div class="card mb-4">
+          <h3 class="mb-3">Data & Privacy</h3>
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--light-gray); border-radius: var(--radius);">
+              <div>
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">Clear Saved Schemes</div>
+                <div style="font-size: 0.875rem; color: var(--gray);">Remove all bookmarked schemes</div>
+              </div>
+              <button class="btn btn-ghost" onclick="clearSavedSchemes()">Clear</button>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--light-gray); border-radius: var(--radius);">
+              <div>
+                <div style="font-weight: 600; margin-bottom: 0.25rem;">Download Data</div>
+                <div style="font-size: 0.875rem; color: var(--gray);">Export your account data</div>
+              </div>
+              <button class="btn btn-ghost" onclick="downloadData()">Download</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="card" style="border: 2px solid var(--danger);">
+          <h3 class="mb-3" style="color: var(--danger);">Danger Zone</h3>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #fee2e2; border-radius: var(--radius);">
+            <div>
+              <div style="font-weight: 600; margin-bottom: 0.25rem; color: var(--danger);">Delete Account</div>
+              <div style="font-size: 0.875rem; color: var(--gray);">Permanently delete your account and all data</div>
+            </div>
+            <button class="btn" style="background: var(--danger); color: white;" onclick="deleteAccount()">Delete</button>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="js/schemes-data.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Check auth
+    if (!auth.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+    
+    // Load user info
+    const user = auth.getUser();
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+    document.getElementById('userEmail').textContent = user.email || 'Not set';
+    document.getElementById('accountType').textContent = user.isGuest ? 'Guest Account' : 'Registered Account';
+    
+    function clearSavedSchemes() {
+      if (confirm('Are you sure you want to clear all saved schemes?')) {
+        storage.remove('savedSchemes');
+        showAlert('All saved schemes cleared', 'success');
+      }
+    }
+    
+    function downloadData() {
+      const data = {
+        user: user,
+        savedSchemes: savedSchemes.getAll(),
+        exportDate: new Date().toISOString()
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'bharatsahayak-data.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      showAlert('Data downloaded successfully', 'success');
+    }
+    
+    function deleteAccount() {
+      if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+        if (confirm('This will permanently delete all your data. Are you absolutely sure?')) {
+          storage.remove('user');
+          storage.remove('authToken');
+          storage.remove('savedSchemes');
+          storage.remove('profileComplete');
+          storage.remove('userProfile');
+          showAlert('Account deleted', 'success');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 2000);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

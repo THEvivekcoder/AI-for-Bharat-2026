@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - BharatSahayak</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script src="config.js"></script>
 </head>
 <body>
   <div class="auth-container">
@@ -12,6 +13,10 @@
       <a href="index.html" class="logo" style="display: block; text-align: center; margin-bottom: 2rem;">🇮🇳 BharatSahayak</a>
       
       <h2>Welcome Back</h2>
+      
+      <div id="demoModeAlert" class="alert alert-info" style="display: none; margin-bottom: 1rem;">
+        🔧 Demo Mode Active - No real API calls
+      </div>
       
       <form id="loginForm" onsubmit="handleLogin(event)">
         <div class="form-group">
@@ -32,38 +37,75 @@
       <div class="divider"></div>
       
       <p class="text-center text-muted">
-        Don't have an account? <a href="#" onclick="showSignup(); return false;" style="color: var(--primary); font-weight: 600;">Sign Up</a>
+        Don't have an account? <a href="register.html" style="color: var(--primary); font-weight: 600;">Sign Up</a>
       </p>
     </div>
   </div>
 
+  <script src="js/api-client.js"></script>
   <script src="js/app.js"></script>
   <script>
-    function handleLogin(e) {
+    // Show demo mode alert if active
+    if (api.demoMode) {
+      document.getElementById('demoModeAlert').style.display = 'block';
+    }
+    
+    async function handleLogin(e) {
       e.preventDefault();
-      const email = document.getElementById('email').value;
+      const phoneOrEmail = document.getElementById('email').value;
       const password = document.getElementById('password').value;
+      const submitBtn = e.target.querySelector('button[type="submit"]');
       
-      // Simulate login
-      const user = {
-        id: 'user_' + Date.now(),
-        name: email.split('@')[0],
-        email: email,
-        isGuest: false
-      };
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Logging in...';
       
-      auth.setUser(user);
-      
-      // Check if profile setup needed
-      if (!storage.get('profileComplete')) {
-        window.location.href = 'profile-setup.html';
-      } else {
+      try {
+        const response = await api.login(phoneOrEmail, password);
+        
+        // Store auth token
+        if (response.token) {
+          api.setAuthToken(response.token);
+        }
+        
+        // Create user session
+        const user = {
+          id: response.user_id || 'user_' + Date.now(),
+          name: response.name || phoneOrEmail.split('@')[0],
+          email: response.email || phoneOrEmail,
+          phone: response.phone_number || phoneOrEmail,
+          isGuest: false
+        };
+        
+        auth.setUser(user);
+        
+        // Always go to dashboard (skip profile setup)
+        storage.set('profileComplete', true);
         window.location.href = 'dashboard.html';
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        showAlert(error.message || 'Login failed. Please check your credentials.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Login';
       }
     }
     
-    function showSignup() {
-      alert('Signup functionality - In production, this would show a signup form');
+    function showAlert(message, type) {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type} fade-in`;
+      alertDiv.textContent = message;
+      alertDiv.style.position = 'fixed';
+      alertDiv.style.top = '20px';
+      alertDiv.style.left = '50%';
+      alertDiv.style.transform = 'translateX(-50%)';
+      alertDiv.style.zIndex = '1000';
+      alertDiv.style.minWidth = '300px';
+      
+      document.body.appendChild(alertDiv);
+      
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 3000);
     }
   </script>
 </body>

@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile - BharatSahayak</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" class="logo">🇮🇳 BharatSahayak</a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html">
+          <span class="icon">📊</span>
+          <span>Dashboard</span>
+        </a>
+        <a href="search.html">
+          <span class="icon">🔍</span>
+          <span>Search Schemes</span>
+        </a>
+        <a href="saved.html">
+          <span class="icon">⭐</span>
+          <span>Saved Schemes</span>
+        </a>
+        <a href="activity.html">
+          <span class="icon">📈</span>
+          <span>Activity</span>
+        </a>
+        <a href="settings.html">
+          <span class="icon">⚙️</span>
+          <span>Settings</span>
+        </a>
+        <a href="#" onclick="event.preventDefault(); auth.logout();" style="margin-top: 2rem; color: var(--danger);">
+          <span class="icon">🚪</span>
+          <span>Logout</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="top-header">
+        <button class="menu-toggle">☰</button>
+        <div class="flex" style="align-items: center; gap: 1rem;">
+          <a href="settings.html" class="btn btn-ghost">← Back to Settings</a>
+          <h1 style="font-size: 1.25rem; font-weight: 600;">Edit Profile</h1>
+        </div>
+        <div class="user-menu">
+          <span id="userName" style="color: var(--gray);"></span>
+          <div class="user-avatar" id="userAvatar"></div>
+        </div>
+      </header>
+
+      <div class="content-area">
+        <div class="card" style="max-width: 700px; margin: 0 auto;">
+          <h2 class="mb-3">Update Your Profile</h2>
+          <p class="text-muted mb-4">Keep your information up to date</p>
+          
+          <form id="profileForm" onsubmit="handleProfileUpdate(event)">
+            <div class="form-group">
+              <label for="name">Full Name</label>
+              <input type="text" id="name" class="form-control" placeholder="Enter your full name" required>
+            </div>
+            
+            <div class="grid grid-2">
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" class="form-control" placeholder="your.email@example.com">
+              </div>
+              
+              <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="tel" id="phone" class="form-control" placeholder="+91 XXXXXXXXXX">
+              </div>
+            </div>
+            
+            <div class="grid grid-2">
+              <div class="form-group">
+                <label for="state">State</label>
+                <select id="state" class="form-control">
+                  <option value="">Select State</option>
+                  <option value="andhra-pradesh">Andhra Pradesh</option>
+                  <option value="bihar">Bihar</option>
+                  <option value="delhi">Delhi</option>
+                  <option value="gujarat">Gujarat</option>
+                  <option value="karnataka">Karnataka</option>
+                  <option value="maharashtra">Maharashtra</option>
+                  <option value="tamil-nadu">Tamil Nadu</option>
+                  <option value="uttar-pradesh">Uttar Pradesh</option>
+                  <option value="west-bengal">West Bengal</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="district">District</label>
+                <input type="text" id="district" class="form-control" placeholder="Enter district">
+              </div>
+            </div>
+            
+            <div class="form-group">
+              <label for="language">Preferred Language</label>
+              <select id="language" class="form-control">
+                <option value="en">English</option>
+                <option value="hi">Hindi</option>
+                <option value="bn">Bengali</option>
+                <option value="te">Telugu</option>
+                <option value="mr">Marathi</option>
+                <option value="ta">Tamil</option>
+                <option value="gu">Gujarati</option>
+                <option value="kn">Kannada</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>Interests (Select all that apply)</label>
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 0.5rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                  <input type="checkbox" name="interests" value="education"> Education
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                  <input type="checkbox" name="interests" value="health"> Health
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                  <input type="checkbox" name="interests" value="agriculture"> Agriculture
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                  <input type="checkbox" name="interests" value="skill"> Skill Development
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                  <input type="checkbox" name="interests" value="housing"> Housing
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                  <input type="checkbox" name="interests" value="employment"> Employment
+                </label>
+              </div>
+            </div>
+            
+            <div class="flex gap-2">
+              <button type="submit" class="btn btn-primary">Save Changes</button>
+              <a href="settings.html" class="btn btn-ghost">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="js/schemes-data.js"></script>
+  <script src="js/api-client.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Check auth
+    if (!auth.isLoggedIn()) {
+      window.location.href = 'login.html';
+    }
+    
+    // Load user info
+    const user = auth.getUser();
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+    
+    // Pre-fill form with existing data
+    document.getElementById('name').value = user.name || '';
+    document.getElementById('email').value = user.email || '';
+    document.getElementById('phone').value = user.phone || '';
+    
+    if (user.profile) {
+      if (user.profile.location) {
+        document.getElementById('state').value = user.profile.location.state || '';
+        document.getElementById('district').value = user.profile.location.district || '';
+      }
+      document.getElementById('language').value = user.profile.language || 'en';
+      
+      if (user.profile.interests) {
+        user.profile.interests.forEach(interest => {
+          const checkbox = document.querySelector(`input[name="interests"][value="${interest}"]`);
+          if (checkbox) checkbox.checked = true;
+        });
+      }
+    }
+    
+    async function handleProfileUpdate(e) {
+      e.preventDefault();
+      
+      const interests = Array.from(document.querySelectorAll('input[name="interests"]:checked'))
+        .map(cb => cb.value);
+      
+      const profileData = {
+        name: document.getElementById('name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        location: {
+          state: document.getElementById('state').value,
+          district: document.getElementById('district').value
+        },
+        language: document.getElementById('language').value,
+        interests: interests
+      };
+      
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+      
+      try {
+        // Call API to update profile
+        await api.updateProfile(profileData);
+        
+        // Update local user data
+        user.name = profileData.name;
+        user.email = profileData.email;
+        user.phone = profileData.phone;
+        user.profile = {
+          location: profileData.location,
+          language: profileData.language,
+          interests: profileData.interests
+        };
+        auth.setUser(user);
+        
+        showAlert('Profile updated successfully!', 'success');
+        
+        setTimeout(() => {
+          window.location.href = 'settings.html';
+        }, 1500);
+        
+      } catch (error) {
+        console.error('Profile update error:', error);
+        showAlert(error.message || 'Failed to update profile. Please try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Save Changes';
+      }
+    }
+  </script>
+</body>
+</html>

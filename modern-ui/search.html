@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Search Schemes - BharatSahayak</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script src="config.js"></script>
 </head>
 <body>
   <div class="dashboard-layout">
@@ -26,15 +27,15 @@
           <span class="icon">⭐</span>
           <span>Saved Schemes</span>
         </a>
-        <a href="#">
+        <a href="activity.html">
           <span class="icon">📈</span>
           <span>Activity</span>
         </a>
-        <a href="#">
+        <a href="settings.html">
           <span class="icon">⚙️</span>
           <span>Settings</span>
         </a>
-        <a href="#" onclick="auth.logout(); return false;" style="margin-top: 2rem; color: var(--danger);">
+        <a href="#" onclick="event.preventDefault(); auth.logout();" style="margin-top: 2rem; color: var(--danger);">
           <span class="icon">🚪</span>
           <span>Logout</span>
         </a>
@@ -70,9 +71,20 @@
                 <option value="education">Education</option>
                 <option value="health">Health</option>
                 <option value="agriculture">Agriculture</option>
-                <option value="skill_development">Skill Development</option>
+                <option value="skill">Skill Development</option>
                 <option value="housing">Housing</option>
                 <option value="employment">Employment</option>
+                <option value="business">Business</option>
+                <option value="social welfare">Social Welfare</option>
+              </select>
+            </div>
+            
+            <div class="filter-group">
+              <label for="levelFilter">Level</label>
+              <select id="levelFilter" class="form-control">
+                <option value="all">All Levels</option>
+                <option value="central">Central</option>
+                <option value="state">State</option>
               </select>
             </div>
             
@@ -86,17 +98,9 @@
                 <option value="gujarat">Gujarat</option>
                 <option value="karnataka">Karnataka</option>
                 <option value="maharashtra">Maharashtra</option>
-              </select>
-            </div>
-            
-            <div class="filter-group">
-              <label for="eligibilityFilter">Eligibility</label>
-              <select id="eligibilityFilter" class="form-control">
-                <option value="all">All</option>
-                <option value="student">Students</option>
-                <option value="farmer">Farmers</option>
-                <option value="women">Women</option>
-                <option value="youth">Youth</option>
+                <option value="tamil-nadu">Tamil Nadu</option>
+                <option value="uttar-pradesh">Uttar Pradesh</option>
+                <option value="west-bengal">West Bengal</option>
               </select>
             </div>
           </div>
@@ -114,6 +118,9 @@
     </main>
   </div>
 
+  <script src="config.js"></script>
+  <script src="js/schemes-data.js"></script>
+  <script src="js/api-client.js"></script>
   <script src="js/app.js"></script>
   <script>
     // Check auth
@@ -139,32 +146,53 @@
     }
     
     // Perform search
-    function performSearch() {
+    async function performSearch() {
       const query = document.getElementById('searchInput').value;
       const category = document.getElementById('categoryFilter').value;
+      const level = document.getElementById('levelFilter') ? document.getElementById('levelFilter').value : 'all';
       
-      const results = searchSchemes(query, { category });
-      
-      document.getElementById('resultsCount').textContent = `${results.length} schemes found`;
-      renderSchemeCards(results, 'searchResults');
+      try {
+        // Wait for data to load
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        if (!window.schemesData || window.schemesData.length === 0) {
+          document.getElementById('resultsCount').textContent = 'No schemes available';
+          document.getElementById('searchResults').innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              <div class="empty-state-icon">⚠️</div>
+              <h3>Unable to load schemes</h3>
+              <p>Please refresh the page</p>
+            </div>
+          `;
+          return;
+        }
+        
+        const results = await searchSchemes(query, { category, level });
+        
+        document.getElementById('resultsCount').textContent = `${results.length} schemes found`;
+        renderSchemeCards(results, 'searchResults');
+      } catch (error) {
+        console.error('Search error:', error);
+        showAlert('Search failed. Please try again.', 'error');
+      }
     }
     
     // Event listeners
     document.getElementById('searchInput').addEventListener('input', performSearch);
     document.getElementById('categoryFilter').addEventListener('change', performSearch);
+    document.getElementById('levelFilter').addEventListener('change', performSearch);
     document.getElementById('stateFilter').addEventListener('change', performSearch);
-    document.getElementById('eligibilityFilter').addEventListener('change', performSearch);
     
     function resetFilters() {
       document.getElementById('searchInput').value = '';
       document.getElementById('categoryFilter').value = 'all';
+      document.getElementById('levelFilter').value = 'all';
       document.getElementById('stateFilter').value = 'all';
-      document.getElementById('eligibilityFilter').value = 'all';
       performSearch();
     }
     
-    // Initial search
-    performSearch();
+    // Initial search after data loads
+    setTimeout(performSearch, 200);
   </script>
 </body>
 </html>

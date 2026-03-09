@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile Setup - BharatSahayak</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script src="config.js"></script>
 </head>
 <body>
   <div class="auth-container">
@@ -89,6 +90,7 @@
     </div>
   </div>
 
+  <script src="js/api-client.js"></script>
   <script src="js/app.js"></script>
   <script>
     // Check if user is logged in
@@ -96,28 +98,68 @@
       window.location.href = 'login.html';
     }
     
-    function handleProfileSetup(e) {
+    async function handleProfileSetup(e) {
       e.preventDefault();
       
       const interests = Array.from(document.querySelectorAll('input[name="interests"]:checked'))
         .map(cb => cb.value);
       
-      const profile = {
+      const profileData = {
         name: document.getElementById('name').value,
-        state: document.getElementById('state').value,
-        district: document.getElementById('district').value,
+        location: {
+          state: document.getElementById('state').value,
+          district: document.getElementById('district').value
+        },
         language: document.getElementById('language').value,
         interests: interests
       };
       
-      // Update user with profile
-      const user = auth.getUser();
-      user.profile = profile;
-      user.name = profile.name;
-      auth.setUser(user);
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
       
-      storage.set('profileComplete', true);
-      window.location.href = 'dashboard.html';
+      try {
+        // Call API to update profile
+        await api.updateProfile(profileData);
+        
+        // Update local user data
+        const user = auth.getUser();
+        user.profile = profileData;
+        user.name = profileData.name;
+        auth.setUser(user);
+        
+        storage.set('profileComplete', true);
+        
+        showAlert('Profile setup complete!', 'success');
+        
+        setTimeout(() => {
+          window.location.href = 'dashboard.html';
+        }, 1000);
+        
+      } catch (error) {
+        console.error('Profile setup error:', error);
+        showAlert(error.message || 'Failed to save profile. Please try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Complete Setup';
+      }
+    }
+    
+    function showAlert(message, type) {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type} fade-in`;
+      alertDiv.textContent = message;
+      alertDiv.style.position = 'fixed';
+      alertDiv.style.top = '20px';
+      alertDiv.style.left = '50%';
+      alertDiv.style.transform = 'translateX(-50%)';
+      alertDiv.style.zIndex = '1000';
+      alertDiv.style.minWidth = '300px';
+      
+      document.body.appendChild(alertDiv);
+      
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 3000);
     }
   </script>
 </body>

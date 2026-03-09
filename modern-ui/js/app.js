@@ -56,7 +56,11 @@ const auth = {
   setUser: (user) => storage.set('user', user),
   logout: () => {
     storage.remove('user');
+    storage.remove('authToken');
     storage.remove('savedSchemes');
+    storage.remove('profileComplete');
+    storage.remove('userProfile');
+    storage.remove('pendingUser');
     window.location.href = 'index.html';
   },
   loginAsGuest: () => {
@@ -67,6 +71,7 @@ const auth = {
       isGuest: true
     };
     auth.setUser(guestUser);
+    storage.set('profileComplete', true);
     window.location.href = 'dashboard.html';
   }
 };
@@ -92,61 +97,47 @@ const savedSchemes = {
   }
 };
 
-// Sample Schemes Data
-const sampleSchemes = [
-  {
-    id: 'pmkvy-2024',
-    title: 'Pradhan Mantri Kaushal Vikas Yojana',
-    category: 'skill_development',
-    description: 'Skill development scheme providing free training and certification',
-    eligibility: 'Age 18-35, Indian citizen',
-    benefits: 'Free training, certification, job placement assistance',
-    documents: ['Aadhaar Card', 'Age Proof', 'Address Proof'],
-    steps: ['Visit nearest training center', 'Register with Aadhaar', 'Choose training program', 'Complete training'],
-    link: 'https://www.pmkvyofficial.org'
-  },
-  {
-    id: 'pmay-2024',
-    title: 'Pradhan Mantri Awas Yojana',
-    category: 'housing',
-    description: 'Housing for all scheme providing financial assistance for home construction',
-    eligibility: 'EWS/LIG/MIG families, no pucca house',
-    benefits: 'Subsidy up to ₹2.67 lakh, low interest rates',
-    documents: ['Income Certificate', 'Aadhaar Card', 'Property Documents'],
-    steps: ['Apply online', 'Submit documents', 'Verification', 'Subsidy approval'],
-    link: 'https://pmaymis.gov.in'
-  },
-  {
-    id: 'pmfby-2024',
-    title: 'Pradhan Mantri Fasal Bima Yojana',
-    category: 'agriculture',
-    description: 'Crop insurance scheme protecting farmers against crop loss',
-    eligibility: 'All farmers growing notified crops',
-    benefits: 'Comprehensive risk coverage, low premium',
-    documents: ['Land Records', 'Aadhaar Card', 'Bank Account'],
-    steps: ['Contact bank/CSC', 'Fill application', 'Pay premium', 'Get policy'],
-    link: 'https://pmfby.gov.in'
+// Search Functionality (local filtering)
+function searchSchemesLocal(query, filters = {}) {
+  if (!window.schemesData || window.schemesData.length === 0) {
+    return [];
   }
-];
-
-// Search Functionality
-function searchSchemes(query, filters = {}) {
-  let results = [...sampleSchemes];
+  
+  let results = [...window.schemesData];
   
   if (query) {
     const lowerQuery = query.toLowerCase();
     results = results.filter(scheme => 
-      scheme.title.toLowerCase().includes(lowerQuery) ||
-      scheme.description.toLowerCase().includes(lowerQuery) ||
-      scheme.category.toLowerCase().includes(lowerQuery)
+      (scheme.name && scheme.name.toLowerCase().includes(lowerQuery)) ||
+      (scheme.details && scheme.details.toLowerCase().includes(lowerQuery)) ||
+      (scheme.category && scheme.category.toLowerCase().includes(lowerQuery)) ||
+      (scheme.tags && scheme.tags.toLowerCase().includes(lowerQuery))
     );
   }
   
   if (filters.category && filters.category !== 'all') {
-    results = results.filter(scheme => scheme.category === filters.category);
+    results = results.filter(scheme => 
+      scheme.category && scheme.category.toLowerCase().includes(filters.category.toLowerCase())
+    );
+  }
+  
+  if (filters.level && filters.level !== 'all') {
+    results = results.filter(scheme => 
+      scheme.level && scheme.level.toLowerCase() === filters.level.toLowerCase()
+    );
   }
   
   return results;
+}
+
+// Search via API (with fallback to local)
+async function searchSchemes(query, filters = {}) {
+  try {
+    const response = await api.searchSchemes(query, filters.category);
+    return response.schemes || [];
+  } catch (error) {
+    return searchSchemesLocal(query, filters);
+  }
 }
 
 // Render Scheme Cards
@@ -165,17 +156,32 @@ function renderSchemeCards(schemes, containerId) {
     return;
   }
   
-  container.innerHTML = schemes.map(scheme => `
+  container.innerHTML = schemes.slice(0, 50).map(scheme => `
     <div class="scheme-card" onclick="viewScheme('${scheme.id}')">
-      <span class="scheme-badge badge-${scheme.category}">${formatCategory(scheme.category)}</span>
-      <h3 class="mb-2">${scheme.title}</h3>
-      <p class="text-muted mb-2">${scheme.description}</p>
+      <span class="scheme-badge badge-${getCategoryClass(scheme.category)}">${scheme.category || 'General'}</span>
+      <h3 class="mb-2">${scheme.name || 'Untitled Scheme'}</h3>
+      <p class="text-muted mb-2">${truncateText(scheme.details || scheme.benefits || 'No description available', 120)}</p>
       <div class="flex-between">
-        <span class="text-muted" style="font-size: 0.875rem;">📋 ${scheme.eligibility}</span>
+        <span class="text-muted" style="font-size: 0.875rem;">📋 ${scheme.level || 'N/A'}</span>
         <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">View Details</button>
       </div>
     </div>
   `).join('');
+}
+
+function getCategoryClass(category) {
+  if (!category) return 'skill';
+  const cat = category.toLowerCase();
+  if (cat.includes('education')) return 'education';
+  if (cat.includes('health')) return 'health';
+  if (cat.includes('agriculture') || cat.includes('rural')) return 'agriculture';
+  return 'skill';
+}
+
+function truncateText(text, maxLength) {
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
 }
 
 // Format Category
@@ -190,15 +196,28 @@ function viewScheme(schemeId) {
   window.location.href = `details.html?id=${schemeId}`;
 }
 
-// Get Scheme by ID
-function getSchemeById(id) {
-  return sampleSchemes.find(scheme => scheme.id === id);
+// Get Scheme by ID (from API or local)
+async function getSchemeById(id) {
+  if (!id) return null;
+  
+  try {
+    if (api.demoMode) {
+      return window.schemesData.find(scheme => scheme.id === id || scheme.slug === id);
+    }
+    
+    const response = await api.getSchemeDetails(id);
+    return response.scheme || null;
+  } catch (error) {
+    return window.schemesData.find(scheme => scheme.id === id || scheme.slug === id);
+  }
 }
 
 // Toggle Save Scheme
 function toggleSaveScheme(schemeId) {
-  const scheme = getSchemeById(schemeId);
-  if (!scheme) return;
+  const scheme = window.schemesData.find(s => s.id === schemeId || s.slug === schemeId);
+  if (!scheme) {
+    return false;
+  }
   
   if (savedSchemes.isSaved(schemeId)) {
     savedSchemes.remove(schemeId);

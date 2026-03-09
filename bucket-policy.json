@@ -9,7 +9,8 @@
       "Resource": [
         "arn:aws:s3:::bharatsahayak-static-content-dev/schemes/*",
         "arn:aws:s3:::bharatsahayak-static-content-dev/documents/*",
-        "arn:aws:s3:::bharatsahayak-static-content-dev/frontend/*"
+        "arn:aws:s3:::bharatsahayak-static-content-dev/frontend/*",
+        "arn:aws:s3:::bharatsahayak-static-content-dev/modern-ui/*"
       ]
     },
     {
@@ -23,7 +24,8 @@
           "s3:prefix": [
             "schemes/*",
             "documents/*",
-            "frontend/*"
+            "frontend/*",
+            "modern-ui/*"
           ]
         }
       }

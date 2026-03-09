@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - BharatSahayak</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <a href="index.html" class="logo" style="display: block; text-align: center; margin-bottom: 2rem;">🇮🇳 BharatSahayak</a>
+      
+      <h2>Create Account</h2>
+      <p class="text-center text-muted mb-4">Join thousands discovering government schemes</p>
+      
+      <div id="demoModeAlert" class="alert alert-info" style="display: none; margin-bottom: 1rem;">
+        🔧 Demo Mode Active - No real API calls
+      </div>
+      
+      <form id="registerForm" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" class="form-control" placeholder="Enter your full name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" class="form-control" placeholder="+91 XXXXXXXXXX" pattern="[+]?[0-9]{10,13}" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" class="form-control" placeholder="your.email@example.com" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" class="form-control" placeholder="Create a strong password" minlength="8" required>
+          <small class="text-muted" style="font-size: 0.875rem;">Minimum 8 characters</small>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" class="form-control" placeholder="Re-enter your password" required>
+        </div>
+        
+        <div class="form-group">
+          <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+            <input type="checkbox" id="terms" required>
+            <span style="font-size: 0.875rem;">I agree to the <a href="#" style="color: var(--primary);">Terms of Service</a> and <a href="#" style="color: var(--primary);">Privacy Policy</a></span>
+          </label>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Create Account</button>
+        
+        <button type="button" onclick="auth.loginAsGuest()" class="btn btn-secondary" style="width: 100%;">Continue as Guest</button>
+      </form>
+      
+      <div class="divider"></div>
+      
+      <p class="text-center text-muted">
+        Already have an account? <a href="login.html" style="color: var(--primary); font-weight: 600;">Login</a>
+      </p>
+    </div>
+  </div>
+
+  <script src="js/api-client.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // Show demo mode alert if active
+    if (api.demoMode) {
+      document.getElementById('demoModeAlert').style.display = 'block';
+    }
+    
+    async function handleRegister(e) {
+      e.preventDefault();
+      
+      const fullName = document.getElementById('fullName').value;
+      const phone = document.getElementById('phone').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      
+      // Validate passwords match
+      if (password !== confirmPassword) {
+        showAlert('Passwords do not match!', 'error');
+        return;
+      }
+      
+      // Validate phone format
+      const phoneRegex = /^[+]?[0-9]{10,13}$/;
+      if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
+        showAlert('Please enter a valid phone number', 'error');
+        return;
+      }
+      
+      // Disable button and show loading
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Creating Account...';
+      
+      try {
+        // Call AWS API to register
+        const response = await api.register({
+          name: fullName,
+          phone: phone,
+          email: email,
+          password: password
+        });
+        
+        if (api.demoMode) {
+          // Demo mode - skip OTP and profile setup, go directly to dashboard
+          const user = {
+            id: response.user_id || 'user_' + Date.now(),
+            name: fullName,
+            email: email,
+            phone: phone,
+            isGuest: false
+          };
+          
+          auth.setUser(user);
+          storage.set('profileComplete', true);
+          showAlert('Account created successfully! (Demo Mode)', 'success');
+          
+          setTimeout(() => {
+            window.location.href = 'dashboard.html';
+          }, 1000);
+        } else {
+          // Production mode - require OTP verification
+          storage.set('pendingUser', {
+            name: fullName,
+            phone: phone,
+            email: email
+          });
+          
+          showAlert('Account created! Please verify OTP sent to your phone.', 'success');
+          
+          setTimeout(() => {
+            window.location.href = 'verify-otp.html';
+          }, 1500);
+        }
+        
+      } catch (error) {
+        console.error('Registration error:', error);
+        showAlert(error.message || 'Registration failed. Please try again.', 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Account';
+      }
+    }
+    
+    function showAlert(message, type) {
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${type} fade-in`;
+      alertDiv.textContent = message;
+      alertDiv.style.position = 'fixed';
+      alertDiv.style.top = '20px';
+      alertDiv.style.left = '50%';
+      alertDiv.style.transform = 'translateX(-50%)';
+      alertDiv.style.zIndex = '1000';
+      alertDiv.style.minWidth = '300px';
+      
+      document.body.appendChild(alertDiv);
+      
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 3000);
+    }
+  </script>
+</body>
+</html>

@@ -10,6 +10,7 @@ A clean, modern, responsive web application for AI-powered government scheme dis
 - Blue/Indigo color theme
 - Smooth animations and transitions
 - Local storage for user data and saved schemes
+- **3,400+ real government schemes** from CSV dataset
 
 ## Pages
 
@@ -17,7 +18,7 @@ A clean, modern, responsive web application for AI-powered government scheme dis
 2. **login.html** - Authentication page with login and guest access
 3. **profile-setup.html** - First-time user profile setup
 4. **dashboard.html** - Main dashboard with AI search and recommendations
-5. **search.html** - Advanced search with filters
+5. **search.html** - Advanced search with filters (category, level, state)
 6. **details.html** - Detailed scheme information
 7. **saved.html** - Bookmarked schemes
 
@@ -35,7 +36,21 @@ modern-ui/
 ├── css/
 │   └── styles.css
 └── js/
-    └── app.js
+    ├── app.js
+    ├── schemes-data.js (auto-generated)
+    └── convert-csv.js
+```
+
+## Setup
+
+1. Convert CSV dataset to JavaScript:
+```bash
+node js/convert-csv.js
+```
+
+2. Open `index.html` in a browser or deploy to S3:
+```bash
+bash deploy.sh
 ```
 
 ## Usage
@@ -43,16 +58,25 @@ modern-ui/
 1. Open `index.html` in a browser
 2. Click "Try as Guest" or "Login"
 3. Complete profile setup (first-time users)
-4. Explore dashboard and search schemes
+4. Explore dashboard and search 3,400+ schemes
+
+## Data Integration
+
+The UI now uses your real dataset from `data/updated_data.csv`:
+- 3,400+ government schemes
+- Categories: Education, Health, Agriculture, Business, Social Welfare, etc.
+- Levels: Central and State schemes
+- Full details: eligibility, benefits, documents, application steps
 
 ## Key Features
 
 - Collapsible sidebar navigation
 - AI-powered search bar
-- Scheme filtering by category, state, eligibility
+- Scheme filtering by category, level, state
 - Save/bookmark schemes
 - Responsive mobile menu
 - Local storage persistence
+- Real government scheme data
 
 ## Design Highlights
 

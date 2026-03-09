@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard - BharatSahayak</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script src="config.js"></script>
 </head>
 <body>
   <div class="dashboard-layout">
@@ -26,15 +27,15 @@
           <span class="icon">⭐</span>
           <span>Saved Schemes</span>
         </a>
-        <a href="#">
+        <a href="activity.html">
           <span class="icon">📈</span>
           <span>Activity</span>
         </a>
-        <a href="#">
+        <a href="settings.html">
           <span class="icon">⚙️</span>
           <span>Settings</span>
         </a>
-        <a href="#" onclick="auth.logout(); return false;" style="margin-top: 2rem; color: var(--danger);">
+        <a href="#" onclick="event.preventDefault(); auth.logout();" style="margin-top: 2rem; color: var(--danger);">
           <span class="icon">🚪</span>
           <span>Logout</span>
         </a>
@@ -116,6 +117,9 @@
     </main>
   </div>
 
+  <script src="config.js"></script>
+  <script src="js/schemes-data.js"></script>
+  <script src="js/api-client.js"></script>
   <script src="js/app.js"></script>
   <script>
     // Check auth
@@ -129,12 +133,44 @@
     document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
     document.getElementById('welcomeMessage').textContent = `Welcome back, ${user.name}!`;
     
-    // Load stats
-    document.getElementById('savedCount').textContent = savedSchemes.getAll().length;
-    document.getElementById('eligibleCount').textContent = sampleSchemes.length;
+    // Initialize and load schemes
+    async function initDashboard() {
+      try {
+        // Wait a bit for schemes-data.js to load
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        if (!window.schemesData || window.schemesData.length === 0) {
+          document.getElementById('recommendedSchemes').innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              <div class="empty-state-icon">⚠️</div>
+              <h3>Unable to load schemes</h3>
+              <p>Please refresh the page</p>
+            </div>
+          `;
+          return;
+        }
+        
+        // Load stats
+        document.getElementById('savedCount').textContent = savedSchemes.getAll().length;
+        document.getElementById('eligibleCount').textContent = window.schemesData.length;
+        
+        // Load recommended schemes (first 6)
+        renderSchemeCards(window.schemesData.slice(0, 6), 'recommendedSchemes');
+        
+      } catch (error) {
+        console.error('Dashboard init error:', error);
+        document.getElementById('recommendedSchemes').innerHTML = `
+          <div class="empty-state" style="grid-column: 1 / -1;">
+            <div class="empty-state-icon">⚠️</div>
+            <h3>Error loading schemes</h3>
+            <p>${error.message}</p>
+          </div>
+        `;
+      }
+    }
     
-    // Load recommended schemes
-    renderSchemeCards(sampleSchemes, 'recommendedSchemes');
+    // Initialize dashboard
+    initDashboard();
     
     // AI Search
     document.getElementById('aiSearch').addEventListener('keypress', (e) => {

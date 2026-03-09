@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Schemes Data</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .status {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+    }
+    .success {
+      background: #d1fae5;
+      color: #065f46;
+      border-left: 4px solid #10b981;
+    }
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+      border-left: 4px solid #ef4444;
+    }
+    .scheme-card {
+      border: 1px solid #e2e8f0;
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 5px;
+      background: white;
+    }
+    h3 {
+      margin-top: 0;
+      color: #4f46e5;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧪 Schemes Data Test</h1>
+  
+  <div id="status"></div>
+  
+  <div id="schemes"></div>
+
+  <script src="js/schemes-data.js"></script>
+  <script>
+    const statusDiv = document.getElementById('status');
+    const schemesDiv = document.getElementById('schemes');
+    
+    // Test 1: Check if schemesData is defined
+    if (typeof schemesData === 'undefined') {
+      statusDiv.innerHTML = `
+        <div class="status error">
+          ❌ ERROR: schemesData is not defined!
+          <br>The schemes-data.js file may not be loading correctly.
+        </div>
+      `;
+    } else if (!Array.isArray(schemesData)) {
+      statusDiv.innerHTML = `
+        <div class="status error">
+          ❌ ERROR: schemesData is not an array!
+          <br>Type: ${typeof schemesData}
+        </div>
+      `;
+    } else if (schemesData.length === 0) {
+      statusDiv.innerHTML = `
+        <div class="status error">
+          ❌ ERROR: schemesData is empty!
+          <br>The array has no schemes.
+        </div>
+      `;
+    } else {
+      statusDiv.innerHTML = `
+        <div class="status success">
+          ✅ SUCCESS: Loaded ${schemesData.length} schemes!
+          <br><br>
+          <strong>Sample scheme:</strong><br>
+          Name: ${schemesData[0].name}<br>
+          Category: ${schemesData[0].category}<br>
+          Level: ${schemesData[0].level}
+        </div>
+      `;
+      
+      // Display first 5 schemes
+      schemesDiv.innerHTML = '<h2>First 5 Schemes:</h2>';
+      schemesData.slice(0, 5).forEach((scheme, index) => {
+        schemesDiv.innerHTML += `
+          <div class="scheme-card">
+            <h3>${index + 1}. ${scheme.name}</h3>
+            <p><strong>Category:</strong> ${scheme.category || 'N/A'}</p>
+            <p><strong>Level:</strong> ${scheme.level || 'N/A'}</p>
+            <p><strong>Details:</strong> ${scheme.details ? scheme.details.substring(0, 200) + '...' : 'N/A'}</p>
+          </div>
+        `;
+      });
+    }
+    
+    // Test 2: Check window.schemesData
+    console.log('=== SCHEMES DATA TEST ===');
+    console.log('typeof schemesData:', typeof schemesData);
+    console.log('Array.isArray(schemesData):', Array.isArray(schemesData));
+    console.log('schemesData.length:', schemesData ? schemesData.length : 'undefined');
+    console.log('typeof window.schemesData:', typeof window.schemesData);
+    console.log('window.schemesData === schemesData:', window.schemesData === schemesData);
+    console.log('First scheme:', schemesData ? schemesData[0] : 'undefined');
+  </script>
+</body>
+</html>

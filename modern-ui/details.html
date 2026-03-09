@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Scheme Details - BharatSahayak</title>
   <link rel="stylesheet" href="css/styles.css">
+  <script src="config.js"></script>
 </head>
 <body>
   <div class="dashboard-layout">
@@ -26,15 +27,15 @@
           <span class="icon">⭐</span>
           <span>Saved Schemes</span>
         </a>
-        <a href="#">
+        <a href="activity.html">
           <span class="icon">📈</span>
           <span>Activity</span>
         </a>
-        <a href="#">
+        <a href="settings.html">
           <span class="icon">⚙️</span>
           <span>Settings</span>
         </a>
-        <a href="#" onclick="auth.logout(); return false;" style="margin-top: 2rem; color: var(--danger);">
+        <a href="#" onclick="event.preventDefault(); auth.logout();" style="margin-top: 2rem; color: var(--danger);">
           <span class="icon">🚪</span>
           <span>Logout</span>
         </a>
@@ -61,6 +62,9 @@
     </main>
   </div>
 
+  <script src="config.js"></script>
+  <script src="js/schemes-data.js"></script>
+  <script src="js/api-client.js"></script>
   <script src="js/app.js"></script>
   <script>
     // Check auth
@@ -81,65 +85,106 @@
       window.location.href = 'search.html';
     }
     
-    const scheme = getSchemeById(schemeId);
+    async function loadSchemeDetails() {
+      try {
+        // Wait for data to load
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        if (!window.schemesData || window.schemesData.length === 0) {
+          document.getElementById('schemeDetails').innerHTML = `
+            <div class="card">
+              <h2>Unable to load schemes</h2>
+              <p class="text-muted">Please refresh the page</p>
+              <a href="search.html" class="btn btn-primary mt-3">Back to Search</a>
+            </div>
+          `;
+          return;
+        }
+        
+        const scheme = await getSchemeById(schemeId);
+        
+        if (!scheme) {
+          document.getElementById('schemeDetails').innerHTML = `
+            <div class="card">
+              <h2>Scheme not found</h2>
+              <p class="text-muted">The scheme you're looking for doesn't exist.</p>
+              <a href="search.html" class="btn btn-primary mt-3">Back to Search</a>
+            </div>
+          `;
+          return;
+        }
+        
+        const isSaved = savedSchemes.isSaved(schemeId);
+        const documentsArray = scheme.documents ? scheme.documents.split(/[,\n]/).filter(d => d.trim()) : [];
+        const stepsArray = scheme.application ? scheme.application.split(/Step \d+:/).filter(s => s.trim()) : [];
+        
+        document.getElementById('schemeDetails').innerHTML = `
+          <div class="card">
+            <div class="flex-between mb-3">
+              <span class="scheme-badge badge-${getCategoryClass(scheme.category)}">${scheme.category || 'General'}</span>
+              <button onclick="toggleSave('${scheme.id}')" id="saveBtn" class="btn ${isSaved ? 'btn-primary' : 'btn-secondary'}">
+                ${isSaved ? '⭐ Saved' : '☆ Save Scheme'}
+              </button>
+            </div>
+            
+            <h1 class="mb-3">${scheme.name || scheme.scheme_name}</h1>
+            
+            ${scheme.details ? `
+            <div class="mb-4">
+              <h3 class="mb-2">📝 Description</h3>
+              <p class="text-muted">${scheme.details}</p>
+            </div>
+            ` : ''}
+            
+            ${scheme.eligibility ? `
+            <div class="mb-4">
+              <h3 class="mb-2">✅ Eligibility Criteria</h3>
+              <p class="text-muted">${scheme.eligibility}</p>
+            </div>
+            ` : ''}
+            
+            ${scheme.benefits ? `
+            <div class="mb-4">
+              <h3 class="mb-2">🎁 Benefits</h3>
+              <p class="text-muted">${scheme.benefits}</p>
+            </div>
+            ` : ''}
+            
+            ${documentsArray.length > 0 ? `
+            <div class="mb-4">
+              <h3 class="mb-2">📄 Required Documents</h3>
+              <ul style="list-style: none; padding-left: 0;">
+                ${documentsArray.slice(0, 10).map(doc => `<li style="padding: 0.5rem 0; color: var(--gray);">• ${doc.trim()}</li>`).join('')}
+              </ul>
+            </div>
+            ` : ''}
+            
+            ${stepsArray.length > 0 ? `
+            <div class="mb-4">
+              <h3 class="mb-2">📋 How to Apply</h3>
+              <ol style="padding-left: 1.5rem; color: var(--gray);">
+                ${stepsArray.slice(0, 8).map(step => `<li style="padding: 0.5rem 0;">${step.trim()}</li>`).join('')}
+              </ol>
+            </div>
+            ` : ''}
+            
+            <div class="flex gap-2">
+              <button onclick="applyNow()" class="btn btn-primary">Apply Now →</button>
+              <button onclick="shareScheme('${scheme.id}')" class="btn btn-secondary">Share</button>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error loading scheme:', error);
+        showAlert('Failed to load scheme details', 'error');
+      }
+    }
     
-    if (!scheme) {
-      document.getElementById('schemeDetails').innerHTML = `
-        <div class="card">
-          <h2>Scheme not found</h2>
-          <p class="text-muted">The scheme you're looking for doesn't exist.</p>
-          <a href="search.html" class="btn btn-primary mt-3">Back to Search</a>
-        </div>
-      `;
-    } else {
-      const isSaved = savedSchemes.isSaved(schemeId);
-      
-      document.getElementById('schemeDetails').innerHTML = `
-        <div class="card">
-          <div class="flex-between mb-3">
-            <span class="scheme-badge badge-${scheme.category}">${formatCategory(scheme.category)}</span>
-            <button onclick="toggleSave('${scheme.id}')" id="saveBtn" class="btn ${isSaved ? 'btn-primary' : 'btn-secondary'}">
-              ${isSaved ? '⭐ Saved' : '☆ Save Scheme'}
-            </button>
-          </div>
-          
-          <h1 class="mb-3">${scheme.title}</h1>
-          
-          <div class="mb-4">
-            <h3 class="mb-2">📝 Description</h3>
-            <p class="text-muted">${scheme.description}</p>
-          </div>
-          
-          <div class="mb-4">
-            <h3 class="mb-2">✅ Eligibility Criteria</h3>
-            <p class="text-muted">${scheme.eligibility}</p>
-          </div>
-          
-          <div class="mb-4">
-            <h3 class="mb-2">🎁 Benefits</h3>
-            <p class="text-muted">${scheme.benefits}</p>
-          </div>
-          
-          <div class="mb-4">
-            <h3 class="mb-2">📄 Required Documents</h3>
-            <ul style="list-style: none; padding-left: 0;">
-              ${scheme.documents.map(doc => `<li style="padding: 0.5rem 0; color: var(--gray);">• ${doc}</li>`).join('')}
-            </ul>
-          </div>
-          
-          <div class="mb-4">
-            <h3 class="mb-2">📋 Steps to Apply</h3>
-            <ol style="padding-left: 1.5rem; color: var(--gray);">
-              ${scheme.steps.map(step => `<li style="padding: 0.5rem 0;">${step}</li>`).join('')}
-            </ol>
-          </div>
-          
-          <div class="flex gap-2">
-            <a href="${scheme.link}" target="_blank" class="btn btn-primary">Apply Now →</a>
-            <button onclick="shareScheme('${scheme.id}')" class="btn btn-secondary">Share</button>
-          </div>
-        </div>
-      `;
+    // Load scheme details
+    loadSchemeDetails();
+    
+    function applyNow() {
+      showAlert('Application process will be available soon!', 'info');
     }
     
     function toggleSave(schemeId) {
