@@ -6,7 +6,7 @@ Globals:
   Function:
     Timeout: 30
     MemorySize: 512
-    Runtime: python3.11
+    Runtime: python3.12
     Environment:
       Variables:
         ENVIRONMENT: !Ref Environment
@@ -16,7 +16,6 @@ Globals:
 
 Conditions:
   IsProd: !Equals [!Ref Environment, prod]
-  IsDev: !Equals [!Ref Environment, dev]
 
 Parameters:
   Environment:
@@ -50,11 +49,6 @@ Resources:
         AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Requested-With'"
         AllowOrigin: "'*'"
         MaxAge: "'600'"
-      Auth:
-        DefaultAuthorizer: CognitoAuthorizer
-        Authorizers:
-          CognitoAuthorizer:
-            UserPoolArn: !GetAtt UserPool.Arn
       MethodSettings:
         - ResourcePath: '/*'
           HttpMethod: '*'
@@ -126,42 +120,7 @@ Resources:
             details:
               type: object
 
-  # Cognito User Pool
-  UserPool:
-    Type: AWS::Cognito::UserPool
-    Properties:
-      UserPoolName: !Sub bharatsahayak-users-${Environment}
-      UsernameAttributes:
-        - phone_number
-      AutoVerifiedAttributes:
-        - phone_number
-      MfaConfiguration: OPTIONAL
-      SmsConfiguration:
-        SnsCallerArn: !GetAtt SNSRole.Arn
-
-  UserPoolClient:
-    Type: AWS::Cognito::UserPoolClient
-    Properties:
-      ClientName: !Sub bharatsahayak-client-${Environment}
-      UserPoolId: !Ref UserPool
-      GenerateSecret: false
-      ExplicitAuthFlows:
-        - ALLOW_USER_SRP_AUTH
-        - ALLOW_REFRESH_TOKEN_AUTH
-
-  # IAM Role for SNS
-  SNSRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: cognito-idp.amazonaws.com
-            Action: sts:AssumeRole
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/AmazonSNSFullAccess
+  # Cognito resources removed - using email/password authentication with JWT tokens
 
   # DynamoDB Tables
   UsersTable:
@@ -170,14 +129,22 @@ Resources:
       TableName: !Sub bharatsahayak-users-${Environment}
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
+        - AttributeName: email
+          AttributeType: S
         - AttributeName: user_id
           AttributeType: S
         - AttributeName: phone_number
           AttributeType: S
       KeySchema:
-        - AttributeName: user_id
+        - AttributeName: email
           KeyType: HASH
       GlobalSecondaryIndexes:
+        - IndexName: user-id-index
+          KeySchema:
+            - AttributeName: user_id
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
         - IndexName: phone-number-index
           KeySchema:
             - AttributeName: phone_number
@@ -217,6 +184,22 @@ Resources:
       KeySchema:
         - AttributeName: user_id
           KeyType: HASH
+
+  SavedSchemesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub bharatsahayak-saved-schemes-${Environment}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: user_id
+          AttributeType: S
+        - AttributeName: scheme_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: user_id
+          KeyType: HASH
+        - AttributeName: scheme_id
+          KeyType: RANGE
 
   InteractionsTable:
     Type: AWS::DynamoDB::Table
@@ -338,7 +321,7 @@ Resources:
   VoiceDataBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub bharatsahayak-voice-data-${Environment}
+      BucketName: !Sub bharatsahayak-voice-${AWS::AccountId}-${Environment}
       LifecycleConfiguration:
         Rules:
           - Id: DeleteOldVoiceData
@@ -348,7 +331,7 @@ Resources:
   ModelsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub bharatsahayak-models-${Environment}
+      BucketName: !Sub bharatsahayak-models-${AWS::AccountId}-${Environment}
       VersioningConfiguration:
         Status: Enabled
 
@@ -356,7 +339,7 @@ Resources:
   StaticContentBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub bharatsahayak-static-content-${Environment}
+      BucketName: !Sub bharatsahayak-static-${AWS::AccountId}-${Environment}
       VersioningConfiguration:
         Status: Enabled
       LifecycleConfiguration:
@@ -408,6 +391,7 @@ Resources:
             Resource:
               - !Sub ${StaticContentBucket.Arn}/schemes/*
               - !Sub ${StaticContentBucket.Arn}/documents/*
+              - !Sub ${StaticContentBucket.Arn}/app/*
           - Sid: AllowListBucket
             Effect: Allow
             Principal: '*'
@@ -419,107 +403,103 @@ Resources:
                 s3:prefix:
                   - schemes/*
                   - documents/*
+                  - app/*
 
   # Lambda Functions
   
-  # Auth: User Registration
-  RegisterFunction:
+  # Old phone/OTP registration removed - using email/password registration (AuthEmailRegisterFunction)
+  # Old OTP verification removed - using email/password login (AuthEmailLoginFunction)
+  # Old phone/OTP login removed - using email/password login (AuthEmailLoginFunction)
+  # Auth: Email Registration (NEW)
+  AuthEmailRegisterFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub bharatsahayak-register-${Environment}
+      FunctionName: !Sub bharatsahayak-auth-email-register-${Environment}
       CodeUri: .
-      Handler: src.api.auth_register.lambda_handler
+      Handler: src.api.auth_email_register.lambda_handler
       Environment:
         Variables:
-          USER_POOL_ID: !Ref UserPool
-          USER_POOL_CLIENT_ID: !Ref UserPoolClient
+          USERS_TABLE: !Ref UsersTable
+          JWT_SECRET: !Ref JWTSecret
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        RegisterEmailAPI:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /auth/email/register
+            Method: POST
+  # Auth: Email Login (NEW)
+  AuthEmailLoginFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-auth-email-login-${Environment}
+      CodeUri: .
+      Handler: src.api.auth_email_login.lambda_handler
+      Environment:
+        Variables:
+          USERS_TABLE: !Ref UsersTable
+          JWT_SECRET: !Ref JWTSecret
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref UsersTable
+      Events:
+        LoginEmailAPI:
+          Type: Api
+          Properties:
+            RestApiId: !Ref BharatSahayakApi
+            Path: /auth/email/login
+            Method: POST
+  # Dashboard: Get Dashboard Data (NEW)
+  DashboardDataFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub bharatsahayak-dashboard-data-${Environment}
+      CodeUri: .
+      Handler: src.api.dashboard_data.lambda_handler
+      Environment:
+        Variables:
           USERS_TABLE: !Ref UsersTable
           PROFILES_TABLE: !Ref UserProfilesTable
+          SAVED_SCHEMES_TABLE: !Ref SavedSchemesTable
+          JWT_SECRET: !Ref JWTSecret
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref UsersTable
         - DynamoDBCrudPolicy:
             TableName: !Ref UserProfilesTable
-        - Statement:
-            - Effect: Allow
-              Action:
-                - cognito-idp:SignUp
-                - cognito-idp:AdminCreateUser
-                - cognito-idp:AdminSetUserPassword
-              Resource: !GetAtt UserPool.Arn
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SavedSchemesTable
       Events:
-        RegisterApi:
+        DashboardAPI:
           Type: Api
           Properties:
             RestApiId: !Ref BharatSahayakApi
-            Path: /auth/register
-            Method: POST
-            Auth:
-              Authorizer: NONE
-
-  # Auth: OTP Verification
-  VerifyOTPFunction:
+            Path: /dashboard/data
+            Method: GET
+  # Schemes: Save/Unsave Scheme (NEW)
+  SaveSchemeFunction:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub bharatsahayak-verify-otp-${Environment}
+      FunctionName: !Sub bharatsahayak-save-scheme-${Environment}
       CodeUri: .
-      Handler: src.api.auth_verify.lambda_handler
+      Handler: src.api.save_scheme.lambda_handler
       Environment:
         Variables:
-          USER_POOL_ID: !Ref UserPool
-          USER_POOL_CLIENT_ID: !Ref UserPoolClient
+          SAVED_SCHEMES_TABLE: !Ref SavedSchemesTable
           JWT_SECRET: !Ref JWTSecret
       Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - cognito-idp:ConfirmSignUp
-                - cognito-idp:InitiateAuth
-                - cognito-idp:RespondToAuthChallenge
-                - cognito-idp:AdminGetUser
-              Resource: !GetAtt UserPool.Arn
+        - DynamoDBCrudPolicy:
+            TableName: !Ref SavedSchemesTable
       Events:
-        VerifyApi:
+        SaveSchemeAPI:
           Type: Api
           Properties:
             RestApiId: !Ref BharatSahayakApi
-            Path: /auth/verify
+            Path: /schemes/save
             Method: POST
-            Auth:
-              Authorizer: NONE
-
-  # Auth: User Login (ADDED)
-  LoginFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      FunctionName: !Sub bharatsahayak-login-${Environment}
-      CodeUri: .
-      Handler: src.api.auth_login.lambda_handler
-      Environment:
-        Variables:
-          USER_POOL_ID: !Ref UserPool
-          USER_POOL_CLIENT_ID: !Ref UserPoolClient
-          USERS_TABLE: !Ref UsersTable
-          LOG_LEVEL: !If [IsProd, INFO, DEBUG]
-      Policies:
-        - DynamoDBReadPolicy:
-            TableName: !Ref UsersTable
-        - Statement:
-            - Effect: Allow
-              Action:
-                - cognito-idp:InitiateAuth
-                - cognito-idp:AdminInitiateAuth
-              Resource: !GetAtt UserPool.Arn
-      Events:
-        LoginApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref BharatSahayakApi
-            Path: /auth/login
-            Method: POST
-            Auth:
-              Authorizer: NONE
-
   # User Profile: Get
   GetProfileFunction:
     Type: AWS::Serverless::Function
@@ -609,9 +589,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /schemes
             Method: GET
-            Auth:
-              Authorizer: NONE
-
   # Schemes: Search Explicit Route (ADDED)
   SearchSchemesExplicitFunction:
     Type: AWS::Serverless::Function
@@ -632,9 +609,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /schemes/search
             Method: GET
-            Auth:
-              Authorizer: NONE
-
   # Schemes: Get Details
   GetSchemeDetailsFunction:
     Type: AWS::Serverless::Function
@@ -655,9 +629,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /schemes/{scheme_id}
             Method: GET
-            Auth:
-              Authorizer: NONE
-
   # Eligibility: Check Single Scheme
   CheckEligibilityFunction:
     Type: AWS::Serverless::Function
@@ -722,9 +693,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /crop-advice
             Method: GET
-            Auth:
-              Authorizer: NONE
-
   # Farmer Advisory: Mandi Prices
   MarketPriceFunction:
     Type: AWS::Serverless::Function
@@ -745,9 +713,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /market-prices
             Method: GET
-            Auth:
-              Authorizer: NONE
-
   # Skills: Program Matching
   SkillsMatchFunction:
     Type: AWS::Serverless::Function
@@ -789,9 +754,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /jobs
             Method: GET
-            Auth:
-              Authorizer: NONE
-
   # Health: Facility Search
   HealthFacilitiesFunction:
     Type: AWS::Serverless::Function
@@ -812,9 +774,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /health/facilities
             Method: GET
-            Auth:
-              Authorizer: NONE
-
   # Health: Symptom Checker
   HealthCheckFunction:
     Type: AWS::Serverless::Function
@@ -829,9 +788,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /health-check
             Method: GET
-            Auth:
-              Authorizer: NONE
-
   # Voice Interface: Speech-to-Text
   VoiceToTextFunction:
     Type: AWS::Serverless::Function
@@ -861,9 +817,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /voice-to-text
             Method: POST
-            Auth:
-              Authorizer: NONE
-
   # Voice Interface: Text-to-Speech
   TextToVoiceFunction:
     Type: AWS::Serverless::Function
@@ -891,9 +844,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /voice/synthesize
             Method: POST
-            Auth:
-              Authorizer: NONE
-
   # Voice Interface: Language Detection
   DetectLanguageFunction:
     Type: AWS::Serverless::Function
@@ -917,9 +867,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /voice/detect-language
             Method: POST
-            Auth:
-              Authorizer: NONE
-
   # Conversational Query (ADDED)
   ConversationalQueryFunction:
     Type: AWS::Serverless::Function
@@ -942,9 +889,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /conversational-query
             Method: POST
-            Auth:
-              Authorizer: NONE
-
   # Multilingual: Translate Scheme Content
   TranslateSchemeFunction:
     Type: AWS::Serverless::Function
@@ -976,9 +920,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /translate/scheme
             Method: POST
-            Auth:
-              Authorizer: NONE
-
   # Offline Cache: Export Cache Data
   CacheExportFunction:
     Type: AWS::Serverless::Function
@@ -1008,9 +949,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /cache/export
             Method: POST
-            Auth:
-              Authorizer: NONE
-
   # Offline Cache: Sync Cache Data
   CacheSyncFunction:
     Type: AWS::Serverless::Function
@@ -1036,9 +974,6 @@ Resources:
             RestApiId: !Ref BharatSahayakApi
             Path: /cache/sync
             Method: POST
-            Auth:
-              Authorizer: NONE
-
   # Impact Tracking: Record Event
   ImpactEventFunction:
     Type: AWS::Serverless::Function
@@ -1307,17 +1242,7 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-ApiStage
   
-  UserPoolId:
-    Description: Cognito User Pool ID
-    Value: !Ref UserPool
-    Export:
-      Name: !Sub ${AWS::StackName}-UserPoolId
-  
-  UserPoolClientId:
-    Description: Cognito User Pool Client ID
-    Value: !Ref UserPoolClient
-    Export:
-      Name: !Sub ${AWS::StackName}-UserPoolClientId
+  # Cognito outputs removed - using email/password authentication
   
   UsersTableName:
     Description: DynamoDB Users Table Name
@@ -1379,3 +1304,4 @@ Outputs:
     Value: !Ref ConversationSessionsTable
     Export:
       Name: !Sub ${AWS::StackName}-ConversationSessionsTable
+

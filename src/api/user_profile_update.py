@@ -8,7 +8,7 @@ from typing import Dict, Any
 from src.core.profile_repository import ProfileRepository, ItemNotFoundError
 from src.models.location import Location
 from src.models.user import UserPreferences
-from src.utils.auth_middleware import require_auth
+from src.utils.jwt_auth import require_jwt_auth
 
 # Configure logging
 logger = logging.getLogger()
@@ -20,8 +20,8 @@ AWS_REGION = os.environ.get('AWS_REGION', 'ap-south-1')
 profile_repo = ProfileRepository(table_name=PROFILES_TABLE, region_name=AWS_REGION)
 
 
-@require_auth
-def lambda_handler(event: Dict[str, Any], context: Any, user_id: str) -> Dict[str, Any]:
+@require_jwt_auth
+def lambda_handler(event: Dict[str, Any], context: Any, user_id: str, email: str) -> Dict[str, Any]:
     """
     Handle PUT user profile update requests.
     

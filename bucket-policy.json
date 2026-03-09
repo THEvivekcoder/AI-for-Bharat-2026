@@ -6,29 +6,7 @@
       "Effect": "Allow",
       "Principal": "*",
       "Action": "s3:GetObject",
-      "Resource": [
-        "arn:aws:s3:::bharatsahayak-static-content-dev/schemes/*",
-        "arn:aws:s3:::bharatsahayak-static-content-dev/documents/*",
-        "arn:aws:s3:::bharatsahayak-static-content-dev/frontend/*",
-        "arn:aws:s3:::bharatsahayak-static-content-dev/modern-ui/*"
-      ]
-    },
-    {
-      "Sid": "AllowListBucket",
-      "Effect": "Allow",
-      "Principal": "*",
-      "Action": "s3:ListBucket",
-      "Resource": "arn:aws:s3:::bharatsahayak-static-content-dev",
-      "Condition": {
-        "StringLike": {
-          "s3:prefix": [
-            "schemes/*",
-            "documents/*",
-            "frontend/*",
-            "modern-ui/*"
-          ]
-        }
-      }
+      "Resource": "arn:aws:s3:::bharatsahayak-static-390402557080-dev/app/*"
     }
   ]
 }

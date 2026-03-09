@@ -3,22 +3,15 @@
 const CONFIG = {
   // API Configuration
   api: {
-    baseURL: 'https://dvt82zj0c4.execute-api.ap-south-1.amazonaws.com/dev',
+    baseURL: 'https://ktlbemv6uh.execute-api.us-east-1.amazonaws.com/dev',
     timeout: 30000
-  },
-  
-  // AWS Cognito Configuration
-  cognito: {
-    userPoolId: 'ap-south-1_KSJ0FKz20',
-    clientId: '10emq71eioca5qkns6on0l22om',
-    region: 'ap-south-1'
   },
   
   // S3 Configuration
   s3: {
-    staticContentBucket: 'bharatsahayak-static-content-dev',
-    staticContentURL: 'https://bharatsahayak-static-content-dev.s3.ap-south-1.amazonaws.com',
-    region: 'ap-south-1'
+    staticContentBucket: 'bharatsahayak-static-390402557080-dev',
+    staticContentURL: 'https://bharatsahayak-static-390402557080-dev.s3.us-east-1.amazonaws.com',
+    region: 'us-east-1'
   },
   
   // Feature Flags

@@ -1,6 +1,6 @@
 /**
- * BharatSahayak API Client - Email/Password Authentication
- * Updated to support email/password login with JWT tokens
+ * BharatSahayak API Client
+ * Centralized API communication with error handling, retry logic, and authentication
  */
 
 class BharatSahayakAPI {
@@ -14,25 +14,40 @@ class BharatSahayakAPI {
         this.initialized = false;
     }
 
+    /**
+     * Initialize the API client
+     * Must be called before making any API requests
+     */
     async initialize() {
         if (this.initialized) return;
 
         try {
+            // Load configuration
             await this.loadConfig();
+            
+            // Load authentication state
             this.loadAuthState();
+            
             this.initialized = true;
             console.log('✅ BharatSahayak API Client initialized');
             console.log('📍 API Endpoint:', this.config.apiEndpoint);
             console.log('🔐 Authenticated:', !!this.authToken);
+            
         } catch (error) {
             console.error('❌ Failed to initialize API client:', error);
             throw error;
         }
     }
 
+    /**
+     * Load configuration from multiple sources
+     */
     async loadConfig() {
+        // Default configuration
         this.config = {
             apiEndpoint: 'https://dvt82zj0c4.execute-api.ap-south-1.amazonaws.com/dev',
+            userPoolId: 'ap-south-1_KSJ0FKz20',
+            clientId: '10emq71eioca5qkns6on0l22om',
             environment: 'development',
             retryAttempts: 3,
             retryDelay: 1000,
@@ -40,11 +55,14 @@ class BharatSahayakAPI {
         };
 
         try {
+            // Try to load from localStorage
             const savedConfig = localStorage.getItem('bharatsahayak-config');
             if (savedConfig) {
                 this.config = { ...this.config, ...JSON.parse(savedConfig) };
+                console.log('📋 Loaded config from localStorage');
             }
 
+            // Try to load from server
             const response = await fetch('/config.json', { 
                 cache: 'no-cache',
                 headers: { 'Cache-Control': 'no-cache' }
@@ -54,20 +72,26 @@ class BharatSahayakAPI {
                 const serverConfig = await response.json();
                 this.config = { ...this.config, ...serverConfig };
                 localStorage.setItem('bharatsahayak-config', JSON.stringify(this.config));
+                console.log('📋 Loaded config from server');
             }
         } catch (error) {
             console.warn('⚠️ Could not load server config, using defaults');
         }
 
+        // Remove trailing slash from API endpoint
         if (this.config.apiEndpoint.endsWith('/')) {
             this.config.apiEndpoint = this.config.apiEndpoint.slice(0, -1);
         }
 
+        // Update retry settings
         this.retryAttempts = this.config.retryAttempts || 3;
         this.retryDelay = this.config.retryDelay || 1000;
         this.timeout = this.config.timeout || 30000;
     }
 
+    /**
+     * Load authentication state from localStorage
+     */
     loadAuthState() {
         this.authToken = localStorage.getItem('bharatsahayak-auth-token');
         const userStr = localStorage.getItem('bharatsahayak-user');
@@ -82,6 +106,9 @@ class BharatSahayakAPI {
         }
     }
 
+    /**
+     * Save authentication state
+     */
     saveAuthState(token, user) {
         this.authToken = token;
         this.currentUser = user;
@@ -89,6 +116,9 @@ class BharatSahayakAPI {
         localStorage.setItem('bharatsahayak-user', JSON.stringify(user));
     }
 
+    /**
+     * Clear authentication state
+     */
     clearAuthState() {
         this.authToken = null;
         this.currentUser = null;
@@ -97,14 +127,23 @@ class BharatSahayakAPI {
         localStorage.removeItem('bharatsahayak-guest');
     }
 
+    /**
+     * Check if user is authenticated
+     */
     isAuthenticated() {
         return !!this.authToken && !!this.currentUser;
     }
 
+    /**
+     * Check if user is guest
+     */
     isGuest() {
         return localStorage.getItem('bharatsahayak-guest') === 'true';
     }
 
+    /**
+     * Make an API request with retry logic
+     */
     async request(endpoint, options = {}) {
         if (!this.initialized) {
             await this.initialize();
@@ -116,6 +155,7 @@ class BharatSahayakAPI {
             ...options.headers
         };
 
+        // Add auth token if available and not explicitly skipped
         if (this.authToken && !options.skipAuth) {
             defaultHeaders['Authorization'] = `Bearer ${this.authToken}`;
         }
@@ -125,6 +165,7 @@ class BharatSahayakAPI {
             headers: defaultHeaders
         };
 
+        // Retry logic
         for (let attempt = 1; attempt <= this.retryAttempts; attempt++) {
             try {
                 console.log(`🌐 API Request [${attempt}/${this.retryAttempts}]: ${options.method || 'GET'} ${endpoint}`);
@@ -151,6 +192,7 @@ class BharatSahayakAPI {
                     console.log(`✅ API Success: ${endpoint}`);
                     return { success: true, data, status: response.status };
                 } else {
+                    // Handle 401 - Unauthorized
                     if (response.status === 401) {
                         console.warn('🔒 Authentication required');
                         this.clearAuthState();
@@ -160,6 +202,7 @@ class BharatSahayakAPI {
                         return { success: false, error: 'Authentication required', status: 401 };
                     }
 
+                    // Handle other errors
                     const errorMessage = data.error || data.message || `Request failed with status ${response.status}`;
                     console.error(`❌ API Error: ${endpoint} - ${errorMessage}`);
                     
@@ -180,15 +223,22 @@ class BharatSahayakAPI {
                     return { success: false, error: 'Network error. Please check your connection.', status: 0 };
                 }
                 
+                // Wait before retry (exponential backoff)
                 await new Promise(resolve => setTimeout(resolve, this.retryDelay * attempt));
             }
         }
     }
 
+    /**
+     * GET request
+     */
     async get(endpoint, options = {}) {
         return this.request(endpoint, { ...options, method: 'GET' });
     }
 
+    /**
+     * POST request
+     */
     async post(endpoint, data, options = {}) {
         return this.request(endpoint, {
             ...options,
@@ -197,6 +247,9 @@ class BharatSahayakAPI {
         });
     }
 
+    /**
+     * PUT request
+     */
     async put(endpoint, data, options = {}) {
         return this.request(endpoint, {
             ...options,
@@ -205,33 +258,36 @@ class BharatSahayakAPI {
         });
     }
 
+    /**
+     * DELETE request
+     */
     async delete(endpoint, options = {}) {
         return this.request(endpoint, { ...options, method: 'DELETE' });
     }
 
-    // ==================== Email/Password Authentication ====================
+    // ==================== Authentication APIs ====================
 
-    async registerWithEmail(email, password, name) {
-        const result = await this.post('/auth/email/register', {
-            email,
-            password,
-            name
-        }, { skipAuth: true });
+    async register(userData) {
+        const result = await this.post('/auth/register', userData, { skipAuth: true });
         return result;
     }
 
-    async loginWithEmail(email, password) {
-        const result = await this.post('/auth/email/login', {
-            email,
-            password
+    async login(phoneNumber) {
+        const result = await this.post('/auth/login', { phone_number: phoneNumber }, { skipAuth: true });
+        return result;
+    }
+
+    async verifyOTP(phoneNumber, otp, session) {
+        const result = await this.post('/auth/verify', {
+            phone_number: phoneNumber,
+            otp: otp,
+            session: session
         }, { skipAuth: true });
         
         if (result.success && result.data.access_token) {
-            this.saveAuthState(result.data.access_token, {
+            this.saveAuthState(result.data.access_token, { 
                 user_id: result.data.user_id,
-                email: result.data.email,
-                name: result.data.name,
-                profile_completed: result.data.profile_completed
+                phone_number: phoneNumber 
             });
         }
         
@@ -241,12 +297,6 @@ class BharatSahayakAPI {
     async logout() {
         this.clearAuthState();
         window.location.href = 'login.html';
-    }
-
-    // ==================== Dashboard APIs ====================
-
-    async getDashboardData() {
-        return this.get('/dashboard/data');
     }
 
     // ==================== User Profile APIs ====================
@@ -287,21 +337,6 @@ class BharatSahayakAPI {
 
     async checkEligibility(schemeId) {
         return this.post('/schemes/check-eligibility', { scheme_id: schemeId });
-    }
-
-    async saveScheme(schemeId, schemeName) {
-        return this.post('/schemes/save', {
-            scheme_id: schemeId,
-            scheme_name: schemeName,
-            action: 'save'
-        });
-    }
-
-    async unsaveScheme(schemeId) {
-        return this.post('/schemes/save', {
-            scheme_id: schemeId,
-            action: 'unsave'
-        });
     }
 
     // ==================== Agriculture APIs ====================
@@ -357,6 +392,8 @@ if (typeof document !== 'undefined') {
         try {
             await api.initialize();
             console.log('🚀 API Client ready');
+            
+            // Dispatch custom event to notify other scripts
             window.dispatchEvent(new CustomEvent('api-ready'));
         } catch (error) {
             console.error('Failed to initialize API:', error);

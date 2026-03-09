@@ -1,182 +1,65 @@
-# 🚀 Quick Reference - BharatSahayak Integration
+# BharatSahayak - Quick Reference
 
-## 30-Second Overview
-
-✅ **Frontend**: Fixed and working  
-✅ **Backend**: Complete, ready to deploy  
-✅ **Documentation**: Comprehensive guides created  
-✅ **Tests**: Automated scripts ready  
-
-## 🎯 What to Do Right Now
-
-### 1. Test Frontend (30 seconds)
+## API Endpoint
 ```
-Open: frontend/test-quick.html
-Look for: 4 green checkmarks ✅
+https://ktlbemv6uh.execute-api.us-east-1.amazonaws.com/dev/
 ```
 
-### 2. Deploy Backend (15 minutes)
+## Test Credentials
+```
+Email: test@bharatsahayak.com
+Password: Test123!
+User ID: 6fb4b13b-21ff-4691-9a8f-554a83be445b
+```
+
+## Quick Test Commands
+
+### Register
 ```bash
-cat serverless-additions.yml >> serverless.yml
-serverless deploy --stage dev
-python test_backend_endpoints.py
+curl -X POST https://ktlbemv6uh.execute-api.us-east-1.amazonaws.com/dev/auth/email/register \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"Pass123!","name":"User Name"}'
 ```
 
-### 3. Test Everything (5 minutes)
-```
-Open: frontend/login.html
-Test: Registration and login
-```
-
-## 📁 Key Files
-
-### Must Read
-- `START_HERE.md` - Start here!
-- `BACKEND_DEPLOYMENT_GUIDE.md` - Deploy backend
-- `TESTING_GUIDE.md` - If issues arise
-
-### Must Run
-- `frontend/test-quick.html` - Test frontend
-- `test_backend_endpoints.py` - Test backend
-
-### Must Deploy
-- `src/api/auth_login.py` - Login endpoint
-- `src/api/health_check.py` - Health check
-- `serverless-additions.yml` - Configuration
-
-## 🔧 Quick Commands
-
-### Test Frontend
+### Login
 ```bash
-# Open in browser
-frontend/test-quick.html
+curl -X POST https://ktlbemv6uh.execute-api.us-east-1.amazonaws.com/dev/auth/email/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"user@example.com","password":"Pass123!"}'
 ```
 
-### Deploy Backend
+### Get Profile (with JWT)
 ```bash
-# Serverless Framework
-serverless deploy --stage dev
-
-# Or AWS SAM
-sam build && sam deploy --guided
+curl https://ktlbemv6uh.execute-api.us-east-1.amazonaws.com/dev/user/profile \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
 ```
 
-### Test Backend
-```bash
-# Python (cross-platform)
-python test_backend_endpoints.py
-
-# Bash (Linux/Mac)
-./test_backend_endpoints.sh
-
-# Manual
-curl https://dvt82zj0c4.execute-api.ap-south-1.amazonaws.com/dev/health-check
+## Frontend
+```
+Open: frontend/login-email.html
+Config: frontend/config.json (already configured)
 ```
 
-## 📊 Status Check
-
-### Frontend ✅
-- API endpoint: Fixed
-- Authentication: Updated
-- All pages: Integrated
-- Test page: Created
-
-### Backend 🚀
-- Login endpoint: Created
-- Health check: Created
-- Configuration: Ready
-- Tests: Ready
-- **Status**: Ready to deploy
-
-## 🐛 Quick Troubleshooting
-
-### Frontend test fails?
-1. Clear browser cache (Ctrl+Shift+Delete)
-2. Check `frontend/config.json` has correct endpoint
-3. Read `TESTING_GUIDE.md`
-
-### Backend deploy fails?
-1. Check AWS credentials
-2. Verify IAM permissions
-3. Check environment variables
-4. Read `BACKEND_DEPLOYMENT_GUIDE.md`
-
-### OTP not received?
-1. Check AWS Cognito SMS settings
-2. Check SNS configuration
-3. Check backend logs for OTP
-
-## 📞 Get Help
-
-1. Check browser console (F12)
-2. Check CloudWatch Logs
-3. Read `TESTING_GUIDE.md`
-4. Check `INDEX_DOCUMENTATION.md`
-
-## 🎯 Success Criteria
-
-✅ `test-quick.html` shows all green  
-✅ Can register new user  
-✅ Can login existing user  
-✅ Can search schemes  
-✅ Dashboard loads  
-
-## 📚 Documentation Map
-
-```
-Quick Start:
-├── START_HERE.md
-├── QUICK_REFERENCE.md (this file)
-└── FIXES_SUMMARY.txt
-
-Testing:
-├── TESTING_GUIDE.md
-├── VISUAL_TESTING_GUIDE.md
-└── frontend/test-quick.html
-
-Deployment:
-├── BACKEND_DEPLOYMENT_GUIDE.md
-├── serverless-additions.yml
-└── test_backend_endpoints.py
-
-Technical:
-├── CRITICAL_FIXES_APPLIED.md
-├── BACKEND_WORK_COMPLETE.md
-└── COMPLETE_INTEGRATION_SUMMARY.md
-
-Reference:
-├── README_INTEGRATION_FIX.md
-└── INDEX_DOCUMENTATION.md
+## Redeploy After Changes
+```powershell
+$env:PATH = "C:\Users\reeta dwivedi\AppData\Local\Programs\Python\Python312;" + $env:PATH
+sam build
+sam deploy --stack-name bharatsahayak-dev --region us-east-1 --parameter-overrides "Environment=dev JWTSecret=To2gBlws9qRhc8HNj7SALGfXzWdYeyZv" --capabilities CAPABILITY_IAM CAPABILITY_NAMED_IAM --no-confirm-changeset --resolve-s3
 ```
 
-## 🔗 Important URLs
+## Key Files
+- `template.yaml` - Infrastructure definition
+- `src/api/auth_email_register.py` - Registration handler
+- `src/api/auth_email_login.py` - Login handler
+- `src/utils/jwt_auth.py` - JWT middleware
+- `frontend/login-email.html` - Login UI
+- `frontend/api-client-email.js` - API client
 
-### API Endpoint
-```
-https://dvt82zj0c4.execute-api.ap-south-1.amazonaws.com/dev
-```
+## AWS Resources
+- Stack: bharatsahayak-dev
+- Region: us-east-1
+- Account: 390402557080
+- Tables: bharatsahayak-*-dev
+- Buckets: bharatsahayak-*-390402557080-dev
 
-### Test Pages
-```
-frontend/test-quick.html
-frontend/debug-test.html
-frontend/login.html
-```
-
-## ⚡ Quick Facts
-
-- **Files Created**: 15+
-- **Endpoints Added**: 2
-- **Pages Updated**: 11
-- **Documentation**: 10 files
-- **Test Scripts**: 2
-- **Deployment Time**: 15 min
-- **Testing Time**: 5 min
-
-## 🎉 Bottom Line
-
-Everything is ready! Just deploy the backend and test. You're 15 minutes away from a fully working system! 🚀
-
----
-
-**Next**: Open `START_HERE.md` for detailed instructions.
+## Status: ✅ OPERATIONAL

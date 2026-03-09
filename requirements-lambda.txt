@@ -8,4 +8,5 @@ requests-aws4auth
 python-jose
 passlib
 python-dotenv
+PyJWT
 

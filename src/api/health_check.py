@@ -58,7 +58,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             "lambda": {
                 "function_name": context.function_name if context else "unknown",
                 "memory_limit": context.memory_limit_in_mb if context else "unknown",
-                "request_id": context.request_id if context else "unknown"
+                "request_id": context.aws_request_id if context else "unknown"
             }
         }
         
@@ -96,23 +96,6 @@ def check_services_health() -> Dict[str, str]:
     except Exception as e:
         logger.error(f"DynamoDB health check error: {str(e)}")
         services['dynamodb'] = 'unknown'
-    
-    # Check Cognito
-    try:
-        cognito = boto3.client('cognito-idp', region_name=AWS_REGION)
-        user_pool_id = os.environ.get('USER_POOL_ID')
-        if user_pool_id:
-            # Simple operation to check connectivity
-            cognito.describe_user_pool(UserPoolId=user_pool_id)
-            services['cognito'] = 'healthy'
-        else:
-            services['cognito'] = 'not_configured'
-    except ClientError as e:
-        logger.error(f"Cognito health check failed: {str(e)}")
-        services['cognito'] = 'unhealthy'
-    except Exception as e:
-        logger.error(f"Cognito health check error: {str(e)}")
-        services['cognito'] = 'unknown'
     
     return services
 
